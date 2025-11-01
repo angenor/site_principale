@@ -46,13 +46,16 @@ watch(selectedDistrict, () => {
   selectedCommune.value = ''
 })
 
-// Fonction de recherche
+// Fonction de recherche avec redirection
 const handleSearch = () => {
   if (!selectedCommune.value) {
     alert('Veuillez sélectionner une commune')
     return
   }
-  emit('search', selectedCommune.value, selectedAnnee.value)
+
+  // Redirection vers la page du compte administratif
+  const url = `/compte-administratif?commune=${encodeURIComponent(selectedCommune.value)}&annee=${selectedAnnee.value}`
+  window.location.href = url
 }
 </script>
 

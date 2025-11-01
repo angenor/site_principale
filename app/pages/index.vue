@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { CompteAdministratif } from '~/composables/useMockData'
-
 // Métadonnées de la page
 useHead({
   title: 'Plateforme de Suivi des Revenus Miniers - Accueil',
@@ -12,52 +10,7 @@ useHead({
   ]
 })
 
-const { getCompteAdministratif } = useMockData()
-
-// État de la page
-const compteAffi = ref<CompteAdministratif | null>(null)
-const isLoading = ref(false)
-const errorMessage = ref('')
 const showScrollTop = ref(false)
-
-// Gestion de la recherche
-const handleSearch = (communeId: string, annee: number) => {
-  isLoading.value = true
-  errorMessage.value = ''
-
-  // Simuler un délai de chargement (comme une vraie API)
-  setTimeout(() => {
-    const compte = getCompteAdministratif(communeId, annee)
-
-    if (compte) {
-      compteAffi.value = compte
-      // Scroller vers le tableau
-      nextTick(() => {
-        const tableauElement = document.getElementById('tableau-financier')
-        if (tableauElement) {
-          tableauElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        }
-      })
-    } else {
-      errorMessage.value = 'Aucun compte administratif trouvé pour cette commune et cette année.'
-      compteAffi.value = null
-    }
-
-    isLoading.value = false
-  }, 500)
-}
-
-// Gestion du téléchargement
-const handleTelecharger = (format: 'excel' | 'word') => {
-  // Simulation du téléchargement (à implémenter plus tard avec une vraie génération)
-  const fileName = `compte_administratif_${compteAffi.value?.commune.nom}_${compteAffi.value?.annee}.${format === 'excel' ? 'xlsx' : 'docx'}`
-
-  alert(`Téléchargement du fichier: ${fileName}\n\nNote: La génération automatique des fichiers Excel/Word sera implémentée lors de l'intégration avec Supabase.`)
-
-  // TODO: Implémenter la génération réelle de fichiers
-  // - Excel: utiliser SheetJS (xlsx)
-  // - Word: utiliser docx.js
-}
 
 // Gestion du scroll to top
 const handleScroll = () => {
@@ -81,49 +34,12 @@ onUnmounted(() => {
 <template>
   <div class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
     <!-- Hero Section avec recherche intégrée -->
-    <HeroSection @search="handleSearch" />
+    <HeroSection />
 
     <!-- Contenu principal -->
     <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
-
-      <!-- Indicateur de chargement -->
-      <Transition name="fade">
-        <div v-if="isLoading" class="flex justify-center items-center py-12">
-          <div class="text-center">
-            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 dark:border-blue-400 border-t-transparent"></div>
-            <p class="mt-4 text-gray-600 dark:text-gray-300 font-medium">Chargement des données...</p>
-          </div>
-        </div>
-      </Transition>
-
-      <!-- Message d'erreur -->
-      <Transition name="fade">
-        <div v-if="errorMessage" class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 dark:border-red-400 p-4 rounded-lg shadow">
-          <div class="flex items-center">
-            <svg class="w-6 h-6 text-red-500 dark:text-red-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-            </svg>
-            <div>
-              <h3 class="text-red-800 dark:text-red-300 font-bold">Aucune donnée disponible</h3>
-              <p class="text-red-700 dark:text-red-400 text-sm mt-1">{{ errorMessage }}</p>
-            </div>
-          </div>
-        </div>
-      </Transition>
-
-
-      <!-- Tableau financier -->
-      <Transition name="slide-up">
-        <section v-if="compteAffi && !isLoading" id="tableau-financier">
-          <TableauFinancier
-            :compte="compteAffi"
-            @telecharger="handleTelecharger"
-          />
-        </section>
-      </Transition>
-
       <!-- Section informations complémentaires -->
-      <section v-if="!compteAffi && !isLoading" class="grid md:grid-cols-3 gap-6">
+      <section class="grid md:grid-cols-3 gap-6">
         <!-- Card 1 -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition">
           <div class="flex items-center gap-3 mb-3">
@@ -192,12 +108,11 @@ onUnmounted(() => {
             </p>
           </div>
           <div>
-            <h3 class="font-bold text-lg mb-3">Liens utiles</h3>
-            <ul class="text-gray-300 dark:text-gray-400 text-sm space-y-1">
-              <li><NuxtLink to="/about" class="hover:text-white transition">À propos du projet</NuxtLink></li>
-              <li><NuxtLink to="/contact" class="hover:text-white transition">Contact</NuxtLink></li>
-              <li><a href="#" class="hover:text-white transition">Mentions légales</a></li>
-            </ul>
+            <h3 class="font-bold text-lg mb-3">Ressources</h3>
+            <p class="text-gray-300 dark:text-gray-400 text-sm">
+              Plateforme de suivi des revenus miniers<br>
+              Collectivités Territoriales de Madagascar
+            </p>
           </div>
         </div>
         <div class="border-t border-gray-700 dark:border-gray-800 mt-8 pt-6 text-center text-gray-400 dark:text-gray-500 text-sm">
