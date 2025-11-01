@@ -1,14 +1,13 @@
 <template>
     <div>
-        <Nav />
+        <!-- <Nav />
 
-        <header>Hello depuis le layaut default</header>
+        <header>Hello depuis le layaut default</header> -->
 
         <slot />
     </div>
 </template>
 
 <script>
-import Nav from '@/components/Nav.vue';
 </script>
 
