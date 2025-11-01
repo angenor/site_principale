@@ -253,45 +253,78 @@ const description = computed(() => {
                 <font-awesome-icon icon="camera" class="text-purple-600 dark:text-purple-400" />
                 Galerie Photos - Contexte Minier Local
               </h3>
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Photo 1 -->
-                <div class="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div class="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
-                    <div class="text-center p-4">
-                      <font-awesome-icon icon="industry" class="w-16 h-16 text-gray-400 dark:text-gray-600 mb-2" />
-                      <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Site d'extraction minier</p>
-                    </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Photo 1 - Mine de cobalt -->
+                <div class="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer">
+                  <div class="aspect-video relative">
+                    <img
+                      src="https://imgs.mongabay.com/wp-content/uploads/sites/26/2023/06/14150521/cobalt-mine.jpg"
+                      alt="Mine de cobalt"
+                      class="w-full h-full object-cover"
+                      loading="lazy"
+                    />
                   </div>
-                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                    <p class="text-white text-sm font-medium">Zone d'exploitation {{ compteAffi.commune.nom }}</p>
-                  </div>
-                </div>
-
-                <!-- Photo 2 -->
-                <div class="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div class="aspect-video bg-gradient-to-br from-blue-200 to-blue-300 dark:from-blue-700 dark:to-blue-800 flex items-center justify-center">
-                    <div class="text-center p-4">
-                      <font-awesome-icon icon="users" class="w-16 h-16 text-blue-400 dark:text-blue-600 mb-2" />
-                      <p class="text-sm text-blue-700 dark:text-blue-400 font-medium">Communauté locale</p>
-                    </div>
-                  </div>
-                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                    <p class="text-white text-sm font-medium">Impact social et développement</p>
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+                    <p class="text-white font-bold mb-1">Mine de cobalt</p>
+                    <p class="text-white/90 text-xs">Exploitation de minerais critiques</p>
                   </div>
                 </div>
 
-                <!-- Photo 3 -->
-                <div class="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300">
-                  <div class="aspect-video bg-gradient-to-br from-green-200 to-green-300 dark:from-green-700 dark:to-green-800 flex items-center justify-center">
-                    <div class="text-center p-4">
-                      <font-awesome-icon icon="building" class="w-16 h-16 text-green-400 dark:text-green-600 mb-2" />
-                      <p class="text-sm text-green-700 dark:text-green-400 font-medium">Infrastructures publiques</p>
-                    </div>
+                <!-- Photo 2 - Concentration de cassitérite -->
+                <div class="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer">
+                  <div class="aspect-video relative">
+                    <img
+                      src="https://diplomatie.belgium.be/sites/default/files/styles/fluid_image/public/2022-11/Minersconcentratingcassiteriteandcoltan_KL.jpg?itok=EuU2PJlB"
+                      alt="Mineurs concentrant la cassitérite"
+                      class="w-full h-full object-cover"
+                      loading="lazy"
+                    />
                   </div>
-                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                    <p class="text-white text-sm font-medium">Projets financés par les revenus miniers</p>
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+                    <p class="text-white font-bold mb-1">Traitement des minerais</p>
+                    <p class="text-white/90 text-xs">Concentration de cassitérite et coltan</p>
                   </div>
                 </div>
+
+                <!-- Photo 3 - Site minier -->
+                <div class="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer">
+                  <div class="aspect-video relative">
+                    <img
+                      src="https://static.euronews.com/articles/stories/08/97/03/94/1200x675_cmsv2_fb678fe0-5671-57f4-95f5-0abb520be44e-8970394.jpg"
+                      alt="Site d'exploitation minière"
+                      class="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+                    <p class="text-white font-bold mb-1">Site d'exploitation</p>
+                    <p class="text-white/90 text-xs">Zone d'extraction {{ compteAffi.commune.nom }}</p>
+                  </div>
+                </div>
+
+                <!-- Photo 4 - Communauté et développement -->
+                <div class="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer">
+                  <div class="aspect-video relative">
+                    <img
+                      src="https://www.afrique-sur7.fr/wp-content/uploads/2023/10/2ad85722-5c2c-4f30-a98c-89412ec2b5aa.jpg"
+                      alt="Impact sur la communauté locale"
+                      class="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+                    <p class="text-white font-bold mb-1">Développement local</p>
+                    <p class="text-white/90 text-xs">Impact social et économique</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Note informative sur les photos -->
+              <div class="flex items-start gap-2 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
+                <font-awesome-icon icon="info-circle" class="text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
+                <p class="text-sm text-purple-800 dark:text-purple-300">
+                  Ces photos illustrent le contexte minier typique de la région. Cliquez pour voir en détail.
+                </p>
               </div>
             </div>
 
