@@ -129,38 +129,45 @@ const description = computed(() => {
     </header>
 
     <!-- Hero Section -->
-    <section v-if="compteAffi" class="relative min-h-[400px] flex items-center overflow-hidden">
-      <!-- Image de fond avec overlay -->
+    <section v-if="compteAffi" class="relative min-h-[400px] flex items-center overflow-hidden pb-20">
+      <!-- Image de fond sans overlay -->
       <div class="absolute inset-0 z-0">
         <img
           src="/images/hero_background.jpg"
           alt="Exploitation minière à Madagascar"
-          class="w-full h-full object-cover"
+          class="w-full h-full object-cover brightness-90 dark:brightness-75"
         />
-        <!-- Overlay gradient - allégé pour plus de visibilité -->
-        <div class="absolute inset-0 bg-gradient-to-r from-blue-900/70 via-blue-800/60 to-blue-900/70 dark:from-gray-900/80 dark:via-gray-800/75 dark:to-gray-900/80"></div>
       </div>
 
-      <!-- Contenu de la hero section -->
+      <!-- Contenu de la hero section avec fond semi-transparent -->
       <div class="relative z-10 w-full">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div class="text-center">
-            <h1 class="text-4xl sm:text-5xl font-bold text-white mb-4 drop-shadow-2xl">
-              Compte Administratif {{ compteAffi.annee }}
-            </h1>
-            <div class="flex flex-wrap justify-center items-center gap-2 text-xl sm:text-2xl text-blue-100 mb-6">
-              <span class="font-semibold">{{ compteAffi.region.nom }}</span>
-              <span class="mx-2">→</span>
-              <span class="font-semibold">{{ compteAffi.district.nom }}</span>
-              <span class="mx-2">→</span>
-              <span class="font-bold text-white">{{ compteAffi.commune.nom }}</span>
+          <div class="flex flex-col items-center gap-4">
+            <!-- Titre avec fond glassmorphism -->
+            <div class="w-auto bg-white/0 dark:bg-gray-900/0 backdrop-blur-xl px-8 py-4 rounded-2xl shadow-2xl border border-white/50 dark:border-gray-700/50">
+              <h1 class="text-4xl sm:text-5xl font-bold text-white whitespace-nowrap">
+                Compte Administratif {{ compteAffi.annee }}
+              </h1>
             </div>
-            <div class="flex flex-wrap justify-center gap-4 mt-6">
-              <div class="bg-white/20 backdrop-blur-sm px-6 py-3 rounded-full border border-white/30">
-                <span class="text-white font-medium">Population: {{ compteAffi.commune.population?.toLocaleString() }}</span>
+
+            <!-- Breadcrumb avec fond glassmorphism -->
+            <div class="w-auto bg-white/85 dark:bg-gray-900/85 backdrop-blur-xl px-6 py-3 rounded-xl shadow-lg border border-white/50 dark:border-gray-700/50">
+              <div class="flex flex-wrap justify-center items-center gap-2 text-lg sm:text-xl text-gray-700 dark:text-gray-300">
+                <span class="font-semibold">{{ compteAffi.region.nom }}</span>
+                <span class="mx-2">→</span>
+                <span class="font-semibold">{{ compteAffi.district.nom }}</span>
+                <span class="mx-2">→</span>
+                <span class="font-bold text-blue-600 dark:text-blue-400">{{ compteAffi.commune.nom }}</span>
               </div>
-              <div class="bg-white/20 backdrop-blur-sm px-6 py-3 rounded-full border border-white/30">
-                <span class="text-white font-medium">Année fiscale: {{ compteAffi.annee }}</span>
+            </div>
+
+            <!-- Badges d'information -->
+            <div class="flex flex-wrap justify-center gap-4 mt-2">
+              <div class="bg-white/85 dark:bg-gray-900/85 backdrop-blur-xl px-6 py-3 rounded-full shadow-lg border border-white/50 dark:border-gray-700/50">
+                <span class="text-gray-800 dark:text-gray-200 font-medium">Population: {{ compteAffi.commune.population?.toLocaleString() }}</span>
+              </div>
+              <div class="bg-white/85 dark:bg-gray-900/85 backdrop-blur-xl px-6 py-3 rounded-full shadow-lg border border-white/50 dark:border-gray-700/50">
+                <span class="text-gray-800 dark:text-gray-200 font-medium">Année fiscale: {{ compteAffi.annee }}</span>
               </div>
             </div>
           </div>
@@ -169,7 +176,7 @@ const description = computed(() => {
     </section>
 
     <!-- Contenu principal -->
-    <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+    <main class="max-w-7xl mx-auto px-4 space-y-8">
       <!-- Indicateur de chargement -->
       <Transition name="fade">
         <div v-if="isLoading" class="flex justify-center items-center py-12">
@@ -195,9 +202,9 @@ const description = computed(() => {
         </div>
       </Transition>
 
-      <!-- Section Description du contexte minier -->
+      <!-- Section Description du contexte minier (superposée au Hero) -->
       <Transition name="slide-up">
-        <section v-if="compteAffi && !isLoading && description" class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl dark:shadow-2xl p-6 sm:p-8 lg:p-10 transition-all duration-200 border border-gray-100 dark:border-gray-700">
+        <section v-if="compteAffi && !isLoading && description" class="relative -mt-16 z-20 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl dark:shadow-3xl p-6 sm:p-8 lg:p-10 transition-all duration-200 border border-gray-100 dark:border-gray-700">
           <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
             <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -236,7 +243,7 @@ const description = computed(() => {
 
       <!-- Tableau financier -->
       <Transition name="slide-up">
-        <section v-if="compteAffi && !isLoading">
+        <section v-if="compteAffi && !isLoading" class="pt-8">
           <TableauFinancier
             :compte="compteAffi"
             @telecharger="handleTelecharger"
