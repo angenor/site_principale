@@ -50,6 +50,11 @@ const handleSearch = () => {
 
 <template>
   <section class="relative min-h-[600px] lg:min-h-[700px] flex items-center overflow-hidden">
+    <!-- Bouton de changement de thème en haut à droite -->
+    <div class="absolute top-6 right-6 z-30">
+      <ThemeToggle />
+    </div>
+
     <!-- Image de fond avec overlay -->
     <div class="absolute inset-0 z-0">
       <img
@@ -73,14 +78,6 @@ const handleSearch = () => {
             <img
               src="/images/logos/logo_fond_noire_texte_blanc.jpeg"
               alt="TI Madagascar"
-              class="h-16 lg:h-20 w-auto object-contain"
-            />
-          </div>
-          <div class="text-white text-2xl font-light hidden sm:block">×</div>
-          <div class="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 shadow-2xl hover:bg-white/15 transition-all duration-300 hover:scale-105">
-            <img
-              src="/images/logos/logo_fond_noire_texte_bleu.jpeg"
-              alt="PCQVP Madagascar"
               class="h-16 lg:h-20 w-auto object-contain"
             />
           </div>
