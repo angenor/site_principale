@@ -4,6 +4,14 @@ const emit = defineEmits<{
 }>()
 
 const { regions, getDistrictsByRegion, getCommunesByDistrict } = useMockData()
+const { isDark } = useDarkMode()
+
+// Logo dynamique basé sur le thème
+const logoSrc = computed(() => {
+  return isDark.value
+    ? '/images/logos/logo_fond_noire_texte_blanc.jpeg'
+    : '/images/logos/logo_fond_noire_texte_bleu.jpeg'
+})
 
 // États
 const selectedRegion = ref<string>('')
@@ -49,7 +57,19 @@ const handleSearch = () => {
 </script>
 
 <template>
-  <section class="relative min-h-[600px] lg:min-h-[700px] flex items-center overflow-hidden">
+  <section class="relative min-h-[600px] pt-20 lg:min-h-[700px] flex items-center overflow-hidden">
+    <!-- Logo en haut à gauche -->
+    <div class="absolute top-6 left-6 z-30">
+      <div class="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 shadow-2xl hover:bg-white/15 transition-all duration-300 hover:scale-105">
+        <img
+          :src="logoSrc"
+          :key="logoSrc"
+          alt="TI Madagascar"
+          class="h-12 lg:h-16 w-auto object-contain transition-opacity duration-300"
+        />
+      </div>
+    </div>
+
     <!-- Bouton de changement de thème en haut à droite -->
     <div class="absolute top-6 right-6 z-30">
       <ThemeToggle />
@@ -72,17 +92,6 @@ const handleSearch = () => {
     <!-- Contenu principal -->
     <div class="relative z-10 w-full">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
-        <!-- Logos en haut -->
-        <div class="flex justify-center items-center gap-6 mb-12 animate-fade-in">
-          <div class="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 shadow-2xl hover:bg-white/15 transition-all duration-300 hover:scale-105">
-            <img
-              src="/images/logos/logo_fond_noire_texte_blanc.jpeg"
-              alt="TI Madagascar"
-              class="h-16 lg:h-20 w-auto object-contain"
-            />
-          </div>
-        </div>
-
         <!-- Titre principal -->
         <div class="text-center mb-8 lg:mb-12 animate-slide-up">
           <h1 class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 leading-tight drop-shadow-2xl">
