@@ -111,6 +111,94 @@ const description = computed(() => {
     `
   }
 })
+
+// Données pour les graphiques
+const chartRecettesVsDepenses = computed(() => {
+  if (!compteAffi.value) return []
+
+  const totauxRecettes = compteAffi.value.lignesRecettes
+    .filter(l => l.niveau === 1)
+    .reduce((sum, l) => sum + (l.previsionDefinitives || 0), 0)
+
+  const totauxDepenses = compteAffi.value.lignesDepenses
+    .filter(l => l.niveau === 1)
+    .reduce((sum, l) => sum + (l.previsionDefinitives || 0), 0)
+
+  return [
+    { category: 'Recettes', value: totauxRecettes, color: '#10b981' },
+    { category: 'Dépenses', value: totauxDepenses, color: '#ef4444' }
+  ]
+})
+
+const chartRepartitionRecettes = computed(() => {
+  if (!compteAffi.value) return []
+
+  return compteAffi.value.lignesRecettes
+    .filter(l => l.niveau === 1)
+    .map((ligne, index) => ({
+      category: ligne.intitule,
+      value: ligne.previsionDefinitives || 0,
+      color: ['#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#d1fae5'][index % 5]
+    }))
+})
+
+const chartRepartitionDepenses = computed(() => {
+  if (!compteAffi.value) return []
+
+  return compteAffi.value.lignesDepenses
+    .filter(l => l.niveau === 1)
+    .map((ligne, index) => ({
+      category: ligne.intitule,
+      value: ligne.previsionDefinitives || 0,
+      color: ['#ef4444', '#f87171', '#fca5a5', '#fecaca', '#fee2e2'][index % 5]
+    }))
+})
+
+const chartBudgetVsRealisation = computed(() => {
+  if (!compteAffi.value) return []
+
+  const recettesBudget = compteAffi.value.lignesRecettes
+    .filter(l => l.niveau === 1)
+    .reduce((sum, l) => sum + (l.previsionDefinitives || 0), 0)
+
+  const recettesRealisation = compteAffi.value.lignesRecettes
+    .filter(l => l.niveau === 1)
+    .reduce((sum, l) => sum + (l.orAdmis || 0), 0)
+
+  const depensesBudget = compteAffi.value.lignesDepenses
+    .filter(l => l.niveau === 1)
+    .reduce((sum, l) => sum + (l.previsionDefinitives || 0), 0)
+
+  const depensesRealisation = compteAffi.value.lignesDepenses
+    .filter(l => l.niveau === 1)
+    .reduce((sum, l) => sum + (l.orAdmis || 0), 0)
+
+  return [
+    { category: 'Recettes Budgétées', value: recettesBudget, color: '#34d399' },
+    { category: 'Recettes Réalisées', value: recettesRealisation, color: '#10b981' },
+    { category: 'Dépenses Budgétées', value: depensesBudget, color: '#fca5a5' },
+    { category: 'Dépenses Réalisées', value: depensesRealisation, color: '#ef4444' }
+  ]
+})
+
+const chartTauxExecution = computed(() => {
+  if (!compteAffi.value) return []
+
+  const recettesTaux = compteAffi.value.lignesRecettes
+    .filter(l => l.niveau === 1)
+    .map((ligne) => {
+      const taux = ligne.previsionDefinitives
+        ? ((ligne.orAdmis || 0) / ligne.previsionDefinitives) * 100
+        : 0
+      return {
+        category: ligne.intitule,
+        value: Math.round(taux),
+        color: taux >= 90 ? '#10b981' : taux >= 70 ? '#f59e0b' : '#ef4444'
+      }
+    })
+
+  return recettesTaux
+})
 </script>
 
 <template>
@@ -666,6 +754,176 @@ const description = computed(() => {
                     <font-awesome-icon icon="chevron-up" class="w-4 h-4 group-hover:-translate-y-1 transition-transform" />
                     <span>Masquer le tableau</span>
                   </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section Graphiques Analytiques -->
+            <div v-if="compteAffi" class="mt-12 space-y-8">
+              <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-3 flex items-center justify-center gap-3">
+                  <div class="bg-gradient-to-br from-purple-500 to-indigo-600 dark:from-purple-400 dark:to-indigo-500 p-3 rounded-xl shadow-lg">
+                    <font-awesome-icon icon="chart-line" class="w-7 h-7 text-white" />
+                  </div>
+                  <span>Analyses Graphiques</span>
+                </h2>
+                <p class="text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                  Visualisation interactive des données financières du compte administratif {{ compteAffi.annee }}
+                </p>
+              </div>
+
+              <!-- Graphique 1: Recettes vs Dépenses (Vue d'ensemble) -->
+              <div class="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-purple-200 dark:border-purple-700">
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="bg-gradient-to-r from-purple-600 to-indigo-600 p-2 rounded-lg">
+                    <font-awesome-icon icon="chart-bar" class="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Vue d'ensemble Budgétaire</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Comparaison Recettes vs Dépenses</p>
+                  </div>
+                </div>
+                <FinancialChart
+                  title="Recettes vs Dépenses"
+                  subtitle="Équilibre budgétaire global"
+                  :data="chartRecettesVsDepenses"
+                  initialChartType="bar"
+                />
+              </div>
+
+              <!-- Graphiques 2 & 3: Répartition en grille -->
+              <div class="grid lg:grid-cols-2 gap-8">
+                <!-- Graphique 2: Répartition des Recettes -->
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 border border-green-200 dark:border-green-700">
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="bg-gradient-to-r from-green-600 to-emerald-600 p-2 rounded-lg">
+                      <font-awesome-icon icon="arrow-up" class="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 class="text-xl font-bold text-gray-900 dark:text-white">Répartition des Recettes</h3>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">Par catégorie budgétaire</p>
+                    </div>
+                  </div>
+                  <FinancialChart
+                    title="Sources de Recettes"
+                    subtitle="Distribution par catégorie"
+                    :data="chartRepartitionRecettes"
+                    initialChartType="pie"
+                  />
+                </div>
+
+                <!-- Graphique 3: Répartition des Dépenses -->
+                <div class="bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 rounded-2xl p-6 border border-red-200 dark:border-red-700">
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="bg-gradient-to-r from-red-600 to-rose-600 p-2 rounded-lg">
+                      <font-awesome-icon icon="arrow-down" class="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 class="text-xl font-bold text-gray-900 dark:text-white">Répartition des Dépenses</h3>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">Par catégorie budgétaire</p>
+                    </div>
+                  </div>
+                  <FinancialChart
+                    title="Postes de Dépenses"
+                    subtitle="Distribution par catégorie"
+                    :data="chartRepartitionDepenses"
+                    initialChartType="pie"
+                  />
+                </div>
+              </div>
+
+              <!-- Graphique 4: Budget vs Réalisation -->
+              <div class="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-700">
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="bg-gradient-to-r from-blue-600 to-cyan-600 p-2 rounded-lg">
+                    <font-awesome-icon icon="chart-line" class="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Budget vs Réalisation</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Prévisions budgétaires et exécution réelle</p>
+                  </div>
+                </div>
+                <FinancialChart
+                  title="Performance Budgétaire"
+                  subtitle="Comparaison Budget/Réalisation"
+                  :data="chartBudgetVsRealisation"
+                  initialChartType="bar"
+                />
+              </div>
+
+              <!-- Graphique 5: Taux d'exécution -->
+              <div class="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-2xl p-6 border border-amber-200 dark:border-amber-700">
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="bg-gradient-to-r from-amber-600 to-orange-600 p-2 rounded-lg">
+                    <font-awesome-icon icon="chart-bar" class="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Taux d'Exécution des Recettes</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Pourcentage de réalisation par rapport aux prévisions</p>
+                  </div>
+                </div>
+                <FinancialChart
+                  title="Taux d'Exécution (%)"
+                  subtitle="Performance de recouvrement des recettes"
+                  :data="chartTauxExecution"
+                  initialChartType="bar"
+                />
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div class="bg-green-100 dark:bg-green-900/30 rounded-lg p-3 border border-green-300 dark:border-green-700">
+                    <div class="flex items-center gap-2">
+                      <div class="w-3 h-3 rounded-full bg-green-600"></div>
+                      <span class="text-sm font-medium text-gray-900 dark:text-white">≥ 90%</span>
+                    </div>
+                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Excellente performance</p>
+                  </div>
+                  <div class="bg-amber-100 dark:bg-amber-900/30 rounded-lg p-3 border border-amber-300 dark:border-amber-700">
+                    <div class="flex items-center gap-2">
+                      <div class="w-3 h-3 rounded-full bg-amber-600"></div>
+                      <span class="text-sm font-medium text-gray-900 dark:text-white">70-89%</span>
+                    </div>
+                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Performance satisfaisante</p>
+                  </div>
+                  <div class="bg-red-100 dark:bg-red-900/30 rounded-lg p-3 border border-red-300 dark:border-red-700">
+                    <div class="flex items-center gap-2">
+                      <div class="w-3 h-3 rounded-full bg-red-600"></div>
+                      <span class="text-sm font-medium text-gray-900 dark:text-white">&lt; 70%</span>
+                    </div>
+                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">À améliorer</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Carte d'information sur les graphiques -->
+              <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+                <div class="flex items-start gap-4">
+                  <div class="bg-indigo-100 dark:bg-indigo-900/30 p-3 rounded-lg">
+                    <font-awesome-icon icon="info-circle" class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-2">À propos de ces graphiques</h4>
+                    <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-3">
+                      Ces visualisations interactives sont générées automatiquement à partir des données du tableau financier.
+                      Vous pouvez basculer entre différents types de graphiques (barres, camembert, courbes) en utilisant les boutons de chaque graphique.
+                    </p>
+                    <div class="grid sm:grid-cols-2 gap-2 text-xs">
+                      <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                        <font-awesome-icon icon="chart-bar" class="text-blue-500" />
+                        <span>Graphiques en barres pour les comparaisons</span>
+                      </div>
+                      <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                        <font-awesome-icon icon="circle" class="text-green-500" />
+                        <span>Camemberts pour les répartitions</span>
+                      </div>
+                      <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                        <font-awesome-icon icon="chart-line" class="text-purple-500" />
+                        <span>Courbes pour les tendances</span>
+                      </div>
+                      <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                        <font-awesome-icon icon="download" class="text-orange-500" />
+                        <span>Données exportables au format Excel/Word</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
