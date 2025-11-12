@@ -27,6 +27,23 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@nuxt/content',
     '@nuxt/test-utils',
-    '@nuxt/ui'
-  ]
+    '@nuxt/ui',
+    '@nuxtjs/supabase'
+  ],
+
+  // Configuration Supabase
+  supabase: {
+    // Désactiver la redirection automatique vers /login
+    redirect: false
+  },
+
+  // Configuration des variables d'environnement pour Supabase
+  runtimeConfig: {
+    public: {
+      supabase: {
+        url: process.env.SUPABASE_URL,
+        key: process.env.SUPABASE_KEY,
+      }
+    }
+  }
 })
