@@ -163,3 +163,35 @@ When creating or modifying components, use Tailwind's `dark:` prefix for dark mo
 - No linting or testing setup currently configured
 - Compatibility date set to 2025-07-15
 - **Dark Mode**: Fully implemented - use `dark:` prefix when adding new components
+
+## Claude Assistant Guidelines
+
+### Package Installation & Deployment Operations
+
+**IMPORTANT**: When package installation or deployment operations are required, Claude MUST:
+
+1. **Provide the commands** instead of executing them directly
+2. **Explain what needs to be done** and why
+3. **Wait for user confirmation** after execution
+
+This applies to operations requiring elevated privileges or special access:
+
+- **Package Installation**:
+  ```bash
+  pnpm add package-name          # Add production dependency
+  pnpm add -D package-name       # Add dev dependency
+  ```
+
+- **Supabase Deployments**:
+  ```bash
+  supabase functions deploy function-name    # Deploy edge function
+  supabase db push                           # Push database migrations
+  ```
+
+- **Other privileged operations**:
+  - Database schema changes
+  - Authentication configuration
+  - Storage bucket setup
+  - Environment variable updates
+
+**Rationale**: Claude doesn't have root/admin access for certain operations. Providing commands allows the user to execute them with proper permissions.
