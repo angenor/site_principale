@@ -157,8 +157,8 @@ const handleSearch = async () => {
         </div>
 
         <!-- Formulaire de recherche moderne avec dark mode -->
-        <div class="max-w-5xl mx-auto animate-fade-in-up">
-          <div class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-lg rounded-2xl shadow-2xl p-6 sm:p-8 lg:p-10 border border-white/20 dark:border-gray-700/50 transition-colors duration-200">
+        <div class="max-w-5xl mx-auto animate-fade-in-up rainbow-border-wrapper">
+          <div class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-lg rounded-2xl shadow-2xl p-6 sm:p-8 lg:p-10 transition-colors duration-200">
             <h3 class="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white mb-6 text-center flex items-center justify-center gap-3">
               <font-awesome-icon icon="search" class="text-blue-600 dark:text-blue-400" />
               <span>Rechercher un Compte Administratif</span>
@@ -476,6 +476,52 @@ select {
 
   .animate-bounce {
     display: none;
+  }
+}
+
+/* Rainbow animated border */
+.rainbow-border-wrapper {
+  position: relative;
+  border-radius: 1rem;
+}
+
+.rainbow-border-wrapper::before,
+.rainbow-border-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  z-index: -1;
+  border-radius: 1.1rem;
+  background: linear-gradient(
+    45deg,
+    #fb0094,
+    #0000ff,
+    #00ff00,
+    #ffff00,
+    #ff0000,
+    #fb0094,
+    #0000ff,
+    #00ff00,
+    #ffff00,
+    #ff0000
+  );
+  background-size: 400%;
+  animation: steam 45s linear infinite;
+}
+
+.rainbow-border-wrapper::after {
+  filter: blur(10px);
+}
+
+@keyframes steam {
+  0% {
+    background-position: 0 0;
+  }
+  50% {
+    background-position: 400% 0;
+  }
+  100% {
+    background-position: 0 0;
   }
 }
 </style>
