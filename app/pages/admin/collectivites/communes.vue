@@ -234,6 +234,14 @@
         </div>
       </div>
     </div>
+
+    <!-- Commune Modal -->
+    <AdminCommuneModal
+      :is-open="isModalOpen"
+      :commune="selectedCommune"
+      @close="closeModal"
+      @saved="handleSaved"
+    />
   </div>
 </template>
 
@@ -260,6 +268,10 @@ const allDistricts = ref<District[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 const deleting = ref(false)
+
+// Modal state
+const isModalOpen = ref(false)
+const selectedCommune = ref<Commune | null>(null)
 
 // Pagination
 const currentPage = ref(1)
@@ -356,11 +368,22 @@ function nextPage() {
 }
 
 function openCreateModal() {
-  alert('Fonctionnalité à implémenter : Créer une commune')
+  selectedCommune.value = null
+  isModalOpen.value = true
 }
 
 function editCommune(commune: Commune) {
-  alert(`Fonctionnalité à implémenter : Modifier la commune ${commune.nom}`)
+  selectedCommune.value = commune
+  isModalOpen.value = true
+}
+
+function closeModal() {
+  isModalOpen.value = false
+  selectedCommune.value = null
+}
+
+async function handleSaved() {
+  await loadCommunes()
 }
 
 async function handleDeleteCommune(commune: Commune) {

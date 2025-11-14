@@ -168,11 +168,19 @@
         </div>
       </div>
     </div>
+
+    <!-- District Modal -->
+    <AdminDistrictModal
+      :is-open="isModalOpen"
+      :district="selectedDistrict"
+      @close="closeModal"
+      @saved="handleSaved"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { DistrictWithStats } from '~/types/collectivites'
+import type { DistrictWithStats, District } from '~/types/collectivites'
 import type { Region } from '~/types/collectivites'
 
 definePageMeta({
@@ -190,6 +198,10 @@ const allRegions = ref<Region[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 const deleting = ref(false)
+
+// Modal state
+const isModalOpen = ref(false)
+const selectedDistrict = ref<District | null>(null)
 
 // Load data on mount
 onMounted(async () => {
@@ -232,11 +244,22 @@ const filteredDistricts = computed(() => {
 })
 
 function openCreateModal() {
-  alert('Fonctionnalité à implémenter : Créer un district')
+  selectedDistrict.value = null
+  isModalOpen.value = true
 }
 
 function editDistrict(district: DistrictWithStats) {
-  alert(`Fonctionnalité à implémenter : Modifier le district ${district.nom}`)
+  selectedDistrict.value = district as District
+  isModalOpen.value = true
+}
+
+function closeModal() {
+  isModalOpen.value = false
+  selectedDistrict.value = null
+}
+
+async function handleSaved() {
+  await loadDistricts()
 }
 
 async function handleDeleteDistrict(district: DistrictWithStats) {
