@@ -98,17 +98,48 @@
           </NuxtLink>
         </div>
 
-        <!-- Section: Autres -->
+        <!-- Section: Gestion -->
         <div class="pt-4">
           <h3 class="px-4 mb-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
-            Autres
+            Gestion
           </h3>
+          <NuxtLink
+            to="/admin/documents"
+            class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          >
+            Documents
+          </NuxtLink>
+          <NuxtLink
+            to="/admin/newsletter/abonnes"
+            class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          >
+            Newsletter
+          </NuxtLink>
           <NuxtLink
             to="/admin/utilisateurs"
             class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             Utilisateurs
           </NuxtLink>
+          <NuxtLink
+            to="/admin/analytics"
+            class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          >
+            Analytics
+          </NuxtLink>
+          <NuxtLink
+            to="/admin/messagerie"
+            class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          >
+            Messagerie
+          </NuxtLink>
+        </div>
+
+        <!-- Section: Système -->
+        <div class="pt-4">
+          <h3 class="px-4 mb-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
+            Système
+          </h3>
           <NuxtLink
             to="/admin/parametres"
             class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
