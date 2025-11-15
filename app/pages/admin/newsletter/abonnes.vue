@@ -54,6 +54,14 @@
         </table>
       </div>
     </div>
+
+    <!-- Newsletter Subscriber Modal -->
+    <AdminNewsletterSubscriberModal
+      :is-open="isModalOpen"
+      :subscriber="selectedSubscriber"
+      @close="closeModal"
+      @saved="handleSaved"
+    />
   </div>
 </template>
 
@@ -66,6 +74,10 @@ const { fetchSubscribers, deleteSubscriber } = useNewsletter()
 const subscribers = ref<NewsletterSubscriber[]>([])
 const selectedStatut = ref('')
 const loading = ref(true)
+
+// Modal state
+const isModalOpen = ref(false)
+const selectedSubscriber = ref<NewsletterSubscriber | null>(null)
 
 onMounted(() => loadSubscribers())
 
@@ -85,6 +97,15 @@ function getStatutClass(statut: string) {
   return statut === 'actif' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
          statut === 'inactif' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' :
          'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+}
+
+function closeModal() {
+  isModalOpen.value = false
+  selectedSubscriber.value = null
+}
+
+async function handleSaved() {
+  await loadSubscribers()
 }
 
 async function handleDelete(sub: NewsletterSubscriber) {

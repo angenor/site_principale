@@ -148,11 +148,19 @@
         </div>
       </div>
     </div>
+
+    <!-- Region Modal -->
+    <AdminRegionModal
+      :is-open="isModalOpen"
+      :region="selectedRegion"
+      @close="closeModal"
+      @saved="handleSaved"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { RegionWithStats } from '~/types/collectivites'
+import type { RegionWithStats, Region } from '~/types/collectivites'
 
 definePageMeta({
   layout: 'admin'
@@ -166,6 +174,10 @@ const regions = ref<RegionWithStats[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 const deleting = ref(false)
+
+// Modal state
+const isModalOpen = ref(false)
+const selectedRegion = ref<Region | null>(null)
 
 // Load regions on mount
 onMounted(async () => {
@@ -199,11 +211,22 @@ const filteredRegions = computed(() => {
 })
 
 function openCreateModal() {
-  alert('Fonctionnalité à implémenter : Créer une région')
+  selectedRegion.value = null
+  isModalOpen.value = true
 }
 
 function editRegion(region: RegionWithStats) {
-  alert(`Fonctionnalité à implémenter : Modifier la région ${region.nom}`)
+  selectedRegion.value = region as Region
+  isModalOpen.value = true
+}
+
+function closeModal() {
+  isModalOpen.value = false
+  selectedRegion.value = null
+}
+
+async function handleSaved() {
+  await loadRegions()
 }
 
 async function handleDeleteRegion(region: RegionWithStats) {
@@ -214,9 +237,7 @@ async function handleDeleteRegion(region: RegionWithStats) {
   try {
     deleting.value = true
     await deleteRegion(region.id)
-    // Recharger la liste après suppression
     await loadRegions()
-    alert(`La région ${region.nom} a été supprimée avec succès`)
   } catch (err: any) {
     alert(`Erreur lors de la suppression : ${err.message}`)
     console.error('Erreur:', err)

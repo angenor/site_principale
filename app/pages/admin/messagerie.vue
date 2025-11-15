@@ -170,6 +170,13 @@
         </div>
       </div>
     </div>
+
+    <!-- Message Modal -->
+    <AdminMessageModal
+      :is-open="isModalOpen"
+      @close="closeModal"
+      @sent="handleSent"
+    />
   </div>
 </template>
 
@@ -185,6 +192,9 @@ const activeTab = ref<'recus' | 'envoyes'>('recus')
 
 const messagesRecus = ref<MessageSecurise[]>([])
 const messagesEnvoyes = ref<MessageSecurise[]>([])
+
+// Modal state
+const isModalOpen = ref(false)
 
 const messagesNonLus = computed(() =>
   messagesRecus.value.filter(m => !m.est_lu).length
@@ -247,7 +257,15 @@ async function openMessage(message: MessageSecurise) {
 }
 
 function openComposeModal() {
-  alert('Fonctionnalité à implémenter : Composer un nouveau message')
+  isModalOpen.value = true
+}
+
+function closeModal() {
+  isModalOpen.value = false
+}
+
+async function handleSent() {
+  await loadMessages()
 }
 
 function formatDate(dateStr: string) {

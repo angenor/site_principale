@@ -194,6 +194,14 @@
         </div>
       </div>
     </div>
+
+    <!-- Projet Minier Modal -->
+    <AdminProjetMinierModal
+      :is-open="isModalOpen"
+      :projet="selectedProjet"
+      @close="closeModal"
+      @saved="handleSaved"
+    />
   </div>
 </template>
 
@@ -215,6 +223,10 @@ const typesMinerais = ref<string[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 const deleting = ref(false)
+
+// Modal state
+const isModalOpen = ref(false)
+const selectedProjet = ref<ProjetMinier | null>(null)
 
 // Load data on mount
 onMounted(async () => {
@@ -283,11 +295,22 @@ function getStatutClass(statut: string): string {
 }
 
 function openCreateModal() {
-  alert('Fonctionnalité à implémenter : Créer un projet minier')
+  selectedProjet.value = null
+  isModalOpen.value = true
 }
 
 function editProjet(projet: ProjetMinier) {
-  alert(`Fonctionnalité à implémenter : Modifier le projet ${projet.nom}`)
+  selectedProjet.value = projet
+  isModalOpen.value = true
+}
+
+function closeModal() {
+  isModalOpen.value = false
+  selectedProjet.value = null
+}
+
+async function handleSaved() {
+  await loadProjets()
 }
 
 async function handleDeleteProjet(projet: ProjetMinier) {

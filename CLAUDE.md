@@ -123,6 +123,48 @@ In `app/assets/css/main.css`:
 
 Without this `@variant` declaration, dark mode classes (e.g., `dark:bg-gray-900`) will NOT work, even if the `.dark` class is present on the HTML element.
 
+### TailwindCSS v4 Migration Notes
+
+**IMPORTANT**: TailwindCSS v4 introduces breaking changes that affect styling throughout the application:
+
+#### Opacity Syntax Change
+The `bg-opacity-xx`, `text-opacity-xx`, and similar opacity utilities are **no longer supported** in v4.
+
+- **Old (v3) - DEPRECATED**:
+  ```html
+  <div class="bg-green-500 bg-opacity-50">...</div>
+  <div class="text-blue-600 text-opacity-75">...</div>
+  <div class="border-red-500 border-opacity-25">...</div>
+  ```
+
+- **New (v4) - REQUIRED**:
+  ```html
+  <div class="bg-green-500/50">...</div>
+  <div class="text-blue-600/75">...</div>
+  <div class="border-red-500/25">...</div>
+  ```
+
+The new syntax uses `/opacity` directly after the color utility (e.g., `bg-green-500/50` for 50% opacity).
+
+#### Button Cursor Pointer
+Buttons and interactive elements **no longer have `cursor-pointer` by default** in v4.
+
+- **Required**: Explicitly add `cursor-pointer` class to all buttons and clickable elements:
+  ```html
+  <button class="cursor-pointer bg-blue-600 hover:bg-blue-700">
+    Click me
+  </button>
+  ```
+
+#### Application Impact
+These changes affect:
+- All modal overlays (fixed with `bg-gray-500/75` syntax)
+- Interactive buttons throughout the admin interface
+- Any component using opacity utilities
+- Custom styled elements with hover states
+
+**When adding new components**: Always use the v4 syntax to ensure compatibility.
+
 ### Core Components
 - **Composable**: `app/composables/useDarkMode.ts`
   - Manages theme state and persistence

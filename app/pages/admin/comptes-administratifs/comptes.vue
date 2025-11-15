@@ -210,11 +210,19 @@
         </div>
       </div>
     </div>
+
+    <!-- Compte Administratif Modal -->
+    <AdminCompteAdministratifModal
+      :is-open="isModalOpen"
+      :compte="selectedCompte"
+      @close="closeModal"
+      @saved="handleSaved"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { CompteAdministratifWithStats } from '~/types/comptes-administratifs'
+import type { CompteAdministratifWithStats, CompteAdministratif } from '~/types/comptes-administratifs'
 
 definePageMeta({
   layout: 'admin'
@@ -231,6 +239,10 @@ const annees = ref<number[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 const deleting = ref(false)
+
+// Modal state
+const isModalOpen = ref(false)
+const selectedCompte = ref<CompteAdministratif | null>(null)
 
 // Load data on mount
 onMounted(async () => {
@@ -301,7 +313,8 @@ function getStatutClass(statut: string): string {
 }
 
 function openCreateModal() {
-  alert('Fonctionnalité à implémenter : Créer un compte administratif')
+  selectedCompte.value = null
+  isModalOpen.value = true
 }
 
 function viewCompte(compte: CompteAdministratifWithStats) {
@@ -309,7 +322,17 @@ function viewCompte(compte: CompteAdministratifWithStats) {
 }
 
 function editCompte(compte: CompteAdministratifWithStats) {
-  alert(`Fonctionnalité à implémenter : Modifier le compte ${compte.annee}`)
+  selectedCompte.value = compte as CompteAdministratif
+  isModalOpen.value = true
+}
+
+function closeModal() {
+  isModalOpen.value = false
+  selectedCompte.value = null
+}
+
+async function handleSaved() {
+  await loadComptes()
 }
 
 async function changerStatut(compte: CompteAdministratifWithStats, nouveauStatut: 'brouillon' | 'valide' | 'publie' | 'archive') {

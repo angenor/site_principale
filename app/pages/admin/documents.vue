@@ -52,6 +52,14 @@
         </table>
       </div>
     </div>
+
+    <!-- Document Modal -->
+    <AdminDocumentModal
+      :is-open="isModalOpen"
+      :document="selectedDocument"
+      @close="closeModal"
+      @saved="handleSaved"
+    />
   </div>
 </template>
 
@@ -64,24 +72,43 @@ const { fetchDocuments, deleteDocument } = useDocuments()
 const documents = ref<Document[]>([])
 const loading = ref(true)
 
+// Modal state
+const isModalOpen = ref(false)
+const selectedDocument = ref<Document | null>(null)
+
 onMounted(async () => {
+  await loadDocuments()
+})
+
+async function loadDocuments() {
   try {
+    loading.value = true
     documents.value = await fetchDocuments()
   } catch (err) {
     console.error(err)
   } finally {
     loading.value = false
   }
-})
+}
 
 function openCreateModal() {
-  alert('Fonctionnalité à implémenter : Upload de document')
+  selectedDocument.value = null
+  isModalOpen.value = true
+}
+
+function closeModal() {
+  isModalOpen.value = false
+  selectedDocument.value = null
+}
+
+async function handleSaved() {
+  await loadDocuments()
 }
 
 async function handleDelete(doc: Document) {
   if (confirm(`Supprimer "${doc.titre}" ?`)) {
     await deleteDocument(doc.id)
-    documents.value = await fetchDocuments()
+    await loadDocuments()
   }
 }
 </script>

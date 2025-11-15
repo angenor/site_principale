@@ -190,6 +190,14 @@
         </div>
       </div>
     </div>
+
+    <!-- Rubrique Budgétaire Modal -->
+    <AdminRubriqueBudgetaireModal
+      :is-open="isModalOpen"
+      :rubrique="selectedRubrique"
+      @close="closeModal"
+      @saved="handleSaved"
+    />
   </div>
 </template>
 
@@ -215,6 +223,10 @@ const filterActif = ref('')
 
 const currentPage = ref(1)
 const itemsPerPage = 20
+
+// Modal state
+const isModalOpen = ref(false)
+const selectedRubrique = ref<RubriqueBudgetaire | null>(null)
 
 onMounted(async () => {
   await fetchRubriques()
@@ -284,10 +296,21 @@ async function deleteRubrique(id: string) {
 }
 
 function openCreateModal() {
-  alert('Fonctionnalité à implémenter : Créer une nouvelle rubrique')
+  selectedRubrique.value = null
+  isModalOpen.value = true
 }
 
 function editRubrique(rubrique: RubriqueBudgetaire) {
-  alert(`Fonctionnalité à implémenter : Modifier la rubrique ${rubrique.code_rubrique}`)
+  selectedRubrique.value = rubrique
+  isModalOpen.value = true
+}
+
+function closeModal() {
+  isModalOpen.value = false
+  selectedRubrique.value = null
+}
+
+async function handleSaved() {
+  await fetchRubriques()
 }
 </script>

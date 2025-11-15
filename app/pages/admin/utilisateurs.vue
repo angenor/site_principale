@@ -65,6 +65,14 @@
         </table>
       </div>
     </div>
+
+    <!-- Profile Modal -->
+    <AdminProfileModal
+      :is-open="isModalOpen"
+      :profile="selectedProfile"
+      @close="closeModal"
+      @saved="handleSaved"
+    />
   </div>
 </template>
 
@@ -77,15 +85,24 @@ const { fetchProfiles, deleteProfile } = useProfiles()
 const profiles = ref<Profile[]>([])
 const loading = ref(true)
 
+// Modal state
+const isModalOpen = ref(false)
+const selectedProfile = ref<Profile | null>(null)
+
 onMounted(async () => {
+  await loadProfiles()
+})
+
+async function loadProfiles() {
   try {
+    loading.value = true
     profiles.value = await fetchProfiles()
   } catch (err) {
     console.error(err)
   } finally {
     loading.value = false
   }
-})
+}
 
 function getRoleClass(role: string) {
   return role === 'administrateur' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
@@ -94,17 +111,28 @@ function getRoleClass(role: string) {
 }
 
 function openCreateModal() {
-  alert('Fonctionnalité à implémenter : Créer un utilisateur')
+  selectedProfile.value = null
+  isModalOpen.value = true
+}
+
+function closeModal() {
+  isModalOpen.value = false
+  selectedProfile.value = null
+}
+
+async function handleSaved() {
+  await loadProfiles()
 }
 
 function editProfile(profile: Profile) {
-  alert(`Modifier l'utilisateur ${profile.email}`)
+  selectedProfile.value = profile
+  isModalOpen.value = true
 }
 
 async function handleDelete(profile: Profile) {
   if (confirm(`Supprimer l'utilisateur ${profile.email} ?`)) {
     await deleteProfile(profile.id)
-    profiles.value = await fetchProfiles()
+    await loadProfiles()
   }
 }
 </script>

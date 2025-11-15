@@ -221,6 +221,14 @@
         </div>
       </div>
     </div>
+
+    <!-- Revenu Minier Modal -->
+    <AdminRevenuMinierModal
+      :is-open="isModalOpen"
+      :revenu="selectedRevenu"
+      @close="closeModal"
+      @saved="handleSaved"
+    />
   </div>
 </template>
 
@@ -242,6 +250,10 @@ const annees = ref<number[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
 const deleting = ref(false)
+
+// Modal state
+const isModalOpen = ref(false)
+const selectedRevenu = ref<RevenuMinier | null>(null)
 
 // Pagination
 const currentPage = ref(1)
@@ -344,11 +356,22 @@ function nextPage() {
 }
 
 function openCreateModal() {
-  alert('Fonctionnalité à implémenter : Créer un revenu minier')
+  selectedRevenu.value = null
+  isModalOpen.value = true
 }
 
 function editRevenu(revenu: RevenuMinier) {
-  alert(`Fonctionnalité à implémenter : Modifier le revenu`)
+  selectedRevenu.value = revenu
+  isModalOpen.value = true
+}
+
+function closeModal() {
+  isModalOpen.value = false
+  selectedRevenu.value = null
+}
+
+async function handleSaved() {
+  await loadRevenus()
 }
 
 async function handleDeleteRevenu(revenu: RevenuMinier) {
