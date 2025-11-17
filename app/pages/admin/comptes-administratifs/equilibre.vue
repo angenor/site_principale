@@ -41,7 +41,14 @@
         </div>
       </div>
 
-      <div class="mt-4 flex justify-end">
+      <div class="mt-4 flex justify-end gap-3">
+        <button @click="exporterExcel" :disabled="!equilibreData || exporting" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2">
+          <svg v-if="!exporting" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white" v-else></span>
+          {{ exporting ? 'Export...' : 'Exporter Excel' }}
+        </button>
         <button @click="loadTableauEquilibre" :disabled="!canLoad || loading" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
           {{ loading ? 'Chargement...' : 'Afficher le tableau d\'équilibre' }}
         </button>
@@ -229,9 +236,9 @@ import { useCommunes } from '~/composables/useCommunes'
 definePageMeta({ layout: 'admin' })
 
 const supabase = useSupabaseClient()
-const { regions, fetchRegions } = useRegions()
-const { districts, fetchDistricts } = useDistricts()
-const { communes, fetchCommunes } = useCommunes()
+const { fetchRegions } = useRegions()
+const { fetchDistricts } = useDistricts()
+const { fetchCommunes } = useCommunes()
 
 // État
 const selectedAnnee = ref<number | ''>('')
@@ -239,6 +246,12 @@ const selectedTypeCollectivite = ref('')
 const selectedCollectiviteId = ref<string | null>(null)
 const equilibreData = ref<any>(null)
 const loading = ref(false)
+const exporting = ref(false)
+
+// Données des collectivités
+const regions = ref<any[]>([])
+const districts = ref<any[]>([])
+const communes = ref<any[]>([])
 
 // Computed
 const anneesDisponibles = computed(() => {
@@ -304,7 +317,16 @@ const totalRecouvrementInvest = computed(() => {
 })
 
 onMounted(async () => {
-  await Promise.all([fetchRegions(), fetchDistricts(), fetchCommunes()])
+  // Charger les données des collectivités
+  const [regionsData, districtsData, communesData] = await Promise.all([
+    fetchRegions(),
+    fetchDistricts(),
+    fetchCommunes()
+  ])
+
+  regions.value = regionsData
+  districts.value = districtsData
+  communes.value = communesData
 })
 
 function onTypeCollectiviteChange() {
@@ -338,6 +360,50 @@ async function loadTableauEquilibre() {
     equilibreData.value = null
   } finally {
     loading.value = false
+  }
+}
+
+async function exporterExcel() {
+  if (!canLoad.value || !equilibreData.value) return
+
+  exporting.value = true
+  try {
+    // Construire l'URL avec les paramètres
+    const params = new URLSearchParams({
+      annee: selectedAnnee.value.toString(),
+      collectivite_id: selectedCollectiviteId.value!,
+      collectivite_type: selectedTypeCollectivite.value
+    })
+
+    // Appeler l'API
+    const response = await fetch(`/api/export/compte-administratif?${params.toString()}`)
+
+    if (!response.ok) {
+      throw new Error('Erreur lors de l\'export')
+    }
+
+    // Télécharger le fichier
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+
+    // Nom du fichier
+    const collectivite = collectivitesOptions.value.find(c => c.id === selectedCollectiviteId.value)
+    const filename = `CA_${collectivite?.code || 'export'}_${selectedAnnee.value}.xlsx`
+    a.download = filename
+
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+
+    alert('Export Excel réussi!')
+  } catch (err) {
+    console.error('Erreur lors de l\'export:', err)
+    alert('Erreur lors de l\'export Excel. Veuillez réessayer.')
+  } finally {
+    exporting.value = false
   }
 }
 
