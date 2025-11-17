@@ -234,8 +234,8 @@ def generer_sql_insertion(rubriques: List[RubriqueBudgetaire]) -> str:
         f"-- Nombre total de rubriques: {len(rubriques)}",
         "-- ============================================================================",
         "",
-        "-- Désactiver temporairement les triggers pour améliorer les performances",
-        "ALTER TABLE rubriques_budgetaires DISABLE TRIGGER ALL;",
+        "-- Désactiver temporairement les triggers utilisateur pour améliorer les performances",
+        "ALTER TABLE rubriques_budgetaires DISABLE TRIGGER USER;",
         "",
         "-- Supprimer les rubriques existantes (si nécessaire)",
         "-- TRUNCATE TABLE rubriques_budgetaires CASCADE;",
@@ -274,8 +274,8 @@ def generer_sql_insertion(rubriques: List[RubriqueBudgetaire]) -> str:
 
     sql_lines.extend([
         "",
-        "-- Réactiver les triggers",
-        "ALTER TABLE rubriques_budgetaires ENABLE TRIGGER ALL;",
+        "-- Réactiver les triggers utilisateur",
+        "ALTER TABLE rubriques_budgetaires ENABLE TRIGGER USER;",
         "",
         "-- Vérification",
         "SELECT",

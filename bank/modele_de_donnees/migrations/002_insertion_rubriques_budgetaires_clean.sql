@@ -15,6 +15,11 @@ ALTER TABLE rubriques_budgetaires DISABLE TRIGGER USER;
 -- Niveau 1
 -- ========================================
 
+
+-- ========================================
+-- Niveau 1
+-- ========================================
+
 INSERT INTO rubriques_budgetaires (
     code, intitule, categorie_id, type, section,
     parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
@@ -217,24 +222,6 @@ INSERT INTO rubriques_budgetaires (
     code, intitule, categorie_id, type, section,
     parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
 ) VALUES (
-    '10',
-    'FONDS, DOTATIONS ET RESERVES',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'recette',
-    'investissement',
-    NULL,
-    1,
-    11,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
     '60',
     'CHARGES DE PERSONNEL',
     NULL,  -- categorie_id (à définir manuellement si nécessaire)
@@ -397,24 +384,6 @@ INSERT INTO rubriques_budgetaires (
     code, intitule, categorie_id, type, section,
     parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
 ) VALUES (
-    '16',
-    'EMPRUNTS ET DETTES ASSIMILEES',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'depense',
-    'investissement',
-    NULL,
-    1,
-    21,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
     '20',
     'IMMOBILISATION INCORPORELLES',
     NULL,  -- categorie_id (à définir manuellement si nécessaire)
@@ -441,42 +410,6 @@ INSERT INTO rubriques_budgetaires (
     NULL,
     1,
     23,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '20',
-    'IMMOBILISATION INCORPORELLES',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'depense',
-    'investissement',
-    NULL,
-    1,
-    24,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '21',
-    'IMMOBILISATION CORPORELLES',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'depense',
-    'investissement',
-    NULL,
-    1,
-    25,
     FALSE,  -- est_calculee
     NULL,   -- formule_calcul
     TRUE,   -- est_active
@@ -1093,42 +1026,6 @@ INSERT INTO rubriques_budgetaires (
     (SELECT id FROM rubriques_budgetaires WHERE code = '16' LIMIT 1),
     2,
     33,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '101',
-    'Dotations et fonds divers',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'recette',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '10' LIMIT 1),
-    2,
-    34,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '106',
-    'Réserves',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'recette',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '10' LIMIT 1),
-    2,
-    35,
     FALSE,  -- est_calculee
     NULL,   -- formule_calcul
     TRUE,   -- est_active
@@ -1913,96 +1810,6 @@ INSERT INTO rubriques_budgetaires (
     code, intitule, categorie_id, type, section,
     parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
 ) VALUES (
-    '161',
-    'Emprunts en Ariary',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'depense',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '16' LIMIT 1),
-    2,
-    79,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '162',
-    'Emprunts en devises',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'depense',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '16' LIMIT 1),
-    2,
-    80,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '165',
-    'Dépôts et cautionnement reçus',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'depense',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '16' LIMIT 1),
-    2,
-    81,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '167',
-    'Dettes sur contrat de location-financement',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'depense',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '16' LIMIT 1),
-    2,
-    82,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '168',
-    'Autres emprunts et dettes assimilés',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'depense',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '16' LIMIT 1),
-    2,
-    83,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
     '201',
     'Frais de développement, de recherche et d''études',
     NULL,  -- categorie_id (à définir manuellement si nécessaire)
@@ -2197,8 +2004,26 @@ INSERT INTO rubriques_budgetaires (
     NULL    -- description
 );
 
+INSERT INTO rubriques_budgetaires (
+    code, intitule, categorie_id, type, section,
+    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
+) VALUES (
+    '7151',
+    'Impôt foncier sur les propriétés bâties – IFPB',
+    NULL,  -- categorie_id (à définir manuellement si nécessaire)
+    'recette',
+    'fonctionnement',
+    (SELECT id FROM rubriques_budgetaires WHERE code = '715' LIMIT 1),
+    3,
+    2,
+    FALSE,  -- est_calculee
+    NULL,   -- formule_calcul
+    TRUE,   -- est_active
+    NULL    -- description
+);
+
 -- ========================================
--- Niveau 3
+-- Autres niveaux
 -- ========================================
 
 INSERT INTO rubriques_budgetaires (
@@ -2231,24 +2056,6 @@ INSERT INTO rubriques_budgetaires (
     (SELECT id FROM rubriques_budgetaires WHERE code = '714' LIMIT 1),
     3,
     1,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '7151',
-    'Impôt foncier sur les propriétés bâties – IFPB',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'recette',
-    'fonctionnement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '715' LIMIT 1),
-    3,
-    2,
     FALSE,  -- est_calculee
     NULL,   -- formule_calcul
     TRUE,   -- est_active
@@ -4121,204 +3928,6 @@ INSERT INTO rubriques_budgetaires (
     (SELECT id FROM rubriques_budgetaires WHERE code = '168' LIMIT 1),
     3,
     106,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '1011',
-    'Contreparties d''intégrations pratimoniales',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'recette',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '101' LIMIT 1),
-    3,
-    107,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '1012',
-    'Dotations de l’État',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'recette',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '101' LIMIT 1),
-    3,
-    108,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '1013',
-    'Dotations : autres collectivités ou organismes publics',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'recette',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '101' LIMIT 1),
-    3,
-    109,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '1014',
-    'Fonds de travaux électricité',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'recette',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '101' LIMIT 1),
-    3,
-    110,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '1015',
-    'Fonds de travaux réseau eau',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'recette',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '101' LIMIT 1),
-    3,
-    111,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '1016',
-    'Dons et legs en capital',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'recette',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '101' LIMIT 1),
-    3,
-    112,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '1017',
-    'Mises à disposition',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'recette',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '101' LIMIT 1),
-    3,
-    113,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '1018',
-    'Autres',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'recette',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '101' LIMIT 1),
-    3,
-    114,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '1061',
-    'Réserves des budgets annexes',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'recette',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '106' LIMIT 1),
-    3,
-    115,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '1064',
-    'Excédent de fonctionnement capitalisé',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'recette',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '106' LIMIT 1),
-    3,
-    116,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '1068',
-    'Autres réserves',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'recette',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '106' LIMIT 1),
-    3,
-    117,
     FALSE,  -- est_calculee
     NULL,   -- formule_calcul
     TRUE,   -- est_active
@@ -6597,150 +6206,6 @@ INSERT INTO rubriques_budgetaires (
     code, intitule, categorie_id, type, section,
     parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
 ) VALUES (
-    '1611',
-    'Emprunts à long et moyen terme : part à plus d''un an',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'depense',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '161' LIMIT 1),
-    3,
-    244,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '1612',
-    'Emprunts à long et moyen terme : part à moins d''un an',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'depense',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '161' LIMIT 1),
-    3,
-    245,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '1621',
-    'Emprunts à long et moyen terme : part à plus d''un an',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'depense',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '162' LIMIT 1),
-    3,
-    246,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '1622',
-    'Emprunts à long et moyen terme : part à moins d''un an',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'depense',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '162' LIMIT 1),
-    3,
-    247,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '1650',
-    'Dépôts et cautionnement reçus',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'depense',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '165' LIMIT 1),
-    3,
-    248,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '1670',
-    'Dettes sur contrat de location-financement',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'depense',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '167' LIMIT 1),
-    3,
-    249,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '1680',
-    'Autres emprunts et dettes assimilés',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'depense',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '168' LIMIT 1),
-    3,
-    250,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
-    '1688',
-    'Intérêts courus sur emprunts et dettes assimilés',
-    NULL,  -- categorie_id (à définir manuellement si nécessaire)
-    'depense',
-    'investissement',
-    (SELECT id FROM rubriques_budgetaires WHERE code = '168' LIMIT 1),
-    3,
-    251,
-    FALSE,  -- est_calculee
-    NULL,   -- formule_calcul
-    TRUE,   -- est_active
-    NULL    -- description
-);
-
-INSERT INTO rubriques_budgetaires (
-    code, intitule, categorie_id, type, section,
-    parent_id, niveau, ordre, est_calculee, formule_calcul, est_active, description
-) VALUES (
     '2011',
     'Formation',
     NULL,  -- categorie_id (à définir manuellement si nécessaire)
@@ -7889,20 +7354,5 @@ INSERT INTO rubriques_budgetaires (
     NULL    -- description
 );
 
-
--- Réactiver les triggers utilisateur
+-- Réactiver les triggers
 ALTER TABLE rubriques_budgetaires ENABLE TRIGGER USER;
-
--- Vérification
-SELECT
-    type,
-    section,
-    niveau,
-    COUNT(*) as nombre_rubriques
-FROM rubriques_budgetaires
-GROUP BY type, section, niveau
-ORDER BY type, section, niveau;
-
--- ============================================================================
--- FIN DE L'INSERTION
--- ============================================================================
