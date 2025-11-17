@@ -121,7 +121,7 @@
               <td v-for="colonne in colonnesAffichees" :key="colonne.id" class="px-4 py-3 text-right">
                 <input
                   v-if="!colonne.est_calculee"
-                  v-model="lignesBudgetairesData[rubrique.id]?.valeurs[colonne.code]"
+                  v-model="lignesBudgetairesData[rubrique.id].valeurs[colonne.code]"
                   type="number"
                   step="0.01"
                   @change="onValueChange(rubrique.id)"
