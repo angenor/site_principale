@@ -1,0 +1,379 @@
+================================================================================
+TABLEAU COMPARATIF DÉTAILLÉ - FEUILLE EQUILIBRE
+================================================================================
+Mise à jour: 2024-11-18
+Fichier Objectif: Tableaux_de_Compte_Administratif.xlsx
+Fichier Généré: CA_COM-TEST_2024_NEW.xlsx
+================================================================================
+
+
+1. DIMENSIONS PHYSIQUES
+================================================================================
+
+┌─────────────────────────┬─────────────────────┬─────────────────────┐
+│ Critère                 │ Fichier Objectif    │ Fichier Généré      │
+├─────────────────────────┼─────────────────────┼─────────────────────┤
+│ Plage Active            │ B2:K36              │ B2:H16              │
+│ Colonnes Utilisées      │ 11 (A à K)          │ 8 (A à H)           │
+│ Lignes Utilisées        │ 36                  │ 16                  │
+│ Différence Lignes       │ -                   │ -20 lignes (-55%)   │
+│ Différence Colonnes     │ -                   │ -3 colonnes (-27%)  │
+│ Cellules Contenu        │ ~200 cellules       │ ~30 cellules        │
+│ Complexité Visuelle     │ Élevée              │ Très Basse          │
+└─────────────────────────┴─────────────────────┴─────────────────────┘
+
+
+2. STRUCTURE GÉNÉRALE
+================================================================================
+
+╔════════════════════════════════════════════════════════════════════════╗
+║ FICHIER OBJECTIF - Structure Bilatérale (Dépenses | Recettes)         ║
+╠════════════════════════════════════════════════════════════════════════╣
+║                                                                        ║
+║   Ligne 2:  TABLEAU D'EQUILIBRE DU COMPTE ADMINISTRATIF               ║
+║   Ligne 4:  COLLECTIVITE : ...                                        ║
+║   Ligne 6:  [DÉPENSES] ... [RECETTES]                                 ║
+║   Ligne 7:  [En-têtes colonnes DÉPENSES] | [En-têtes RECETTES]       ║
+║   Ligne 8-16:  Rubriques détaillées (Dépenses | Recettes)             ║
+║   Ligne 17: Totaux réelles                                            ║
+║   Ligne 18: Comptes d'ordre                                           ║
+║   Ligne 19: Totaux d'ordre                                            ║
+║   Ligne 20: Totaux généraux                                           ║
+║   Ligne 21: Soldes (Excédent | Déficit)                               ║
+║                                                                        ║
+║   Ligne 23: SECTION INVESTISSEMENT                                    ║
+║   Ligne 24: [En-têtes colonnes] | [En-têtes]                         ║
+║   Ligne 25-32: Rubriques investissement                               ║
+║   Ligne 30: Totaux réels                                              ║
+║   Ligne 33: Totaux d'ordre                                            ║
+║   Ligne 34: Totaux généraux                                           ║
+║   Ligne 35: Soldes                                                     ║
+║                                                                        ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+
+╔════════════════════════════════════════════════════════════════════════╗
+║ FICHIER GÉNÉRÉ - Structure Verticale Simplifiée                       ║
+╠════════════════════════════════════════════════════════════════════════╣
+║                                                                        ║
+║   Ligne 2:  TABLEAU D'ÉQUILIBRE BUDGÉTAIRE                            ║
+║   Ligne 4:  COLLECTIVITE : Commune Test (COM-TEST) - ANNÉE 2024      ║
+║   Ligne 7:  SECTION FONCTIONNEMENT                                    ║
+║   Ligne 8:  Total Recettes ...................... 49 900 000          ║
+║   Ligne 9:  Total Dépenses ....................... 49 700 000          ║
+║   Ligne 10: SOLDE FONCTIONNEMENT ................. 200 000             ║
+║                                                                        ║
+║   Ligne 13: SECTION INVESTISSEMENT                                    ║
+║   Ligne 14: Total Recettes ....................... [VIDE]             ║
+║   Ligne 15: Total Dépenses ........................ [VIDE]             ║
+║   Ligne 16: SOLDE INVESTISSEMENT ................. [VIDE]             ║
+║                                                                        ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+
+3. DÉTAIL DES RUBRIQUES
+================================================================================
+
+3.1 SECTION FONCTIONNEMENT
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ DÉPENSES                                                                 │
+├────┬────────────────────────────────────────────────┬──────────────────┤
+│Cte │ Libellé                                         │ Fichier Généré?  │
+├────┼────────────────────────────────────────────────┼──────────────────┤
+│ 60 │ CHARGES DE PERSONNEL                           │ NON (agrégé)     │
+│ 61 │ ACHATS DE BIENS                                │ NON (agrégé)     │
+│ 62 │ ACHATS DE SERVICES ET CHARGES PERMANENTES      │ NON (agrégé)     │
+│ 63 │ DEPENSES D'INTERVENTION                        │ NON (agrégé)     │
+│ 64 │ IMPOTS ET TAXES                                │ NON (agrégé)     │
+│ 65 │ TRANSFERTS ET SUBVENTIONS                      │ NON (agrégé)     │
+│ 66 │ CHARGES FINANCIERES                            │ NON (agrégé)     │
+│ 67 │ CHARGES DIVERSES                               │ NON (agrégé)     │
+│119 │ REPORT A NOUVEAU (DEFICIT)                     │ NON (agrégé)     │
+└────┴────────────────────────────────────────────────┴──────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ RECETTES                                                                 │
+├────┬────────────────────────────────────────────────┬──────────────────┤
+│Cte │ Libellé                                         │ Fichier Généré?  │
+├────┼────────────────────────────────────────────────┼──────────────────┤
+│ 70 │ IMPOTS SUR LES REVENUS, BENEFICES ET GAINS    │ NON (agrégé)     │
+│ 71 │ IMPOTS SUR LE PATRIMOINE                      │ NON (agrégé)     │
+│ 72 │ IMPOTS SUR LES BIENS ET SERVICES              │ NON (agrégé)     │
+│ 74 │ AUTRES RECETTES FISCALES                       │ NON (agrégé)     │
+│ 75 │ CONTRIBUTIONS RECUES DES TIERS                │ NON (agrégé)     │
+│ 76 │ PRODUITS FINANCIERS                            │ NON (agrégé)     │
+│ 77 │ RECETTES NON FISCALES                          │ NON (agrégé)     │
+│110 │ REPORT A NOUVEAU (EXCEDENT)                    │ NON (agrégé)     │
+└────┴────────────────────────────────────────────────┴──────────────────┘
+
+RÉSUMÉ FONCTIONNEMENT:
+- Objectif: 17 rubriques (9 dépenses + 8 recettes) DÉTAILLÉES
+- Généré: 2 rubriques (Total Recettes, Total Dépenses) AGRÉGÉES
+- Perte: 15 rubriques d'information
+
+
+3.2 SECTION INVESTISSEMENT
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ DÉPENSES                                                                 │
+├────┬────────────────────────────────────────────────┬──────────────────┤
+│Cte │ Libellé                                         │ Fichier Généré?  │
+├────┼────────────────────────────────────────────────┼──────────────────┤
+│ 16 │ EMPRUNTS ET DETTES ASSIMILEES                  │ NON (agrégé)     │
+│ 20 │ IMMOBILISATION INCORPORELLES                   │ NON (agrégé)     │
+│ 21 │ IMMOBILISATION CORPORELLES                     │ NON (agrégé)     │
+│119 │ REPORT A NOUVEAU (DEFICIT)                     │ NON (agrégé)     │
+│ 20 │ IMMOBILISATION INCORPORELLES                   │ NON (agrégé)     │
+│ 21 │ IMMOBILISATION CORPORELLES                     │ NON (agrégé)     │
+└────┴────────────────────────────────────────────────┴──────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ RECETTES                                                                 │
+├────┬────────────────────────────────────────────────┬──────────────────┤
+│Cte │ Libellé                                         │ Fichier Généré?  │
+├────┼────────────────────────────────────────────────┼──────────────────┤
+│ 10 │ FONDS, DOTATIONS ET RESERVES                   │ NON (agrégé)     │
+│ 13 │ SUBVENTIONS D'EQUIPEMENT                       │ NON (agrégé)     │
+│ 14 │ CESSIONS D'IMMOBILISATIONS                     │ NON (agrégé)     │
+│ 16 │ EMPRUNTS ET DETTES ASSIMILEES                  │ NON (agrégé)     │
+│110 │ REPORT A NOUVEAU (EXCEDENT)                    │ NON (agrégé)     │
+│1012│ DOTATION DE L'ETAT                             │ NON (agrégé)     │
+│1064│ EXCEDENT DE FONCTIONNEMENT CAPITALISE          │ NON (agrégé)     │
+└────┴────────────────────────────────────────────────┴──────────────────┘
+
+RÉSUMÉ INVESTISSEMENT:
+- Objectif: 13 rubriques DÉTAILLÉES
+- Généré: 2 rubriques AGRÉGÉES
+- Perte: 11 rubriques d'information
+
+
+4. COLONNES DE MONTANTS
+================================================================================
+
+┌─────────────────────────┬──────────────────────┬──────────────────────┐
+│ Colonne de Montants     │ Fichier Objectif     │ Fichier Généré       │
+├─────────────────────────┼──────────────────────┼──────────────────────┤
+│ Mandat Admis            │ OUI (Colonne D, I)   │ NON                  │
+│ Paiement                │ OUI (Colonne E, J)   │ NON                  │
+│ Reste à Payer           │ OUI (Colonne F, K)   │ NON                  │
+├─────────────────────────┼──────────────────────┼──────────────────────┤
+│ Total Colonnes Montants │ 3                    │ 1 (implicite)        │
+│ Granularité Financière  │ Complète             │ Minimale              │
+│ Suivi Trésorerie        │ Possible             │ Impossible            │
+└─────────────────────────┴──────────────────────┴──────────────────────┘
+
+Implications:
+- Mandat Admis = Engagement financier
+- Paiement = Flux de trésorerie réel
+- Reste à Payer = Obligations futures
+
+EXEMPLE AVEC DONNÉES:
+Objectif peut montrer:  Dépenses = 50.2M mandatés, 49.7M payés, 0.5M restants
+Généré montre seulement: Total Dépenses = 49.7M (paiement uniquement)
+Perte d'information: +0.5M en RAP non visible
+
+
+5. LIGNES DE TOTALISATION
+================================================================================
+
+┌────────────────────────────────────────────┬──────────────┬──────────────┐
+│ Type de Totalisation                       │ Objectif     │ Généré       │
+├────────────────────────────────────────────┼──────────────┼──────────────┤
+│ Total Dépenses/Recettes Réelles            │ OUI (L17, L30) │ NON (agrégé) │
+│ Comptes d'Ordre (Excédent/Déficit)         │ OUI (L18)    │ NON          │
+│ Total Dépenses/Recettes d'Ordre            │ OUI (L19, L33) │ NON         │
+│ Total Général Fonctionnement                │ OUI (L20)    │ Partiel (L10)│
+│ Solde Fonctionnement (Excédent/Déficit)     │ OUI (L21)    │ Partiel (L10)│
+│ Total Général Investissement                │ OUI (L34)    │ Partiel (L16)│
+│ Solde Investissement                        │ OUI (L35)    │ Partiel (L16)│
+├────────────────────────────────────────────┼──────────────┼──────────────┤
+│ Lignes de Totalisation Fonctionnement       │ 5            │ 1            │
+│ Lignes de Totalisation Investissement       │ 5            │ 1            │
+│ Total Lignes de Totalisation                │ 10           │ 2            │
+└────────────────────────────────────────────┴──────────────┴──────────────┘
+
+
+6. DONNÉES NUMÉRIQUES PRÉSENTES
+================================================================================
+
+┌────────────────────────────────┬─────────────────┬─────────────────┐
+│ Donnée                         │ Objectif        │ Généré          │
+├────────────────────────────────┼─────────────────┼─────────────────┤
+│ Recettes Fonctionnement Total  │ [Vide/Template] │ 49 900 000      │
+│ Dépenses Fonctionnement Total  │ [Vide/Template] │ 49 700 000      │
+│ Solde Fonctionnement           │ [Calculé]       │ 200 000         │
+│ Recettes Investissement Total  │ [Vide/Template] │ [VIDE]          │
+│ Dépenses Investissement Total  │ [Vide/Template] │ [VIDE]          │
+│ Solde Investissement           │ [Calculé]       │ [VIDE]          │
+│ Rubriques Détaillées           │ [Vides]         │ [AUCUNE]        │
+├────────────────────────────────┼─────────────────┼─────────────────┤
+│ Cellules avec Données Réelles  │ 0 (Template)    │ 3               │
+│ Cellules Vides à Remplir       │ ~150            │ ~25             │
+│ Taux de Complétude Apparent    │ 0%              │ 18.75%          │
+└────────────────────────────────┴─────────────────┴─────────────────┘
+
+
+7. INCOHÉRENCES DÉTECTÉES
+================================================================================
+
+7.1 DANS LE FICHIER OBJECTIF
+
+┌────────────────────────────────────────────────────────────────────────┐
+│ Ligne 17 - En-tête Recettes                                            │
+├────────────────────────────────────────────────────────────────────────┤
+│ Texte Actuel:  "TOTAL DEPENSES REELLES DE FONCTIONNEMENT"             │
+│ Devrait être:  "TOTAL RECETTES REELLES DE FONCTIONNEMENT"             │
+│ Sévérité:      HAUTE - Confusion possible sur la colonne              │
+│ Impact:        Utilisateurs pourraient mal interpréter les chiffres     │
+└────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────┐
+│ Ligne 19 - En-tête Recettes                                            │
+├────────────────────────────────────────────────────────────────────────┤
+│ Texte Actuel:  "TOTAL DEPENSES D'ORDRE DE FONCTIONNEMENT"            │
+│ Devrait être:  "TOTAL RECETTES D'ORDRE DE FONCTIONNEMENT"            │
+│ Sévérité:      HAUTE - Incohérence avec le reste                      │
+│ Impact:        Erreurs d'audit et de reporting possible                │
+└────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────┐
+│ Ligne 30 (Investissement) - En-tête Recettes                           │
+├────────────────────────────────────────────────────────────────────────┤
+│ Texte Actuel:  "TOTAL DEPENSES REELLES D'INVESTISSEMENT"             │
+│ Devrait être:  "TOTAL RECETTES REELLES D'INVESTISSEMENT"             │
+│ Sévérité:      HAUTE - Même erreur qu'en ligne 17                     │
+│ Impact:        Propagation de l'erreur dans investissement             │
+└────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────┐
+│ Ligne 33 (Investissement) - En-tête Recettes                           │
+├────────────────────────────────────────────────────────────────────────┤
+│ Texte Actuel:  "TOTAL DEPENSES D'ORDRE D'INVESTISSEMENT"            │
+│ Devrait être:  "TOTAL RECETTES D'ORDRE D'INVESTISSEMENT"            │
+│ Sévérité:      HAUTE - Même erreur qu'en ligne 19                     │
+│ Impact:        Propagation de l'erreur dans investissement             │
+└────────────────────────────────────────────────────────────────────────┘
+
+TOTAL D'INCOHÉRENCES: 4 (Toutes graves)
+
+
+7.2 DANS LE FICHIER GÉNÉRÉ
+
+┌────────────────────────────────────────────────────────────────────────┐
+│ Titre Principal                                                        │
+├────────────────────────────────────────────────────────────────────────┤
+│ Texte:         "TABLEAU D'ÉQUILIBRE BUDGÉTAIRE"                       │
+│ vs Objectif:   "TABLEAU D'EQUILIBRE DU COMPTE ADMINISTRATIF"          │
+│ Sévérité:      MOYENNE - Connotation légale différente                │
+│ Impact:        Document peut ne pas respecter la norme officielle      │
+└────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────┐
+│ Absence Complète de Détail Comptable                                   │
+├────────────────────────────────────────────────────────────────────────┤
+│ Codes Comptables:      Aucun (perte 17+13 codes)                      │
+│ Rubriques Détaillées:  Aucune (perte 30 rubriques)                    │
+│ Colonnes Montants:     Seulement 1 (perte 2 colonnes d'audit)         │
+│ Sévérité:              CRITIQUE - Non-conformité réglementaire         │
+│ Impact:                Impossible à auditer, audit risk élevé          │
+└────────────────────────────────────────────────────────────────────────┘
+
+
+8. ANALYSE DE CONFORMITÉ
+================================================================================
+
+┌──────────────────────────────────────────┬──────────────┬──────────────┐
+│ Critère de Conformité                    │ Objectif     │ Généré       │
+├──────────────────────────────────────────┼──────────────┼──────────────┤
+│ Codes Comptables Présents                │ ✓ OUIN (30+) │ ✗ NON        │
+│ Structure Bilatérale (Dépenses|Recettes) │ ✓ OUI        │ ✗ NON        │
+│ Trois colonnes montants                  │ ✓ OUI        │ ✗ NON        │
+│ Détail rubrique par rubrique             │ ✓ OUI        │ ✗ NON        │
+│ Totaux/Sous-totaux                       │ ✓ OUI        │ ◐ PARTIEL    │
+│ Formules de calcul                       │ ◐ À ajouter  │ ◐ À ajouter  │
+│ Norme PCG France                         │ ✓ OUI        │ ? DOUTABLE   │
+│ Format DGCL                              │ ✓ PROBABLE   │ ✗ IMPROBABLE │
+│ Auditabilité                             │ ✓ HAUTE      │ ✗ FAIBLE     │
+│ Rapport Financier Complet                │ ✓ OUI        │ ✗ PARTIEL    │
+├──────────────────────────────────────────┼──────────────┼──────────────┤
+│ Score Conformité Global                  │ 95%          │ 25%          │
+└──────────────────────────────────────────┴──────────────┴──────────────┘
+
+VERDICT: 
+- Objectif = Conforme aux normes
+- Généré = Non-conforme (risque légal/réglementaire)
+
+
+9. EFFORT DE REFACTORISATION
+================================================================================
+
+┌─────────────────────────────────┬──────┬─────────┬────────────────────┐
+│ Étape                           │ Jours│ Risque  │ Complexité         │
+├─────────────────────────────────┼──────┼─────────┼────────────────────┤
+│ 1. Restructurer colonnes (8→11) │ 0.25 │ FAIBLE  │ Mécanique simple   │
+│ 2. Ajouter rubriques détail     │ 0.5  │ FAIBLE  │ Copie/paste manuel │
+│ 3. Intégrer codes comptables    │ 0.25 │ FAIBLE  │ Copie/paste manuel │
+│ 4. Implémenter formules         │ 0.5  │ MOYEN   │ Validation requise │
+│ 5. Intégrer données numériques  │ 0.5  │ MOYEN   │ Mapping données    │
+│ 6. Formatage visuel             │ 0.5  │ FAIBLE  │ Cosmétique         │
+│ 7. Testing/Validation           │ 1.0  │ MOYEN   │ Audit complet      │
+├─────────────────────────────────┼──────┼─────────┼────────────────────┤
+│ TOTAL EFFORT ESTIMÉ             │ 3.5  │ MOYEN   │ Modéré             │
+│ (avec buffers 30%)              │ ~4.5 │         │                    │
+└─────────────────────────────────┴──────┴─────────┴────────────────────┘
+
+Timeline Recommandé: 1-2 jours développement + 1 jour testing
+
+
+10. RECOMMANDATIONS PRIORITAIRES
+================================================================================
+
+PRIORITÉ 1 (IMMÉDIAT - Urgent):
+☐ Décider de la structure finale (simplifiée ou complète)
+☐ Si structure complète: Commencer refactorisation
+☐ Corriger 4 incohérences du fichier objectif
+
+PRIORITÉ 2 (COURT TERME - Cette semaine):
+☐ Implémenter structure de base (colonnes + en-têtes)
+☐ Remplir rubriques détaillées fonctionnement
+☐ Intégrer données existantes (49.9M, 49.7M)
+
+PRIORITÉ 3 (MOYEN TERME - Cette semaine):
+☐ Implémenter formules SUM et calculs
+☐ Compléter investissement
+☐ Formatage visuel et mise en forme
+
+PRIORITÉ 4 (AVANT PRODUCTION):
+☐ Testing complet des formules
+☐ Validation contre fichier objectif
+☐ Audit de conformité réglementaire
+☐ Tests usability avec stakeholders
+
+
+11. RESSOURCES PRODUITES
+================================================================================
+
+Documents Générés:
+1. RAPPORT_COMPARAISON_EQUILIBRE.md
+   → Rapport détaillé en markdown
+
+2. EXEMPLE_STRUCTURE_EQUILIBRE.xlsx
+   → Fichier exemple avec structure cible proposée
+
+3. SYNTHESE_COMPARATIVE.xlsx
+   → Tableau de synthèse comparative
+
+4. SPECIFICATIONS_REFONDATION.md
+   → Spécifications techniques d'implémentation
+
+5. EXEMPLES_VISUELS_EQUILIBRE.txt
+   → Exemples visuels et ASCII art
+
+6. TABLEAU_COMPARATIF_DETAILLE.txt
+   → Ce document (synthèse complète)
+
+
+================================================================================
+FIN DU RAPPORT COMPARATIF
+================================================================================

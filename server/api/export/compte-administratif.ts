@@ -428,98 +428,205 @@ function writeRubriqueData(ws: ExcelJS.Worksheet, rubriques: any[], startRow: nu
   return currentRow
 }
 
-// Fonction pour créer la feuille EQUILIBRE
+// Fonction pour créer la feuille EQUILIBRE (format bilatéral conforme)
 function createEquilibreSheet(ws: ExcelJS.Worksheet, collectivite: any, annee: string, rubriquesRecettes: any[], rubriquesDepenses: any[]) {
-  // En-tête
-  ws.getCell('B2').value = 'TABLEAU D\'ÉQUILIBRE BUDGÉTAIRE'
+  // Titre principal
+  ws.getCell('B2').value = 'TABLEAU D\'EQUILIBRE DU COMPTE ADMINISTRATIF'
   ws.getCell('B2').font = { bold: true, size: 14 }
-  ws.mergeCells('B2:H2')
+  ws.getCell('B2').alignment = { horizontal: 'center' }
+  ws.mergeCells('B2:K2')
 
-  ws.getCell('E4').value = `COLLECTIVITE : ${collectivite.nom} (${collectivite.code}) - ANNÉE ${annee}`
-  ws.getCell('E4').font = { bold: true }
-  ws.mergeCells('E4:H4')
+  // Informations collectivité
+  ws.getCell('C4').value = `COLLECTIVITE : ${collectivite.nom} (${collectivite.code}) - ANNÉE ${annee}`
+  ws.getCell('C4').font = { bold: true }
+  ws.mergeCells('C4:J4')
 
-  let currentRow = 7
+  // ========== SECTION FONCTIONNEMENT ==========
+  let row = 6
 
-  // Section FONCTIONNEMENT
-  ws.getCell(`B${currentRow}`).value = 'SECTION FONCTIONNEMENT'
-  ws.getCell(`B${currentRow}`).font = { bold: true, size: 12 }
-  ws.getCell(`B${currentRow}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4472C4' } }
-  ws.getCell(`B${currentRow}`).font = { bold: true, color: { argb: 'FFFFFFFF' } }
-  ws.mergeCells(`B${currentRow}:H${currentRow}`)
-  currentRow++
+  // En-têtes de sections
+  ws.getCell(`C${row}`).value = 'DEPENSES'
+  ws.getCell(`C${row}`).font = { bold: true, size: 12 }
+  ws.getCell(`C${row}`).alignment = { horizontal: 'center' }
+  ws.mergeCells(`C${row}:F${row}`)
 
-  // Calculs recettes fonctionnement
-  const recettesFonct = rubriquesRecettes.filter((r: any) => r.section === 'fonctionnement' && r.niveau === 1)
-  const totalRecettesFonct = recettesFonct.reduce((sum: number, r: any) => {
-    const valeurs = r.lignes_budgetaires?.[0]?.valeurs || {}
-    return sum + (valeurs.recouvrement || 0)
-  }, 0)
+  ws.getCell(`H${row}`).value = 'RECETTES'
+  ws.getCell(`H${row}`).font = { bold: true, size: 12 }
+  ws.getCell(`H${row}`).alignment = { horizontal: 'center' }
+  ws.mergeCells(`H${row}:K${row}`)
+  row++
 
-  // Calculs dépenses fonctionnement
-  const depensesFonct = rubriquesDepenses.filter((r: any) => r.section === 'fonctionnement' && r.niveau === 1)
-  const totalDepensesFonct = depensesFonct.reduce((sum: number, r: any) => {
-    const valeurs = r.lignes_budgetaires?.[0]?.valeurs || {}
-    return sum + (valeurs.paiement || 0)
-  }, 0)
+  // En-têtes des colonnes
+  const headerStyle = { bold: true, size: 10 }
+  const headerFill = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFD9E1F2' } }
 
-  ws.getCell(`C${currentRow}`).value = 'Total Recettes'
-  ws.getCell(`D${currentRow}`).value = totalRecettesFonct
-  ws.getCell(`D${currentRow}`).numFmt = '#,##0.00'
-  currentRow++
+  ;['B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'].forEach(col => {
+    const cell = ws.getCell(`${col}${row}`)
+    cell.font = headerStyle
+    cell.fill = headerFill
+    cell.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } }
+    cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }
+  })
 
-  ws.getCell(`C${currentRow}`).value = 'Total Dépenses'
-  ws.getCell(`D${currentRow}`).value = totalDepensesFonct
-  ws.getCell(`D${currentRow}`).numFmt = '#,##0.00'
-  currentRow++
+  ws.getCell(`B${row}`).value = 'COMPTE'
+  ws.getCell(`C${row}`).value = 'INTITULES'
+  ws.getCell(`D${row}`).value = 'MANDAT ADMIS'
+  ws.getCell(`E${row}`).value = 'PAIEMENT'
+  ws.getCell(`F${row}`).value = 'RESTE A PAYER'
+  ws.getCell(`G${row}`).value = 'COMPTE'
+  ws.getCell(`H${row}`).value = 'INTITULES'
+  ws.getCell(`I${row}`).value = 'MANDAT ADMIS'
+  ws.getCell(`J${row}`).value = 'PAIEMENT'
+  ws.getCell(`K${row}`).value = 'RESTE A PAYER'
+  row++
 
-  ws.getCell(`C${currentRow}`).value = 'SOLDE FONCTIONNEMENT'
-  ws.getCell(`C${currentRow}`).font = { bold: true }
-  ws.getCell(`D${currentRow}`).value = totalRecettesFonct - totalDepensesFonct
-  ws.getCell(`D${currentRow}`).numFmt = '#,##0.00'
-  ws.getCell(`D${currentRow}`).font = { bold: true }
-  currentRow += 3
+  // Helper pour écrire une ligne de rubrique
+  const writeRubriqueLine = (row: number, depCode: string, depLabel: string, depData: any, recCode: string, recLabel: string, recData: any) => {
+    // DÉPENSES
+    if (depCode) ws.getCell(`B${row}`).value = depCode
+    if (depLabel) ws.getCell(`C${row}`).value = depLabel
+    if (depData) {
+      const valeurs = depData.lignes_budgetaires?.[0]?.valeurs || {}
+      ws.getCell(`D${row}`).value = valeurs.mandat_admis || 0
+      ws.getCell(`D${row}`).numFmt = '#,##0.00'
+      ws.getCell(`E${row}`).value = valeurs.paiement || 0
+      ws.getCell(`E${row}`).numFmt = '#,##0.00'
+      ws.getCell(`F${row}`).value = { formula: `D${row}-E${row}` }
+      ws.getCell(`F${row}`).numFmt = '#,##0.00'
+    }
 
-  // Section INVESTISSEMENT
-  ws.getCell(`B${currentRow}`).value = 'SECTION INVESTISSEMENT'
-  ws.getCell(`B${currentRow}`).font = { bold: true, size: 12 }
-  ws.getCell(`B${currentRow}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF9966FF' } }
-  ws.getCell(`B${currentRow}`).font = { bold: true, color: { argb: 'FFFFFFFF' } }
-  ws.mergeCells(`B${currentRow}:H${currentRow}`)
-  currentRow++
+    // RECETTES
+    if (recCode) ws.getCell(`G${row}`).value = recCode
+    if (recLabel) ws.getCell(`H${row}`).value = recLabel
+    if (recData) {
+      const valeurs = recData.lignes_budgetaires?.[0]?.valeurs || {}
+      ws.getCell(`I${row}`).value = valeurs.or_admis || 0
+      ws.getCell(`I${row}`).numFmt = '#,##0.00'
+      ws.getCell(`J${row}`).value = valeurs.recouvrement || 0
+      ws.getCell(`J${row}`).numFmt = '#,##0.00'
+      ws.getCell(`K${row}`).value = { formula: `I${row}-J${row}` }
+      ws.getCell(`K${row}`).numFmt = '#,##0.00'
+    }
+  }
 
-  // Calculs recettes investissement
-  const recettesInvest = rubriquesRecettes.filter((r: any) => r.section === 'investissement' && r.niveau === 1)
-  const totalRecettesInvest = recettesInvest.reduce((sum: number, r: any) => {
-    const valeurs = r.lignes_budgetaires?.[0]?.valeurs || {}
-    return sum + (valeurs.recouvrement || 0)
-  }, 0)
+  // Rubriques détaillées FONCTIONNEMENT
+  const depFonct = rubriquesDepenses.filter((r: any) => r.section === 'fonctionnement' && r.niveau === 1)
+  const recFonct = rubriquesRecettes.filter((r: any) => r.section === 'fonctionnement' && r.niveau === 1)
 
-  // Calculs dépenses investissement
-  const depensesInvest = rubriquesDepenses.filter((r: any) => r.section === 'investissement' && r.niveau === 1)
-  const totalDepensesInvest = depensesInvest.reduce((sum: number, r: any) => {
-    const valeurs = r.lignes_budgetaires?.[0]?.valeurs || {}
-    return sum + (valeurs.paiement || 0)
-  }, 0)
+  const getRubriqueByCode = (rubriques: any[], code: string) => rubriques.find((r: any) => r.code === code)
 
-  ws.getCell(`C${currentRow}`).value = 'Total Recettes'
-  ws.getCell(`D${currentRow}`).value = totalRecettesInvest
-  ws.getCell(`D${currentRow}`).numFmt = '#,##0.00'
-  currentRow++
+  writeRubriqueLine(row++, '60', 'CHARGES DE PERSONNEL', getRubriqueByCode(depFonct, '60'), '70', 'IMPOTS SUR LES REVENUS, BENEFICES ET GAINS', getRubriqueByCode(recFonct, '70'))
+  writeRubriqueLine(row++, '61', 'ACHATS DE BIENS', getRubriqueByCode(depFonct, '61'), '71', 'IMPOTS SUR LE PATRIMOINE', getRubriqueByCode(recFonct, '71'))
+  writeRubriqueLine(row++, '62', 'ACHATS DE SERVICES ET CHARGES PERMANENTES', getRubriqueByCode(depFonct, '62'), '72', 'IMPOTS SUR LES BIENS ET SERVICES', getRubriqueByCode(recFonct, '72'))
+  writeRubriqueLine(row++, '63', 'DEPENSES D\'INTERVENTION', getRubriqueByCode(depFonct, '63'), '74', 'AUTRES RECETTES FISCALES', getRubriqueByCode(recFonct, '74'))
+  writeRubriqueLine(row++, '64', 'IMPOTS ET TAXES', getRubriqueByCode(depFonct, '64'), '75', 'CONTRIBUTIONS RECUES DES TIERS', getRubriqueByCode(recFonct, '75'))
+  writeRubriqueLine(row++, '65', 'TRANSFERTS ET SUBVENTIONS', getRubriqueByCode(depFonct, '65'), '76', 'PRODUITS FINANCIERS', getRubriqueByCode(recFonct, '76'))
+  writeRubriqueLine(row++, '66', 'CHARGES FINANCIERES', getRubriqueByCode(depFonct, '66'), '77', 'RECETTES NON FISCALES', getRubriqueByCode(recFonct, '77'))
+  writeRubriqueLine(row++, '67', 'CHARGES DIVERSES', getRubriqueByCode(depFonct, '67'), '110', 'REPORT A NOUVEAU (EXCEDENT)', getRubriqueByCode(recFonct, '110'))
+  writeRubriqueLine(row++, '119', 'REPORT A NOUVEAU (DEFICIT)', getRubriqueByCode(depFonct, '119'), '', '', null)
 
-  ws.getCell(`C${currentRow}`).value = 'Total Dépenses'
-  ws.getCell(`D${currentRow}`).value = totalDepensesInvest
-  ws.getCell(`D${currentRow}`).numFmt = '#,##0.00'
-  currentRow++
+  // Lignes de totaux FONCTIONNEMENT
+  const totalRow = row++
+  ws.getCell(`C${totalRow}`).value = 'TOTAL DEPENSES REELLES DE FONCTIONNEMENT'
+  ws.getCell(`C${totalRow}`).font = { bold: true }
+  ws.getCell(`H${totalRow}`).value = 'TOTAL RECETTES REELLES DE FONCTIONNEMENT'
+  ws.getCell(`H${totalRow}`).font = { bold: true }
 
-  ws.getCell(`C${currentRow}`).value = 'SOLDE INVESTISSEMENT'
-  ws.getCell(`C${currentRow}`).font = { bold: true }
-  ws.getCell(`D${currentRow}`).value = totalRecettesInvest - totalDepensesInvest
-  ws.getCell(`D${currentRow}`).numFmt = '#,##0.00'
-  ws.getCell(`D${currentRow}`).font = { bold: true }
+  row += 2
+  const totalDepRow = row
+  ws.getCell(`C${totalDepRow}`).value = 'TOTAL DEPENSES DE FONCTIONNEMENT (2)'
+  ws.getCell(`C${totalDepRow}`).font = { bold: true }
+  ws.getCell(`H${totalDepRow}`).value = 'TOTAL RECETTES DE FONCTIONNEMENT (1)'
+  ws.getCell(`H${totalDepRow}`).font = { bold: true }
+
+  row++
+  ws.getCell(`C${row}`).value = 'EXCEDENT DE FONCTIONNEMENT (1) - (2)'
+  ws.getCell(`C${row}`).font = { bold: true }
+  ws.getCell(`H${row}`).value = 'DEFICIT DE FONCTIONNEMENT (1) - (2)'
+  ws.getCell(`H${row}`).font = { bold: true }
+
+  // ========== SECTION INVESTISSEMENT ==========
+  row += 3
+  const investRow = row
+  ws.getCell(`C${investRow}`).value = 'SECTION INVESTISSEMENT'
+  ws.getCell(`C${investRow}`).font = { bold: true, size: 12 }
+  ws.getCell(`C${investRow}`).alignment = { horizontal: 'center' }
+  ws.mergeCells(`C${investRow}:F${investRow}`)
+
+  ws.getCell(`H${investRow}`).value = 'SECTION INVESTISSEMENT'
+  ws.getCell(`H${investRow}`).font = { bold: true, size: 12 }
+  ws.getCell(`H${investRow}`).alignment = { horizontal: 'center' }
+  ws.mergeCells(`H${investRow}:K${investRow}`)
+  row++
+
+  // En-têtes colonnes investissement (même structure)
+  ;['B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'].forEach(col => {
+    const cell = ws.getCell(`${col}${row}`)
+    cell.font = headerStyle
+    cell.fill = headerFill
+    cell.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } }
+    cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }
+  })
+
+  ws.getCell(`B${row}`).value = 'COMPTE'
+  ws.getCell(`C${row}`).value = 'INTITULE'
+  ws.getCell(`D${row}`).value = 'MANDAT ADMIS'
+  ws.getCell(`E${row}`).value = 'PAIEMENT'
+  ws.getCell(`F${row}`).value = 'RESTE A PAYER'
+  ws.getCell(`G${row}`).value = 'COMPTE'
+  ws.getCell(`H${row}`).value = 'INTITULE'
+  ws.getCell(`I${row}`).value = 'MANDAT ADMIS'
+  ws.getCell(`J${row}`).value = 'PAIEMENT'
+  ws.getCell(`K${row}`).value = 'RESTE A PAYER'
+  row++
+
+  // Rubriques détaillées INVESTISSEMENT
+  const depInvest = rubriquesDepenses.filter((r: any) => r.section === 'investissement' && r.niveau === 1)
+  const recInvest = rubriquesRecettes.filter((r: any) => r.section === 'investissement' && r.niveau === 1)
+
+  writeRubriqueLine(row++, '16', 'EMPRUNTS ET DETTES ASSIMILEES', getRubriqueByCode(depInvest, '16'), '10', 'FONDS, DOTATIONS ET RESERVES', getRubriqueByCode(recInvest, '10'))
+  writeRubriqueLine(row++, '20', 'IMMOBILISATION INCORPORELLES', getRubriqueByCode(depInvest, '20'), '13', 'SUBVENTIONS D\'EQUIPEMENT', getRubriqueByCode(recInvest, '13'))
+  writeRubriqueLine(row++, '21', 'IMMOBILISATION CORPORELLES', getRubriqueByCode(depInvest, '21'), '14', 'CESSIONS D\'IMMOBILISATIONS', getRubriqueByCode(recInvest, '14'))
+  writeRubriqueLine(row++, '', '', null, '16', 'EMPRUNTS ET DETTES ASSIMILEES', getRubriqueByCode(recInvest, '16'))
+  writeRubriqueLine(row++, '119', 'REPORT A NOUVEAU (DEFICIT)', getRubriqueByCode(depInvest, '119'), '110', 'REPORT A NOUVEAU (EXCEDENT)', getRubriqueByCode(recInvest, '110'))
+  writeRubriqueLine(row++, '', '', null, '1012', 'DOTATION DE L\'ETAT', getRubriqueByCode(recInvest, '1012'))
+  writeRubriqueLine(row++, '', '', null, '1064', 'EXCEDENT DE FONCTIONNEMENT CAPITALISE', getRubriqueByCode(recInvest, '1064'))
+
+  // Lignes de totaux INVESTISSEMENT
+  row++
+  ws.getCell(`C${row}`).value = 'TOTAL DEPENSES REELLES D\'INVESTISSEMENT'
+  ws.getCell(`C${row}`).font = { bold: true }
+  ws.getCell(`H${row}`).value = 'TOTAL RECETTES REELLES D\'INVESTISSEMENT'
+  ws.getCell(`H${row}`).font = { bold: true }
+
+  row += 2
+  ws.getCell(`C${row}`).value = 'TOTAL DEPENSES D\'ORDRE D\'INVESTISSEMENT'
+  ws.getCell(`C${row}`).font = { bold: true }
+  ws.getCell(`H${row}`).value = 'TOTAL RECETTES D\'ORDRE D\'INVESTISSEMENT'
+  ws.getCell(`H${row}`).font = { bold: true }
+
+  row++
+  ws.getCell(`C${row}`).value = 'TOTAL DEPENSES D\'INVESTISSEMENT (4)'
+  ws.getCell(`C${row}`).font = { bold: true }
+  ws.getCell(`H${row}`).value = 'TOTAL RECETTES D\'INVESTISSEMENT (3)'
+  ws.getCell(`H${row}`).font = { bold: true }
+
+  row++
+  ws.getCell(`C${row}`).value = 'EXCEDENT D\'INVESTISSEMENT (3) - (4)'
+  ws.getCell(`C${row}`).font = { bold: true }
+  ws.getCell(`H${row}`).value = 'DEFICIT D\'INVESTISSEMENT (3) - (4)'
+  ws.getCell(`H${row}`).font = { bold: true }
 
   // Mise en forme des colonnes
-  ws.getColumn('B').width = 5
-  ws.getColumn('C').width = 30
-  ws.getColumn('D').width = 20
+  ws.getColumn('A').width = 11.55
+  ws.getColumn('B').width = 8.55
+  ws.getColumn('C').width = 44.44
+  ws.getColumn('D').width = 16.33
+  ws.getColumn('E').width = 13.55
+  ws.getColumn('F').width = 14.11
+  ws.getColumn('G').width = 8.55
+  ws.getColumn('H').width = 44.44
+  ws.getColumn('I').width = 18.44
+  ws.getColumn('J').width = 17.33
+  ws.getColumn('K').width = 17.66
 }
