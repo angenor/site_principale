@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A Nuxt 4 web application for managing information about French territorial authorities ("Collectivités Territoriales"). Built with Vue 3, Nuxt, Supabase (PostgreSQL backend), and Tailwind CSS.
+A Nuxt 4 web application for managing information about French territorial authorities ("Collectivités Territoriales"). Built with Vue 3, Nuxt, and Tailwind CSS.
 
 ## Essential Commands
 
@@ -21,17 +21,9 @@ pnpm preview          # Preview production build locally
 pnpm generate         # Generate static HTML (SSG)
 ```
 
-**Database:**
-```bash
-# Database is managed through Supabase Dashboard
-# Connection string in .env file (SUPABASE_URL and SUPABASE_KEY)
-```
-
 ## Critical Setup Requirements
 
 1. **Package Manager**: MUST use `pnpm`. The project uses pnpm lockfile v9.0.
-2. **Backend**: Supabase for database, authentication, and storage. Configure `SUPABASE_URL` and `SUPABASE_KEY` in `.env` file.
-3. **Database**: PostgreSQL managed by Supabase. Use Supabase Dashboard or SQL Editor for schema management.
 
 ## Architecture Overview
 
@@ -59,18 +51,6 @@ Pages specify layouts via `definePageMeta({ layout: 'layoutname' })` or use defa
 - **log.ts**: Page-specific middleware (applied via definePageMeta)
 
 All middleware files use Nuxt's `defineNuxtRouteMiddleware()`.
-
-### Database & Backend
-
-- **Backend**: Supabase (PostgreSQL + Auth + Storage + Realtime)
-- **Client**: `@supabase/supabase-js` for database queries
-- **Authentication**: Supabase Auth with Row Level Security (RLS)
-- **Connection**: Via `SUPABASE_URL` and `SUPABASE_KEY` in `.env`
-
-When adding tables:
-1. Use Supabase Dashboard SQL Editor or Table Editor
-2. Define Row Level Security (RLS) policies
-3. Generate TypeScript types if needed
 
 ### Styling
 
@@ -226,16 +206,7 @@ This applies to operations requiring elevated privileges or special access:
   pnpm add -D package-name       # Add dev dependency
   ```
 
-- **Supabase Deployments**:
-  ```bash
-  supabase functions deploy function-name    # Deploy edge function
-  supabase db push                           # Push database migrations
-  ```
-
 - **Other privileged operations**:
-  - Database schema changes
-  - Authentication configuration
-  - Storage bucket setup
   - Environment variable updates
 
 **Rationale**: Claude doesn't have root/admin access for certain operations. Providing commands allows the user to execute them with proper permissions.
