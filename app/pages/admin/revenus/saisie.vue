@@ -130,6 +130,14 @@
             Importer Excel
           </button>
           <button
+            @click="exportExcel"
+            :disabled="exporting"
+            class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow-sm transition-colors text-sm cursor-pointer disabled:opacity-50"
+          >
+            <Icon name="heroicons:document-arrow-up" class="inline-block w-4 h-4 mr-1" />
+            {{ exporting ? 'Export...' : 'Exporter Excel' }}
+          </button>
+          <button
             @click="saveDraft"
             :disabled="saving"
             class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg shadow-sm transition-colors text-sm cursor-pointer disabled:opacity-50"
@@ -346,6 +354,7 @@ const selectedProjetId = ref('')
 const dataLoaded = ref(false)
 const loading = ref(false)
 const saving = ref(false)
+const exporting = ref(false)
 const tableData = ref<any[]>([])
 const lastSaved = ref('')
 const isValidated = ref(false)
@@ -569,6 +578,221 @@ const saveData = async (validate: boolean = false) => {
 const importExcel = () => {
   // Redirect to Excel import page
   navigateTo('/admin/import/excel')
+}
+
+const exportExcel = async () => {
+  if (!isFormValid.value) {
+    alert('Veuillez sélectionner l\'exercice, la période et la commune')
+    return
+  }
+
+  try {
+    exporting.value = true
+
+    const commune = getSelectedCommune()
+    const exercice = getSelectedExercice()
+
+    if (!commune || !exercice) {
+      alert('Erreur: commune ou exercice non trouvé')
+      return
+    }
+
+    // Call backend API to get tableau data
+    const tableauData = await api.get(`/api/v1/revenus/tableau/${commune.code}/${exercice.annee}`)
+
+    // Create Excel file using xlsx library
+    const XLSX = await import('xlsx')
+    const wb = XLSX.utils.book_new()
+
+    // Separate rubriques by type
+    const rubriquesRecette = tableauData.rubriques.filter((r: any) => r.type === 'recette')
+    const rubriquesDepense = tableauData.rubriques.filter((r: any) => r.type === 'depense')
+
+    // ===== SHEET 1: RECETTES =====
+    if (rubriquesRecette.length > 0) {
+      const recettesData: any[] = []
+
+      // Title
+      recettesData.push([`RECETTES - ${commune.nom} - Exercice ${exercice.annee}`])
+      recettesData.push([])
+
+      // Headers
+      recettesData.push([
+        'Code',
+        'Libellé',
+        'Budget Primitif (1)',
+        'Budget Additionnel',
+        'Modifications',
+        'Prévisions Définitives (1)',
+        'OR ADMIS (2)',
+        'Recouvrement',
+        'Reste à Recouvrer',
+        'Taux d\'Exécution (2)/(1)'
+      ])
+
+      // Data rows
+      rubriquesRecette.forEach((rubrique: any) => {
+        // For hierarchical display, add indentation based on niveau
+        const indent = '  '.repeat((rubrique.niveau || 1) - 1)
+        const libelle = indent + rubrique.nom
+
+        // Sum across all periods for this rubrique
+        let budget_primitif = 0
+        let budget_additionnel = 0
+        let modifications = 0
+        let previsions_definitives = 0
+        let ordre_recette_admis = 0
+        let recouvrement = 0
+        let reste_a_recouvrer = 0
+
+        tableauData.periodes.forEach((periode: any) => {
+          const donnee = tableauData.donnees?.[rubrique.id]?.[periode.id]
+          if (donnee) {
+            budget_primitif += donnee.budget_primitif || 0
+            budget_additionnel += donnee.budget_additionnel || 0
+            modifications += donnee.modifications || 0
+            previsions_definitives += donnee.previsions_definitives || 0
+            ordre_recette_admis += donnee.ordre_recette_admis || 0
+            recouvrement += donnee.recouvrement || 0
+            reste_a_recouvrer += donnee.reste_a_recouvrer || 0
+          }
+        })
+
+        // Calculate taux d'exécution
+        const taux_execution = previsions_definitives > 0
+          ? ((ordre_recette_admis / previsions_definitives) * 100).toFixed(2)
+          : 0
+
+        recettesData.push([
+          rubrique.code,
+          libelle,
+          budget_primitif,
+          budget_additionnel,
+          modifications,
+          previsions_definitives,
+          ordre_recette_admis,
+          recouvrement,
+          reste_a_recouvrer,
+          taux_execution + '%'
+        ])
+      })
+
+      const wsRecettes = XLSX.utils.aoa_to_sheet(recettesData)
+      wsRecettes['!cols'] = [
+        { wch: 10 },  // Code
+        { wch: 40 },  // Libellé
+        { wch: 15 },  // Budget Primitif
+        { wch: 15 },  // Budget Additionnel
+        { wch: 15 },  // Modifications
+        { wch: 18 },  // Prévisions Définitives
+        { wch: 15 },  // OR ADMIS
+        { wch: 15 },  // Recouvrement
+        { wch: 18 },  // Reste à Recouvrer
+        { wch: 15 }   // Taux d'Exécution
+      ]
+      XLSX.utils.book_append_sheet(wb, wsRecettes, 'RECETTES')
+    }
+
+    // ===== SHEET 2: DEPENSES =====
+    if (rubriquesDepense.length > 0) {
+      const depensesData: any[] = []
+
+      // Title
+      depensesData.push([`DEPENSES - ${commune.nom} - Exercice ${exercice.annee}`])
+      depensesData.push([])
+
+      // Headers
+      depensesData.push([
+        'Code',
+        'Libellé',
+        'Budget Primitif (1)',
+        'Budget Additionnel',
+        'Modifications',
+        'Prévisions Définitives (1)',
+        'Engagement',
+        'Mandat Admis (2)',
+        'Paiement',
+        'Reste à Payer',
+        'Taux d\'Exécution (2)/(1)'
+      ])
+
+      // Data rows
+      rubriquesDepense.forEach((rubrique: any) => {
+        // For hierarchical display, add indentation based on niveau
+        const indent = '  '.repeat((rubrique.niveau || 1) - 1)
+        const libelle = indent + rubrique.nom
+
+        // Sum across all periods for this rubrique
+        let budget_primitif = 0
+        let budget_additionnel = 0
+        let modifications = 0
+        let previsions_definitives = 0
+        let engagement = 0
+        let mandat_admis = 0
+        let paiement = 0
+        let reste_a_payer = 0
+
+        tableauData.periodes.forEach((periode: any) => {
+          const donnee = tableauData.donnees?.[rubrique.id]?.[periode.id]
+          if (donnee) {
+            budget_primitif += donnee.budget_primitif || 0
+            budget_additionnel += donnee.budget_additionnel || 0
+            modifications += donnee.modifications || 0
+            previsions_definitives += donnee.previsions_definitives || 0
+            engagement += donnee.engagement || 0
+            mandat_admis += donnee.mandat_admis || 0
+            paiement += donnee.paiement || 0
+            reste_a_payer += donnee.reste_a_payer || 0
+          }
+        })
+
+        // Calculate taux d'exécution
+        const taux_execution = previsions_definitives > 0
+          ? ((mandat_admis / previsions_definitives) * 100).toFixed(2)
+          : 0
+
+        depensesData.push([
+          rubrique.code,
+          libelle,
+          budget_primitif,
+          budget_additionnel,
+          modifications,
+          previsions_definitives,
+          engagement,
+          mandat_admis,
+          paiement,
+          reste_a_payer,
+          taux_execution + '%'
+        ])
+      })
+
+      const wsDepenses = XLSX.utils.aoa_to_sheet(depensesData)
+      wsDepenses['!cols'] = [
+        { wch: 10 },  // Code
+        { wch: 40 },  // Libellé
+        { wch: 15 },  // Budget Primitif
+        { wch: 15 },  // Budget Additionnel
+        { wch: 15 },  // Modifications
+        { wch: 18 },  // Prévisions Définitives
+        { wch: 15 },  // Engagement
+        { wch: 15 },  // Mandat Admis
+        { wch: 15 },  // Paiement
+        { wch: 15 },  // Reste à Payer
+        { wch: 15 }   // Taux d'Exécution
+      ]
+      XLSX.utils.book_append_sheet(wb, wsDepenses, 'DEPENSES')
+    }
+
+    // Generate Excel file and download
+    XLSX.writeFile(wb, `compte_administratif_${commune.code}_${exercice.annee}.xlsx`)
+
+    alert('Export réussi!')
+  } catch (error: any) {
+    console.error('Erreur export:', error)
+    alert(error.response?.data?.detail || 'Erreur lors de l\'export')
+  } finally {
+    exporting.value = false
+  }
 }
 
 const cancel = () => {
