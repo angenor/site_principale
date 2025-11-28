@@ -68,7 +68,7 @@ const handleReset = () => {
       <!-- Sélection Région -->
       <div>
         <label for="region" class="block text-sm font-medium text-gray-700 mb-2">
-          Région
+          Province
         </label>
         <select
           id="region"
