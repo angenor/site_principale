@@ -170,7 +170,7 @@ const handleSearch = async () => {
               <div class="relative">
                 <label class="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                   <font-awesome-icon icon="map-marker-alt" class="text-blue-500 dark:text-blue-400" />
-                  <span>Province</span>
+                  <span>Région</span>
                   <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">
                     {{ totalRegions }}
                   </span>
