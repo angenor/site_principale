@@ -243,8 +243,8 @@
 - [x] Page détail actualité → `/actualites/[slug]`
 
 ### 6.4 Échange sécurisé d'informations
-- [ ] Évaluation de GlobalLeaks ou solution similaire
-- [ ] Intégration ou lien vers la solution choisie
+- [ ] Solution similaire alternative à GlobalLeaks
+- [ ] Intégration
 - [ ] Formulaire de signalement anonyme (déjà disponible via `/signaler`)
 
 ---

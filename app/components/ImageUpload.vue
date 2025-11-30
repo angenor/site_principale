@@ -3,12 +3,18 @@ interface Props {
   modelValue?: string | null
   label?: string
   placeholder?: string
+  aspectRatio?: number | null
+  maxFileSize?: number
+  enableEditor?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: null,
   label: 'Image',
-  placeholder: 'https://... ou téléverser une image'
+  placeholder: 'https://... ou téléverser une image',
+  aspectRatio: null,
+  maxFileSize: 2 * 1024 * 1024, // 2MB
+  enableEditor: true
 })
 
 const emit = defineEmits<{
@@ -23,6 +29,10 @@ const isDragOver = ref(false)
 const showUrlInput = ref(false)
 const urlInput = ref('')
 
+// Editor state
+const showEditor = ref(false)
+const selectedFile = ref<File | null>(null)
+
 // Computed pour l'URL actuelle
 const currentUrl = computed(() => props.modelValue || '')
 
@@ -36,7 +46,14 @@ async function handleFileSelect(event: Event) {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (file) {
-    await uploadFile(file)
+    if (props.enableEditor) {
+      // Open editor
+      selectedFile.value = file
+      showEditor.value = true
+    } else {
+      // Direct upload
+      await uploadFile(file)
+    }
   }
   // Réinitialiser l'input pour permettre de sélectionner le même fichier
   if (target) target.value = ''
@@ -59,14 +76,35 @@ async function handleDrop(event: DragEvent) {
 
   const file = event.dataTransfer?.files[0]
   if (file && file.type.startsWith('image/')) {
-    await uploadFile(file)
+    if (props.enableEditor) {
+      selectedFile.value = file
+      showEditor.value = true
+    } else {
+      await uploadFile(file)
+    }
   } else {
     error.value = 'Veuillez déposer un fichier image valide'
   }
 }
 
+// Handle editor save
+async function handleEditorSave(blob: Blob) {
+  showEditor.value = false
+  selectedFile.value = null
+
+  // Create a File from the Blob
+  const file = new File([blob], 'image.jpg', { type: blob.type })
+  await uploadFile(file)
+}
+
+// Handle editor cancel
+function handleEditorCancel() {
+  showEditor.value = false
+  selectedFile.value = null
+}
+
 // Téléverser le fichier
-async function uploadFile(file: File) {
+async function uploadFile(file: File | Blob) {
   error.value = ''
   isUploading.value = true
   uploadProgress.value = 0
@@ -77,7 +115,7 @@ async function uploadFile(file: File) {
       throw new Error('Le fichier doit être une image')
     }
 
-    // Vérifier la taille (5MB max)
+    // Vérifier la taille (5MB max for server)
     if (file.size > 5 * 1024 * 1024) {
       throw new Error('L\'image ne doit pas dépasser 5MB')
     }
@@ -225,6 +263,10 @@ function toggleUrlInput() {
           <p class="text-xs text-gray-400 mt-2">
             JPEG, PNG, GIF, WebP • Max 5MB
           </p>
+          <p v-if="enableEditor" class="text-xs text-ti-blue mt-1">
+            <font-awesome-icon icon="crop" class="mr-1" />
+            Recadrage et compression disponibles
+          </p>
         </template>
       </div>
 
@@ -283,5 +325,25 @@ function toggleUrlInput() {
       <font-awesome-icon icon="link" class="mr-1" />
       Ou entrer une URL
     </button>
+
+    <!-- Image Editor Modal -->
+    <Teleport to="body">
+      <div
+        v-if="showEditor && selectedFile"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
+      >
+        <div class="w-full max-w-4xl max-h-[90vh] overflow-auto">
+          <ClientOnly>
+            <ImageEditor
+              :image-file="selectedFile"
+              :aspect-ratio="aspectRatio"
+              :max-file-size="maxFileSize"
+              @save="handleEditorSave"
+              @cancel="handleEditorCancel"
+            />
+          </ClientOnly>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>

@@ -100,6 +100,8 @@ import {
   faHandshake,
   faBalanceScale,
   faTreeCity,
+  faCrop,
+  faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons'
 
 // Regular icons
@@ -226,6 +228,8 @@ library.add(
   faHandshake,
   faBalanceScale,
   faTreeCity,
+  faCrop,
+  faTriangleExclamation,
   // Regular
   farHeart,
   farStar,
