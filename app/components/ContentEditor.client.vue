@@ -9,6 +9,7 @@ import Delimiter from '@editorjs/delimiter'
 import Marker from '@editorjs/marker'
 import InlineCode from '@editorjs/inline-code'
 import Paragraph from '@editorjs/paragraph'
+import ImageTool from '@editorjs/image'
 
 interface Props {
   modelValue?: string | OutputData | null
@@ -216,6 +217,46 @@ onMounted(async () => {
       },
       inlineCode: {
         class: InlineCode
+      },
+      image: {
+        class: ImageTool,
+        config: {
+          uploader: {
+            async uploadByFile(file: File) {
+              const formData = new FormData()
+              formData.append('file', file)
+
+              try {
+                const response = await $fetch<{ success: boolean; url: string }>('/api/admin/upload', {
+                  method: 'POST',
+                  body: formData
+                })
+
+                if (response.success && response.url) {
+                  return {
+                    success: 1,
+                    file: {
+                      url: response.url
+                    }
+                  }
+                }
+                return { success: 0 }
+              } catch {
+                return { success: 0 }
+              }
+            },
+            async uploadByUrl(url: string) {
+              return {
+                success: 1,
+                file: {
+                  url
+                }
+              }
+            }
+          },
+          captionPlaceholder: 'Légende de l\'image',
+          buttonContent: 'Sélectionner une image'
+        }
       }
     },
     onChange: async () => {
@@ -447,5 +488,82 @@ defineExpose({ save })
 .dark :deep(.inline-code) {
   background-color: #374151;
   color: #f472b6;
+}
+
+/* Image tool styles */
+:deep(.image-tool) {
+  padding: 0;
+}
+
+:deep(.image-tool__image) {
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+:deep(.image-tool__image-picture) {
+  max-width: 100%;
+  vertical-align: bottom;
+}
+
+:deep(.image-tool__caption) {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+
+.dark :deep(.image-tool__caption) {
+  border-color: #4b5563;
+  background-color: #374151;
+  color: #9ca3af;
+}
+
+:deep(.cdx-button) {
+  background-color: #f3f4f6;
+  border: 1px dashed #d1d5db;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+:deep(.cdx-button:hover) {
+  background-color: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.dark :deep(.cdx-button) {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: #9ca3af;
+}
+
+.dark :deep(.cdx-button:hover) {
+  background-color: #4b5563;
+  border-color: #6b7280;
+}
+
+:deep(.image-tool--withBorder .image-tool__image) {
+  border: 1px solid #e5e7eb;
+}
+
+.dark :deep(.image-tool--withBorder .image-tool__image) {
+  border-color: #4b5563;
+}
+
+:deep(.image-tool--withBackground .image-tool__image) {
+  background-color: #f3f4f6;
+  padding: 1rem;
+}
+
+.dark :deep(.image-tool--withBackground .image-tool__image) {
+  background-color: #374151;
+}
+
+:deep(.image-tool--stretched .image-tool__image-picture) {
+  width: 100%;
 }
 </style>

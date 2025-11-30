@@ -289,24 +289,7 @@ async function togglePublish() {
           <!-- Cover Image -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Image de couverture</h3>
-
-            <div v-if="form.coverImage" class="mb-4">
-              <img
-                :src="form.coverImage"
-                alt="Aperçu"
-                class="w-full h-40 object-cover rounded-lg"
-              />
-            </div>
-            <div v-else class="mb-4 w-full h-40 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-              <font-awesome-icon icon="image" class="text-gray-400 dark:text-gray-500 text-3xl" />
-            </div>
-
-            <input
-              v-model="form.coverImage"
-              type="url"
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
-              placeholder="URL de l'image"
-            />
+            <ImageUpload v-model="form.coverImage" />
           </div>
 
           <!-- External URL -->
