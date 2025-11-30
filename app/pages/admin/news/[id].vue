@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import type { OutputData } from '@editorjs/editorjs'
+import { stringifyEditorData } from '~/utils/editorjs'
+
 definePageMeta({
   layout: 'admin',
   middleware: 'auth'
@@ -23,7 +26,7 @@ const isNew = id === 'new'
 const form = ref({
   title: '',
   summary: '',
-  content: '',
+  content: '' as string | OutputData,
   coverImage: '',
   externalUrl: '',
   isPublished: false
@@ -55,6 +58,20 @@ if (!isNew) {
   }
 }
 
+// Check if content has blocks
+function hasContent(content: string | OutputData): boolean {
+  if (!content) return false
+  if (typeof content === 'string') {
+    try {
+      const parsed = JSON.parse(content)
+      return parsed.blocks && parsed.blocks.length > 0 && parsed.blocks.some((b: { data?: { text?: string } }) => b.data?.text?.trim())
+    } catch {
+      return content.trim().length > 0
+    }
+  }
+  return content.blocks && content.blocks.length > 0 && content.blocks.some(b => (b.data as { text?: string })?.text?.trim())
+}
+
 async function handleSubmit() {
   error.value = ''
   success.value = ''
@@ -67,18 +84,23 @@ async function handleSubmit() {
     error.value = 'Le résumé est requis'
     return
   }
-  if (!form.value.content.trim()) {
+  if (!hasContent(form.value.content)) {
     error.value = 'Le contenu est requis'
     return
   }
 
   isSaving.value = true
 
+  // Serialize content if it's an OutputData object
+  const contentToSave = typeof form.value.content === 'string'
+    ? form.value.content
+    : stringifyEditorData(form.value.content as OutputData) || ''
+
   try {
     const payload = {
       title: form.value.title,
       summary: form.value.summary,
-      content: form.value.content,
+      content: contentToSave,
       coverImage: form.value.coverImage || null,
       externalUrl: form.value.externalUrl || null,
       isPublished: form.value.isPublished
@@ -240,20 +262,24 @@ async function togglePublish() {
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Contenu</h3>
 
             <div>
-              <label for="content" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Contenu <span class="text-red-500">*</span>
               </label>
               <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                Vous pouvez utiliser du HTML pour la mise en forme.
+                Utilisez l'éditeur pour créer votre contenu. Appuyez sur Tab ou cliquez sur + pour ajouter des blocs.
               </p>
-              <textarea
-                id="content"
-                v-model="form.content"
-                rows="15"
-                required
-                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500 font-mono text-sm"
-                placeholder="<p>Contenu de l'actualité...</p>"
-              />
+              <ClientOnly>
+                <ContentEditor
+                  v-model="form.content"
+                  :min-height="400"
+                  placeholder="Commencez à écrire le contenu de l'actualité..."
+                />
+                <template #fallback>
+                  <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4 min-h-[400px] bg-gray-50 dark:bg-gray-700 flex items-center justify-center">
+                    <font-awesome-icon icon="spinner" class="animate-spin text-gray-400 text-2xl" />
+                  </div>
+                </template>
+              </ClientOnly>
             </div>
           </div>
         </div>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { editorJsToHtml } from '~/utils/editorjs'
+
 definePageMeta({
   layout: 'default'
 })
@@ -64,6 +66,12 @@ function formatDate(date: string) {
     year: 'numeric'
   })
 }
+
+// Convertir le contenu Editor.js en HTML
+const contentHtml = computed(() => {
+  if (!article.value?.content) return ''
+  return editorJsToHtml(article.value.content)
+})
 </script>
 
 <template>
@@ -176,9 +184,9 @@ function formatDate(date: string) {
 
         <!-- Corps de l'article -->
         <div
-          v-if="article.content"
+          v-if="contentHtml"
           class="prose prose-lg dark:prose-invert max-w-none prose-headings:text-gray-900 dark:prose-headings:text-white prose-a:text-ti-blue dark:prose-a:text-ti-blue-400"
-          v-html="article.content"
+          v-html="contentHtml"
         />
 
         <!-- Message si pas de contenu -->

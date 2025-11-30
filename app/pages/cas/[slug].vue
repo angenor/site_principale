@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { editorJsToHtml } from '~/utils/editorjs'
+
 // Interfaces
 interface Category {
   id: number
@@ -88,6 +90,12 @@ watchEffect(() => {
 
 // Obtenir la catégorie principale
 const primaryCategory = computed(() => caseStudy.value?.categories[0] || null)
+
+// Convertir le contenu Editor.js en HTML
+const contentHtml = computed(() => {
+  if (!caseStudy.value?.content) return ''
+  return editorJsToHtml(caseStudy.value.content)
+})
 
 // Formater la date
 const formattedDate = computed(() => {
@@ -244,9 +252,9 @@ const copyLink = async () => {
           <article class="lg:flex-1">
             <!-- Contenu HTML -->
             <div
-              v-if="caseStudy.content"
+              v-if="contentHtml"
               class="prose prose-lg dark:prose-invert max-w-none prose-headings:font-heading prose-headings:uppercase prose-headings:tracking-wide prose-a:text-ti-blue dark:prose-a:text-ti-blue-400"
-              v-html="caseStudy.content"
+              v-html="contentHtml"
             />
 
             <!-- Message si pas de contenu -->
