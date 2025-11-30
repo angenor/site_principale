@@ -1,7 +1,16 @@
 <template>
-    <div class="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-200">
-        <NuxtPage />
-    </div>
+  <div class="min-h-screen flex flex-col bg-white dark:bg-gray-900 transition-colors duration-200">
+    <!-- Header -->
+    <AppHeader />
+
+    <!-- Contenu principal -->
+    <main class="flex-1">
+      <NuxtPage />
+    </main>
+
+    <!-- Footer -->
+    <AppFooter />
+  </div>
 </template>
 
 <script setup lang="ts">

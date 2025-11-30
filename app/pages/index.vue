@@ -1,109 +1,72 @@
 <script setup lang="ts">
-  // Métadonnées de la page
-  useHead({
-    title: 'Plateforme de Suivi des Revenus Miniers - Accueil',
-    meta: [
-      {
-        name: 'description',
-        content: 'Plateforme de suivi de l\'utilisation des revenus miniers des collectivités territoriales à Madagascar'
-      }
-    ]
-  })
-
-  const showScrollTop = ref(false)
-
-  // Gestion du scroll to top
-  const handleScroll = () => {
-    showScrollTop.value = window.scrollY > 300
-  }
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
-  // Lifecycle
-  onMounted(() => {
-    window.addEventListener('scroll', handleScroll)
-  })
-
-  onUnmounted(() => {
-    window.removeEventListener('scroll', handleScroll)
-  })
+// Métadonnées de la page
+useHead({
+  title: 'Observatoire des Mines de Madagascar - Accueil',
+  meta: [
+    {
+      name: 'description',
+      content: 'L\'Observatoire des Mines de Madagascar (MOM) promeut la transparence et la bonne gouvernance dans le secteur minier malgache.'
+    },
+    {
+      property: 'og:title',
+      content: 'Observatoire des Mines de Madagascar'
+    },
+    {
+      property: 'og:description',
+      content: 'Plateforme de suivi de la gouvernance minière à Madagascar par Transparency International et PCQVP.'
+    },
+    {
+      property: 'og:type',
+      content: 'website'
+    }
+  ]
+})
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-    <!-- Hero Section avec recherche intégrée -->
+  <div>
+    <!-- Hero Section avec slider -->
     <HeroSection />
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 dark:bg-gray-950 text-white mt-16 print:hidden transition-colors duration-200">
-      <div class="max-w-7xl mx-auto px-4 py-8">
-        <div class="grid md:grid-cols-3 gap-8">
-          <div>
-            <h3 class="font-bold text-lg mb-3">À propos</h3>
-            <p class="text-gray-300 dark:text-gray-400 text-sm">
-              Projet "Minerais critiques : justice fiscale et redistribution de revenus"
-              mené par PCQVP Madagascar et TI Madagascar.
-            </p>
-          </div>
-          <div>
-            <h3 class="font-bold text-lg mb-3">Contact</h3>
-            <p class="text-gray-300 dark:text-gray-400 text-sm">
-              Email: vramaherison@transparency.mg<br>
-              Transparency International - Initiative Madagascar
-            </p>
-          </div>
-          <div>
-            <h3 class="font-bold text-lg mb-3">Ressources</h3>
-            <p class="text-gray-300 dark:text-gray-400 text-sm">
-              Plateforme de suivi des revenus miniers<br>
-              Collectivités Territoriales de Madagascar
-            </p>
-          </div>
-        </div>
-        <div class="border-t border-gray-700 dark:border-gray-800 mt-8 pt-6 text-center text-gray-400 dark:text-gray-500 text-sm">
-          <p>&copy; {{ new Date().getFullYear() }} PCQVP Madagascar. Tous droits réservés.</p>
+    <!-- Section Axes Stratégiques -->
+    <StrategicAxesSection />
+
+    <!-- Section Actualités -->
+    <NewsSection />
+
+    <!-- Section Études de Cas -->
+    <CaseStudiesSection />
+
+    <!-- Section Partenaires -->
+    <PartnersSection />
+
+    <!-- Call to Action -->
+    <section class="py-16 lg:py-24 section-ti-blue">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl lg:text-4xl font-heading font-bold uppercase text-white mb-6">
+          Signaler un cas
+        </h2>
+        <p class="text-lg text-blue-100 mb-8 max-w-2xl mx-auto">
+          Vous avez connaissance d'un cas de mauvaise gouvernance ou d'impact négatif
+          lié à l'exploitation minière ? Partagez l'information de manière sécurisée.
+        </p>
+        <div class="flex flex-wrap justify-center gap-4">
+          <NuxtLink
+            to="/signaler"
+            class="inline-flex items-center px-6 py-3 bg-white text-ti-blue font-heading font-semibold uppercase tracking-wide rounded-lg hover:bg-gray-100 transition-colors duration-200"
+          >
+            <font-awesome-icon icon="bullhorn" class="mr-2" />
+            Faire un signalement
+          </NuxtLink>
+          <NuxtLink
+            to="/a-propos"
+            class="inline-flex items-center px-6 py-3 border-2 border-white text-white font-heading font-semibold uppercase tracking-wide rounded-lg hover:bg-white/10 transition-colors duration-200"
+          >
+            En savoir plus
+            <font-awesome-icon icon="arrow-right" class="ml-2" />
+          </NuxtLink>
         </div>
       </div>
-    </footer>
+    </section>
   </div>
 </template>
-
-<style scoped>
-/* Transitions */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.slide-up-enter-active {
-  transition: all 0.5s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-/* Print styles */
-@media print {
-  .print\:hidden {
-    display: none !important;
-  }
-
-  body {
-    background: white;
-  }
-
-  main {
-    max-width: 100%;
-    padding: 0;
-  }
-}
-</style>

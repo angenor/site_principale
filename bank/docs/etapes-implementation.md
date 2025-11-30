@@ -43,56 +43,84 @@
 ---
 
 ## Phase 2 : Charte graphique
-- [ ] Réception de la charte graphique de TIMG
-- [ ] Définition de la palette de couleurs
-- [ ] Choix des typographies
-- [ ] Création des variables CSS personnalisées
+- [x] Réception de la charte graphique de TIMG (`bank/docs/charte_graphique/`)
+- [x] Définition de la palette de couleurs (Bleu TI #3695d8, couleurs secondaires)
+- [x] Choix des typographies (Barlow Condensed, Inter)
+- [x] Création des variables CSS personnalisées (`app/assets/css/main.css`)
+
+### Résumé de la charte graphique
+
+**Couleurs primaires :**
+- Bleu TI : `#3695d8` (PANTONE 2381 C)
+- Noir TI : `#000000`
+- Blanc TI : `#ffffff`
+
+**Couleurs secondaires :**
+- Jaune : `#ffed00`
+- Vert lime : `#c4d600`
+- Orange : `#ffb81c`
+- Rose : `#e31c79`
+- Rouge-orange : `#ee3124`
+- Rouge : `#e31837`
+
+**Typographies :**
+- Titres : Barlow Condensed (équivalent Folio BdCn BT)
+- Corps : Inter (équivalent Geomanist)
+
+**Logos disponibles :**
+- `public/images/logos/logo_fond_bleu_texte_blanc.jpeg`
+- `public/images/logos/logo_fond_noire_texte_blanc.jpeg`
+- `public/images/logos/logo_fond_noire_texte_bleu.jpeg`
 
 ---
 
 ## Phase 3 : Développement Frontend
 
 ### 3.1 Composants communs
-- [ ] Header (logo + navigation sticky)
-- [ ] Footer (contact, adresse)
-- [ ] Composant Card générique
+- [x] Header (logo + navigation sticky) → `AppHeader.vue`
+- [x] Footer (contact, adresse) → `AppFooter.vue`
+- [x] Composant Card générique → `AppCard.vue`
 - [ ] Composant Button
 - [ ] Composant Modal
 - [ ] Loader / Skeleton
 
 ### 3.2 Page d'accueil (`/`)
-- [ ] Section Hero / Galerie d'images (slider)
-- [ ] Section Axes stratégiques (4 cartes en grille)
-- [ ] Section Actualités (cartes avec date, tri récent → ancien)
-- [ ] Section Études de cas (aperçu, grille de cartes)
-- [ ] Section Partenaires (logos défilants)
+- [x] Section Hero / Galerie d'images (slider) → `HeroSection.vue`
+- [x] Section Axes stratégiques (4 cartes en grille) → `StrategicAxesSection.vue`
+- [x] Section Actualités (cartes avec date, tri récent → ancien) → `NewsSection.vue`
+- [x] Section Études de cas (aperçu, grille de cartes) → `CaseStudiesSection.vue`
+- [x] Section Partenaires (logos défilants) → `PartnersSection.vue`
 
-### 3.3 Page Études de cas (`/cas`)
-- [ ] Liste des études de cas (grille)
-- [ ] Filtres par catégorie/région
+### 3.3 Page Études de cas (`/cas`) → `pages/cas/index.vue`
+- [x] Liste des études de cas (grille)
+- [x] Filtres par catégorie/région
 - [ ] Pagination ou infinite scroll
-- [ ] Tri par date (récent → ancien)
+- [x] Tri par date (récent → ancien)
 
-### 3.4 Page Fiche de cas (`/cas/[slug]`)
-- [ ] Image de couverture
-- [ ] Titre et sous-titre
-- [ ] Icônes des thématiques
-- [ ] Région et date
-- [ ] Contenu détaillé (texte, images, vidéos)
-- [ ] Mots-clés
-- [ ] Documents téléchargeables
-- [ ] Navigation entre cas (précédent/suivant)
+### 3.4 Page Fiche de cas (`/cas/[slug]`) → `pages/cas/[slug].vue`
+- [x] Image de couverture
+- [x] Titre et sous-titre
+- [x] Icônes des thématiques
+- [x] Région et date
+- [x] Contenu détaillé (texte, images, vidéos)
+- [x] Mots-clés
+- [x] Documents téléchargeables
+- [x] Navigation entre cas (précédent/suivant)
+- [x] Partage social (Twitter, Facebook, LinkedIn)
+- [x] Cas connexes
 
-### 3.5 Page À propos (`/a-propos`)
-- [ ] Section Mission
-- [ ] Section Vision
-- [ ] Section Contexte/Historique
-- [ ] Présentation des organisations (TIMG, PCQVP)
+### 3.5 Page À propos (`/a-propos`) → `pages/a-propos.vue`
+- [x] Section Mission
+- [x] Section Vision
+- [x] Section Contexte/Historique
+- [x] Présentation des organisations (TIMG, PCQVP)
+- [x] Timeline historique
+- [x] Section Contact
 
 ### 3.6 Responsive Design
-- [ ] Adaptation mobile (< 640px)
-- [ ] Adaptation tablette (640px - 1024px)
-- [ ] Tests sur différents appareils
+- [x] Adaptation mobile (< 640px) - intégrée dans tous les composants
+- [x] Adaptation tablette (640px - 1024px) - intégrée dans tous les composants
+- [x] Tests sur différents appareils
 
 ---
 
@@ -329,8 +357,8 @@
 | Phase | Description | Avancement |
 |-------|-------------|------------|
 | 1 | Configuration et Infrastructure | 100% |
-| 2 | Design et Maquettes | 0% |
-| 3 | Développement Frontend | 0% |
+| 2 | Charte graphique | 100% |
+| 3 | Développement Frontend | 85% |
 | 4 | Développement Backend (API) | 0% |
 | 5 | Back-office (Administration) | 0% |
 | 6 | Fonctionnalités avancées | 0% |
@@ -341,17 +369,20 @@
 | 11 | Formation et Documentation | 10% |
 | 12 | Livraison et SAV | 0% |
 
-**Avancement global estimé : ~10%**
+**Avancement global estimé : ~25%**
 
 ---
 
 ## Prochaines actions prioritaires
 
-1. **Réception de la charte graphique** de TIMG
-2. **Insertion des données initiales** (régions, catégories, axes stratégiques)
-3. **Création des maquettes** (Figma ou autre)
-4. **Développement des composants UI** de base (Header, Footer, Cards)
-5. **Implémentation de la page d'accueil**
+1. ~~**Insertion des données initiales** (régions, catégories, axes stratégiques)~~ ✓
+2. ~~**Développement des composants UI** de base (Header, Footer, Cards)~~ ✓
+3. ~~**Implémentation de la page d'accueil**~~ ✓
+4. ~~**Page des études de cas** (`/cas` et `/cas/[slug]`)~~ ✓
+5. ~~**Page À propos** (`/a-propos`)~~ ✓
+6. **Création des API endpoints** de base (Phase 4)
+7. **Page de signalement** (`/signaler`)
+8. **Composants manquants** (Button, Modal, Loader)
 
 ---
 
@@ -376,8 +407,10 @@ site_config, about_content
 | Fichier | Description |
 |---------|-------------|
 | `bank/docs/cahier_des_charges/TIMG_MOM_TdR_Conception-Web.md` | Cahier des charges |
+| `bank/docs/charte_graphique/Charte-graphique-TI-MG-version-7102020.pdf` | Charte graphique TIMG |
 | `bank/modele_de_donnees/schema.prisma` | Schéma de données |
 | `bank/modele_de_donnees/README.md` | Documentation modèle |
 | `bank/modele_de_donnees/seed-data.sql` | Données initiales |
 | `prisma/schema.prisma` | Schéma Prisma actif |
+| `app/assets/css/main.css` | Variables CSS de la charte graphique |
 | `CLAUDE.md` | Configuration projet |

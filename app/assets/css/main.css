@@ -1,4 +1,425 @@
 @import "tailwindcss";
 
+/* ============================================================================
+   CHARTE GRAPHIQUE - TRANSPARENCY INTERNATIONAL MADAGASCAR
+   Basé sur : Charte-graphique-TI-MG-version-7102020.pdf
+   ============================================================================ */
+
 /* Enable class-based dark mode in Tailwind v4 */
 @variant dark (&:where(.dark, .dark *));
+
+/* ============================================================================
+   POLICES DE CARACTÈRES
+
+   Polices originales de la charte :
+   - Logo : Syntax Bold
+   - Titres : Folio BdCn BT (Bold Condensed)
+   - Corps : Geomanist (Black, Bold, Book, Regular, Light, ExtraLight)
+
+   Équivalents Google Fonts utilisés :
+   - Folio BdCn BT → Barlow Condensed (similaire condensé)
+   - Geomanist → Inter (similaire sans-serif moderne)
+   ============================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Inter:wght@200;300;400;500;600;700;800;900&display=swap');
+
+/* ============================================================================
+   VARIABLES CSS PERSONNALISÉES
+   ============================================================================ */
+
+@theme {
+  /* --------------------------------------------
+     COULEURS PRIMAIRES (Charte TI Madagascar)
+     -------------------------------------------- */
+
+  /* Bleu TI - Couleur principale de la marque */
+  --color-ti-blue: #3695d8;
+  --color-ti-blue-50: #e8f4fc;
+  --color-ti-blue-100: #c5e3f7;
+  --color-ti-blue-200: #9ed0f2;
+  --color-ti-blue-300: #77bded;
+  --color-ti-blue-400: #59aee8;
+  --color-ti-blue-500: #3695d8;
+  --color-ti-blue-600: #2d7bb8;
+  --color-ti-blue-700: #236197;
+  --color-ti-blue-800: #1a4877;
+  --color-ti-blue-900: #112f56;
+  --color-ti-blue-950: #0a1c36;
+
+  /* Noir TI */
+  --color-ti-black: #000000;
+
+  /* Blanc TI */
+  --color-ti-white: #ffffff;
+
+  /* --------------------------------------------
+     COULEURS SECONDAIRES (Accents)
+     -------------------------------------------- */
+
+  /* Jaune - PANTONE 102 C */
+  --color-ti-yellow: #ffed00;
+  --color-ti-yellow-light: #fff566;
+  --color-ti-yellow-dark: #ccbe00;
+
+  /* Vert lime - PANTONE 389 C */
+  --color-ti-lime: #c4d600;
+  --color-ti-lime-light: #d9e64d;
+  --color-ti-lime-dark: #9dab00;
+
+  /* Orange - PANTONE 1235 C */
+  --color-ti-orange: #ffb81c;
+  --color-ti-orange-light: #ffce66;
+  --color-ti-orange-dark: #cc9316;
+
+  /* Rose/Magenta - PANTONE 214 C */
+  --color-ti-pink: #e31c79;
+  --color-ti-pink-light: #ed66a3;
+  --color-ti-pink-dark: #b61661;
+
+  /* Rouge-orange - PANTONE 1788 C */
+  --color-ti-red-orange: #ee3124;
+  --color-ti-red-orange-light: #f37369;
+  --color-ti-red-orange-dark: #be271d;
+
+  /* Rouge - PANTONE 192 C */
+  --color-ti-red: #e31837;
+  --color-ti-red-light: #ed6075;
+  --color-ti-red-dark: #b6132c;
+
+  /* --------------------------------------------
+     COULEURS SÉMANTIQUES
+     -------------------------------------------- */
+
+  --color-primary: var(--color-ti-blue);
+  --color-primary-hover: var(--color-ti-blue-600);
+  --color-primary-active: var(--color-ti-blue-700);
+
+  --color-success: #22c55e;
+  --color-warning: var(--color-ti-orange);
+  --color-error: var(--color-ti-red);
+  --color-info: var(--color-ti-blue);
+
+  /* --------------------------------------------
+     COULEURS DE FOND ET TEXTE
+     -------------------------------------------- */
+
+  /* Mode clair */
+  --color-bg-light: #ffffff;
+  --color-bg-light-secondary: #f8fafc;
+  --color-bg-light-tertiary: #f1f5f9;
+  --color-text-light: #1e293b;
+  --color-text-light-secondary: #475569;
+  --color-text-light-muted: #94a3b8;
+
+  /* Mode sombre */
+  --color-bg-dark: #0f172a;
+  --color-bg-dark-secondary: #1e293b;
+  --color-bg-dark-tertiary: #334155;
+  --color-text-dark: #f8fafc;
+  --color-text-dark-secondary: #cbd5e1;
+  --color-text-dark-muted: #64748b;
+
+  /* --------------------------------------------
+     TYPOGRAPHIE
+     -------------------------------------------- */
+
+  /* Familles de polices */
+  --font-heading: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --font-body: 'Inter', 'Geomanist', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Tailles de police */
+  --text-xs: 0.75rem;      /* 12px */
+  --text-sm: 0.875rem;     /* 14px */
+  --text-base: 1rem;       /* 16px */
+  --text-lg: 1.125rem;     /* 18px */
+  --text-xl: 1.25rem;      /* 20px */
+  --text-2xl: 1.5rem;      /* 24px */
+  --text-3xl: 1.875rem;    /* 30px */
+  --text-4xl: 2.25rem;     /* 36px */
+  --text-5xl: 3rem;        /* 48px */
+  --text-6xl: 3.75rem;     /* 60px */
+
+  /* Poids de police */
+  --font-extralight: 200;
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+  --font-black: 900;
+
+  /* --------------------------------------------
+     ESPACEMENTS ET RAYONS
+     -------------------------------------------- */
+
+  --radius-sm: 0.25rem;    /* 4px */
+  --radius-md: 0.5rem;     /* 8px */
+  --radius-lg: 0.75rem;    /* 12px */
+  --radius-xl: 1rem;       /* 16px */
+  --radius-2xl: 1.5rem;    /* 24px */
+  --radius-full: 9999px;
+
+  /* --------------------------------------------
+     OMBRES
+     -------------------------------------------- */
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* --------------------------------------------
+     TRANSITIONS
+     -------------------------------------------- */
+
+  --transition-fast: 150ms ease;
+  --transition-normal: 300ms ease;
+  --transition-slow: 500ms ease;
+}
+
+/* ============================================================================
+   STYLES DE BASE
+   ============================================================================ */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  color: var(--color-text-light);
+  background-color: var(--color-bg-light);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Mode sombre */
+.dark body {
+  color: var(--color-text-dark);
+  background-color: var(--color-bg-dark);
+}
+
+/* ============================================================================
+   TYPOGRAPHIE
+   ============================================================================ */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: var(--font-bold);
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+h1 { font-size: var(--text-5xl); }
+h2 { font-size: var(--text-4xl); }
+h3 { font-size: var(--text-3xl); }
+h4 { font-size: var(--text-2xl); }
+h5 { font-size: var(--text-xl); }
+h6 { font-size: var(--text-lg); }
+
+/* Responsive typography */
+@media (max-width: 768px) {
+  h1 { font-size: var(--text-4xl); }
+  h2 { font-size: var(--text-3xl); }
+  h3 { font-size: var(--text-2xl); }
+  h4 { font-size: var(--text-xl); }
+}
+
+/* ============================================================================
+   CLASSES UTILITAIRES PERSONNALISÉES
+   ============================================================================ */
+
+/* Couleurs TI */
+.text-ti-blue { color: var(--color-ti-blue); }
+.bg-ti-blue { background-color: var(--color-ti-blue); }
+.border-ti-blue { border-color: var(--color-ti-blue); }
+
+.text-ti-blue-dark { color: var(--color-ti-blue-700); }
+.bg-ti-blue-dark { background-color: var(--color-ti-blue-700); }
+
+.text-ti-blue-light { color: var(--color-ti-blue-300); }
+.bg-ti-blue-light { background-color: var(--color-ti-blue-100); }
+
+/* Typographie */
+.font-heading { font-family: var(--font-heading); }
+.font-body { font-family: var(--font-body); }
+
+/* Bouton primaire style TI */
+.btn-ti {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-heading);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-ti-white);
+  background-color: var(--color-ti-blue);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-ti:hover {
+  background-color: var(--color-ti-blue-600);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-ti:active {
+  background-color: var(--color-ti-blue-700);
+  transform: translateY(0);
+}
+
+/* Bouton secondaire (outline) */
+.btn-ti-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-heading);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-ti-blue);
+  background-color: transparent;
+  border: 2px solid var(--color-ti-blue);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-ti-outline:hover {
+  color: var(--color-ti-white);
+  background-color: var(--color-ti-blue);
+}
+
+/* ============================================================================
+   COMPOSANTS SPÉCIFIQUES MOM
+   ============================================================================ */
+
+/* Card style */
+.card-mom {
+  background-color: var(--color-bg-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.card-mom:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+.dark .card-mom {
+  background-color: var(--color-bg-dark-secondary);
+}
+
+/* Section avec fond bleu TI */
+.section-ti-blue {
+  background-color: var(--color-ti-blue);
+  color: var(--color-ti-white);
+}
+
+/* Gradient TI */
+.gradient-ti {
+  background: linear-gradient(135deg, var(--color-ti-blue-600) 0%, var(--color-ti-blue) 100%);
+}
+
+/* Badge catégorie */
+.badge-category {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-full);
+  background-color: var(--color-ti-blue-100);
+  color: var(--color-ti-blue-700);
+}
+
+.dark .badge-category {
+  background-color: var(--color-ti-blue-900);
+  color: var(--color-ti-blue-200);
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.5s ease-out forwards;
+}
+
+/* ============================================================================
+   SCROLLBAR PERSONNALISÉE
+   ============================================================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-light-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-ti-blue-400);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ti-blue-500);
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: var(--color-bg-dark-tertiary);
+}
+
+/* ============================================================================
+   SÉLECTION DE TEXTE
+   ============================================================================ */
+
+::selection {
+  background-color: var(--color-ti-blue);
+  color: var(--color-ti-white);
+}
