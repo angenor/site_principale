@@ -1,14 +1,14 @@
 <script setup lang="ts">
 interface Props {
   imageFile: File
-  aspectRatio?: number | null // null = free, 1 = square, 16/9, 4/3, etc.
-  maxFileSize?: number // in bytes, default 2MB
-  minQuality?: number // minimum quality before warning (0-100)
+  aspectRatio?: number | null
+  maxFileSize?: number
+  minQuality?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   aspectRatio: null,
-  maxFileSize: 2 * 1024 * 1024, // 2MB
+  maxFileSize: 2 * 1024 * 1024,
   minQuality: 30
 })
 
@@ -43,11 +43,16 @@ const cropStartY = ref(0)
 const cropStartWidth = ref(0)
 const cropStartHeight = ref(0)
 
+// Cursor state
+const currentCursor = ref('default')
+
+// Canvas offset cache
+const canvasOffset = ref({ x: 0, y: 0 })
+
 // Computed values
 const estimatedSize = ref(0)
 const isProcessing = ref(false)
 
-// Warnings
 const sizeWarning = computed(() => {
   if (estimatedSize.value > props.maxFileSize) {
     return `Fichier trop lourd (${formatSize(estimatedSize.value)}). Maximum: ${formatSize(props.maxFileSize)}`
@@ -62,14 +67,12 @@ const qualityWarning = computed(() => {
   return null
 })
 
-// Format file size
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} o`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} Ko`
   return `${(bytes / (1024 * 1024)).toFixed(2)} Mo`
 }
 
-// Load image on mount
 onMounted(async () => {
   imageUrl.value = URL.createObjectURL(props.imageFile)
 
@@ -89,33 +92,39 @@ onUnmounted(() => {
   }
 })
 
-// Initialize crop area
-function initializeCrop() {
-  if (!originalImage.value || !containerRef.value) return
+function getDisplayParams() {
+  if (!originalImage.value || !containerRef.value) return null
 
   const img = originalImage.value
   const container = containerRef.value
   const containerWidth = container.clientWidth
   const containerHeight = 400
 
-  // Scale image to fit container
   const scale = Math.min(containerWidth / img.width, containerHeight / img.height)
   const displayWidth = img.width * scale
   const displayHeight = img.height * scale
+  const offsetX = (containerWidth - displayWidth) / 2
+  const offsetY = (containerHeight - displayHeight) / 2
 
-  // Initialize crop to full image or aspect ratio
+  return { containerWidth, containerHeight, scale, displayWidth, displayHeight, offsetX, offsetY }
+}
+
+function initializeCrop() {
+  const params = getDisplayParams()
+  if (!params) return
+
+  const { displayWidth, displayHeight } = params
+
   if (props.aspectRatio) {
     const targetRatio = props.aspectRatio
     const imageRatio = displayWidth / displayHeight
 
     if (imageRatio > targetRatio) {
-      // Image is wider than target ratio
       cropHeight.value = displayHeight
       cropWidth.value = displayHeight * targetRatio
       cropX.value = (displayWidth - cropWidth.value) / 2
       cropY.value = 0
     } else {
-      // Image is taller than target ratio
       cropWidth.value = displayWidth
       cropHeight.value = displayWidth / targetRatio
       cropX.value = 0
@@ -129,7 +138,6 @@ function initializeCrop() {
   }
 }
 
-// Draw main canvas with crop overlay
 function drawCanvas() {
   if (!canvasRef.value || !originalImage.value || !containerRef.value) return
 
@@ -137,28 +145,23 @@ function drawCanvas() {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
 
-  const img = originalImage.value
-  const container = containerRef.value
-  const containerWidth = container.clientWidth
-  const containerHeight = 400
+  const params = getDisplayParams()
+  if (!params) return
 
-  // Scale image to fit
-  const scale = Math.min(containerWidth / img.width, containerHeight / img.height)
-  const displayWidth = img.width * scale
-  const displayHeight = img.height * scale
+  const { containerWidth, containerHeight, displayWidth, displayHeight, offsetX, offsetY } = params
+  const img = originalImage.value
+
+  canvasOffset.value = { x: offsetX, y: offsetY }
 
   canvas.width = containerWidth
   canvas.height = containerHeight
 
-  // Center image
-  const offsetX = (containerWidth - displayWidth) / 2
-  const offsetY = (containerHeight - displayHeight) / 2
-
-  // Draw darkened image
+  // Draw darkened background
   ctx.fillStyle = '#1f2937'
   ctx.fillRect(0, 0, containerWidth, containerHeight)
 
-  ctx.globalAlpha = 0.5
+  // Draw darkened image
+  ctx.globalAlpha = 0.4
   ctx.drawImage(img, offsetX, offsetY, displayWidth, displayHeight)
   ctx.globalAlpha = 1.0
 
@@ -175,46 +178,51 @@ function drawCanvas() {
   ctx.lineWidth = 2
   ctx.strokeRect(offsetX + cropX.value, offsetY + cropY.value, cropWidth.value, cropHeight.value)
 
-  // Draw resize handles
-  const handleSize = 10
-  const handles = [
-    { x: cropX.value, y: cropY.value, cursor: 'nw-resize', name: 'nw' },
-    { x: cropX.value + cropWidth.value, y: cropY.value, cursor: 'ne-resize', name: 'ne' },
-    { x: cropX.value, y: cropY.value + cropHeight.value, cursor: 'sw-resize', name: 'sw' },
-    { x: cropX.value + cropWidth.value, y: cropY.value + cropHeight.value, cursor: 'se-resize', name: 'se' }
+  // Draw corner handles
+  const handleSize = 12
+  const corners = [
+    { x: cropX.value, y: cropY.value },
+    { x: cropX.value + cropWidth.value, y: cropY.value },
+    { x: cropX.value, y: cropY.value + cropHeight.value },
+    { x: cropX.value + cropWidth.value, y: cropY.value + cropHeight.value }
   ]
 
   ctx.fillStyle = '#ffffff'
   ctx.strokeStyle = '#3695d8'
   ctx.lineWidth = 2
 
-  handles.forEach(handle => {
-    ctx.fillRect(
-      offsetX + handle.x - handleSize / 2,
-      offsetY + handle.y - handleSize / 2,
-      handleSize,
-      handleSize
-    )
-    ctx.strokeRect(
-      offsetX + handle.x - handleSize / 2,
-      offsetY + handle.y - handleSize / 2,
-      handleSize,
-      handleSize
-    )
+  corners.forEach(corner => {
+    ctx.beginPath()
+    ctx.arc(offsetX + corner.x, offsetY + corner.y, handleSize / 2, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
   })
 
-  // Draw grid lines (rule of thirds)
+  // Draw edge handles (middle of each side)
+  const edges = [
+    { x: cropX.value + cropWidth.value / 2, y: cropY.value },
+    { x: cropX.value + cropWidth.value / 2, y: cropY.value + cropHeight.value },
+    { x: cropX.value, y: cropY.value + cropHeight.value / 2 },
+    { x: cropX.value + cropWidth.value, y: cropY.value + cropHeight.value / 2 }
+  ]
+
+  edges.forEach(edge => {
+    ctx.beginPath()
+    ctx.arc(offsetX + edge.x, offsetY + edge.y, handleSize / 2 - 1, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
+  })
+
+  // Draw grid lines
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
   ctx.lineWidth = 1
 
   for (let i = 1; i < 3; i++) {
-    // Vertical lines
     ctx.beginPath()
     ctx.moveTo(offsetX + cropX.value + (cropWidth.value * i / 3), offsetY + cropY.value)
     ctx.lineTo(offsetX + cropX.value + (cropWidth.value * i / 3), offsetY + cropY.value + cropHeight.value)
     ctx.stroke()
 
-    // Horizontal lines
     ctx.beginPath()
     ctx.moveTo(offsetX + cropX.value, offsetY + cropY.value + (cropHeight.value * i / 3))
     ctx.lineTo(offsetX + cropX.value + cropWidth.value, offsetY + cropY.value + (cropHeight.value * i / 3))
@@ -222,7 +230,6 @@ function drawCanvas() {
   }
 }
 
-// Update preview and calculate size
 async function updatePreview() {
   if (!previewCanvasRef.value || !originalImage.value || !containerRef.value) return
 
@@ -230,46 +237,37 @@ async function updatePreview() {
   const ctx = preview.getContext('2d')
   if (!ctx) return
 
+  const params = getDisplayParams()
+  if (!params) return
+
+  const { scale } = params
   const img = originalImage.value
-  const container = containerRef.value
-  const containerWidth = container.clientWidth
-  const containerHeight = 400
 
-  // Calculate scale used in main canvas
-  const scale = Math.min(containerWidth / img.width, containerHeight / img.height)
-
-  // Calculate actual crop coordinates on original image
   const actualCropX = cropX.value / scale
   const actualCropY = cropY.value / scale
   const actualCropWidth = cropWidth.value / scale
   const actualCropHeight = cropHeight.value / scale
 
-  // Set preview canvas size (max 300px for preview)
   const previewScale = Math.min(300 / actualCropWidth, 200 / actualCropHeight)
   preview.width = actualCropWidth * previewScale
   preview.height = actualCropHeight * previewScale
 
-  // Draw cropped image
   ctx.drawImage(
     img,
     actualCropX, actualCropY, actualCropWidth, actualCropHeight,
     0, 0, preview.width, preview.height
   )
 
-  // Calculate estimated file size
   await calculateSize()
 }
 
 async function calculateSize() {
-  if (!originalImage.value || !containerRef.value) return
+  const params = getDisplayParams()
+  if (!params || !originalImage.value) return
 
+  const { scale } = params
   const img = originalImage.value
-  const container = containerRef.value
-  const containerWidth = container.clientWidth
-  const containerHeight = 400
-  const scale = Math.min(containerWidth / img.width, containerHeight / img.height)
 
-  // Create temp canvas for size calculation
   const tempCanvas = document.createElement('canvas')
   const ctx = tempCanvas.getContext('2d')
   if (!ctx) return
@@ -288,7 +286,6 @@ async function calculateSize() {
     0, 0, actualCropWidth, actualCropHeight
   )
 
-  // Get blob to calculate size
   const mimeType = outputFormat.value === 'png' ? 'image/png' :
                    outputFormat.value === 'webp' ? 'image/webp' : 'image/jpeg'
   const qualityValue = outputFormat.value === 'png' ? undefined : quality.value / 100
@@ -300,131 +297,170 @@ async function calculateSize() {
   }, mimeType, qualityValue)
 }
 
-// Mouse event handlers
-function handleMouseDown(e: MouseEvent) {
-  if (!canvasRef.value || !containerRef.value) return
+// Detect which handle or area the mouse is over
+function getInteractionType(x: number, y: number): { type: string; cursor: string } {
+  const params = getDisplayParams()
+  if (!params) return { type: 'none', cursor: 'default' }
 
-  const canvas = canvasRef.value
-  const rect = canvas.getBoundingClientRect()
-  const x = e.clientX - rect.left
-  const y = e.clientY - rect.top
+  const { offsetX, offsetY } = params
+  const handleRadius = 12
 
-  const container = containerRef.value
-  const containerWidth = container.clientWidth
-  const containerHeight = 400
-  const img = originalImage.value
-  if (!img) return
+  // Relative to image
+  const rx = x - offsetX
+  const ry = y - offsetY
 
-  const scale = Math.min(containerWidth / img.width, containerHeight / img.height)
-  const displayWidth = img.width * scale
-  const displayHeight = img.height * scale
-  const offsetX = (containerWidth - displayWidth) / 2
-  const offsetY = (containerHeight - displayHeight) / 2
-
-  const handleSize = 10
-  const handles = [
-    { x: cropX.value, y: cropY.value, name: 'nw' },
-    { x: cropX.value + cropWidth.value, y: cropY.value, name: 'ne' },
-    { x: cropX.value, y: cropY.value + cropHeight.value, name: 'sw' },
-    { x: cropX.value + cropWidth.value, y: cropY.value + cropHeight.value, name: 'se' }
+  // Check corner handles
+  const corners = [
+    { x: cropX.value, y: cropY.value, name: 'nw', cursor: 'nwse-resize' },
+    { x: cropX.value + cropWidth.value, y: cropY.value, name: 'ne', cursor: 'nesw-resize' },
+    { x: cropX.value, y: cropY.value + cropHeight.value, name: 'sw', cursor: 'nesw-resize' },
+    { x: cropX.value + cropWidth.value, y: cropY.value + cropHeight.value, name: 'se', cursor: 'nwse-resize' }
   ]
 
-  // Check if clicking on a handle
-  for (const handle of handles) {
-    const hx = offsetX + handle.x
-    const hy = offsetY + handle.y
-    if (Math.abs(x - hx) < handleSize && Math.abs(y - hy) < handleSize) {
-      isResizing.value = true
-      resizeHandle.value = handle.name
-      dragStartX.value = x
-      dragStartY.value = y
-      cropStartX.value = cropX.value
-      cropStartY.value = cropY.value
-      cropStartWidth.value = cropWidth.value
-      cropStartHeight.value = cropHeight.value
-      return
+  for (const corner of corners) {
+    const dist = Math.sqrt((rx - corner.x) ** 2 + (ry - corner.y) ** 2)
+    if (dist < handleRadius) {
+      return { type: corner.name, cursor: corner.cursor }
     }
   }
 
-  // Check if clicking inside crop area
+  // Check edge handles
+  const edges = [
+    { x: cropX.value + cropWidth.value / 2, y: cropY.value, name: 'n', cursor: 'ns-resize' },
+    { x: cropX.value + cropWidth.value / 2, y: cropY.value + cropHeight.value, name: 's', cursor: 'ns-resize' },
+    { x: cropX.value, y: cropY.value + cropHeight.value / 2, name: 'w', cursor: 'ew-resize' },
+    { x: cropX.value + cropWidth.value, y: cropY.value + cropHeight.value / 2, name: 'e', cursor: 'ew-resize' }
+  ]
+
+  for (const edge of edges) {
+    const dist = Math.sqrt((rx - edge.x) ** 2 + (ry - edge.y) ** 2)
+    if (dist < handleRadius) {
+      return { type: edge.name, cursor: edge.cursor }
+    }
+  }
+
+  // Check if inside crop area
   if (
-    x >= offsetX + cropX.value &&
-    x <= offsetX + cropX.value + cropWidth.value &&
-    y >= offsetY + cropY.value &&
-    y <= offsetY + cropY.value + cropHeight.value
+    rx >= cropX.value &&
+    rx <= cropX.value + cropWidth.value &&
+    ry >= cropY.value &&
+    ry <= cropY.value + cropHeight.value
   ) {
+    return { type: 'move', cursor: 'move' }
+  }
+
+  return { type: 'none', cursor: 'default' }
+}
+
+// Convert mouse coordinates to canvas coordinates (accounting for CSS scaling)
+function getCanvasCoordinates(e: MouseEvent): { x: number; y: number } | null {
+  if (!canvasRef.value) return null
+
+  const canvas = canvasRef.value
+  const rect = canvas.getBoundingClientRect()
+
+  // Scale factor between rendered size and internal canvas size
+  const scaleX = canvas.width / rect.width
+  const scaleY = canvas.height / rect.height
+
+  return {
+    x: (e.clientX - rect.left) * scaleX,
+    y: (e.clientY - rect.top) * scaleY
+  }
+}
+
+function handleMouseDown(e: MouseEvent) {
+  const coords = getCanvasCoordinates(e)
+  if (!coords) return
+
+  const { x, y } = coords
+  const interaction = getInteractionType(x, y)
+
+  if (interaction.type === 'move') {
     isDragging.value = true
     dragStartX.value = x
     dragStartY.value = y
     cropStartX.value = cropX.value
     cropStartY.value = cropY.value
+  } else if (interaction.type !== 'none') {
+    isResizing.value = true
+    resizeHandle.value = interaction.type
+    dragStartX.value = x
+    dragStartY.value = y
+    cropStartX.value = cropX.value
+    cropStartY.value = cropY.value
+    cropStartWidth.value = cropWidth.value
+    cropStartHeight.value = cropHeight.value
   }
 }
 
 function handleMouseMove(e: MouseEvent) {
-  if (!canvasRef.value || !containerRef.value || !originalImage.value) return
+  const coords = getCanvasCoordinates(e)
+  if (!coords) return
+
+  const { x, y } = coords
+
+  // Update cursor
+  if (!isDragging.value && !isResizing.value) {
+    const interaction = getInteractionType(x, y)
+    currentCursor.value = interaction.cursor
+  }
+
   if (!isDragging.value && !isResizing.value) return
 
-  const canvas = canvasRef.value
-  const rect = canvas.getBoundingClientRect()
-  const x = e.clientX - rect.left
-  const y = e.clientY - rect.top
+  const params = getDisplayParams()
+  if (!params) return
+
+  const { displayWidth, displayHeight } = params
 
   const deltaX = x - dragStartX.value
   const deltaY = y - dragStartY.value
 
-  const container = containerRef.value
-  const containerWidth = container.clientWidth
-  const containerHeight = 400
-  const img = originalImage.value
-
-  const scale = Math.min(containerWidth / img.width, containerHeight / img.height)
-  const displayWidth = img.width * scale
-  const displayHeight = img.height * scale
-
   if (isDragging.value) {
-    // Move crop area
     cropX.value = Math.max(0, Math.min(displayWidth - cropWidth.value, cropStartX.value + deltaX))
     cropY.value = Math.max(0, Math.min(displayHeight - cropHeight.value, cropStartY.value + deltaY))
   } else if (isResizing.value) {
-    // Resize crop area
     let newX = cropStartX.value
     let newY = cropStartY.value
     let newWidth = cropStartWidth.value
     let newHeight = cropStartHeight.value
 
-    switch (resizeHandle.value) {
-      case 'se':
-        newWidth = Math.max(50, Math.min(displayWidth - cropX.value, cropStartWidth.value + deltaX))
-        newHeight = props.aspectRatio
-          ? newWidth / props.aspectRatio
-          : Math.max(50, Math.min(displayHeight - cropY.value, cropStartHeight.value + deltaY))
-        break
-      case 'sw':
-        newWidth = Math.max(50, cropStartWidth.value - deltaX)
-        newX = cropStartX.value + cropStartWidth.value - newWidth
-        newHeight = props.aspectRatio
-          ? newWidth / props.aspectRatio
-          : Math.max(50, Math.min(displayHeight - cropY.value, cropStartHeight.value + deltaY))
-        break
-      case 'ne':
-        newWidth = Math.max(50, Math.min(displayWidth - cropX.value, cropStartWidth.value + deltaX))
-        newHeight = props.aspectRatio
-          ? newWidth / props.aspectRatio
-          : Math.max(50, cropStartHeight.value - deltaY)
-        newY = props.aspectRatio ? cropY.value : cropStartY.value + cropStartHeight.value - newHeight
-        break
-      case 'nw':
-        newWidth = Math.max(50, cropStartWidth.value - deltaX)
-        newX = cropStartX.value + cropStartWidth.value - newWidth
-        newHeight = props.aspectRatio
-          ? newWidth / props.aspectRatio
-          : Math.max(50, cropStartHeight.value - deltaY)
-        newY = props.aspectRatio ? cropStartY.value : cropStartY.value + cropStartHeight.value - newHeight
-        break
+    const handle = resizeHandle.value
+
+    // Handle horizontal resizing
+    if (handle?.includes('e')) {
+      newWidth = Math.max(50, cropStartWidth.value + deltaX)
+    } else if (handle?.includes('w')) {
+      const proposedWidth = cropStartWidth.value - deltaX
+      if (proposedWidth >= 50) {
+        newWidth = proposedWidth
+        newX = cropStartX.value + deltaX
+      }
     }
 
-    // Ensure bounds
+    // Handle vertical resizing
+    if (handle?.includes('s')) {
+      newHeight = Math.max(50, cropStartHeight.value + deltaY)
+    } else if (handle?.includes('n')) {
+      const proposedHeight = cropStartHeight.value - deltaY
+      if (proposedHeight >= 50) {
+        newHeight = proposedHeight
+        newY = cropStartY.value + deltaY
+      }
+    }
+
+    // Apply aspect ratio constraint if set
+    if (props.aspectRatio && (handle?.length === 2)) {
+      // Corner resize with aspect ratio
+      const targetRatio = props.aspectRatio
+      if (newWidth / newHeight > targetRatio) {
+        newWidth = newHeight * targetRatio
+      } else {
+        newHeight = newWidth / targetRatio
+      }
+    }
+
+    // Constrain to bounds
     newX = Math.max(0, newX)
     newY = Math.max(0, newY)
     if (newX + newWidth > displayWidth) newWidth = displayWidth - newX
@@ -446,23 +482,19 @@ function handleMouseUp() {
   resizeHandle.value = null
 }
 
-// Watch quality changes
 watch([quality, outputFormat], () => {
   updatePreview()
 })
 
-// Save cropped image
 async function save() {
-  if (!originalImage.value || !containerRef.value) return
+  const params = getDisplayParams()
+  if (!params || !originalImage.value) return
 
   isProcessing.value = true
 
   try {
+    const { scale } = params
     const img = originalImage.value
-    const container = containerRef.value
-    const containerWidth = container.clientWidth
-    const containerHeight = 400
-    const scale = Math.min(containerWidth / img.width, containerHeight / img.height)
 
     const actualCropX = cropX.value / scale
     const actualCropY = cropY.value / scale
@@ -498,7 +530,6 @@ async function save() {
   }
 }
 
-// Preset aspect ratios
 const aspectRatios = [
   { label: 'Libre', value: null },
   { label: '1:1', value: 1 },
@@ -507,23 +538,20 @@ const aspectRatios = [
   { label: '3:2', value: 3/2 }
 ]
 
+const outputFormats: Array<'jpeg' | 'png' | 'webp'> = ['jpeg', 'png', 'webp']
+
+function setOutputFormat(fmt: 'jpeg' | 'png' | 'webp') {
+  outputFormat.value = fmt
+}
+
 function setAspectRatio(ratio: number | null) {
-  if (!containerRef.value || !originalImage.value) return
+  const params = getDisplayParams()
+  if (!params) return
 
-  const img = originalImage.value
-  const container = containerRef.value
-  const containerWidth = container.clientWidth
-  const containerHeight = 400
-  const scale = Math.min(containerWidth / img.width, containerHeight / img.height)
-  const displayWidth = img.width * scale
-  const displayHeight = img.height * scale
+  const { displayWidth, displayHeight } = params
 
-  if (ratio === null) {
-    // Free aspect ratio - keep current crop
-    return
-  }
+  if (ratio === null) return
 
-  // Adjust crop to new aspect ratio, keeping center
   const centerX = cropX.value + cropWidth.value / 2
   const centerY = cropY.value + cropHeight.value / 2
 
@@ -531,16 +559,13 @@ function setAspectRatio(ratio: number | null) {
   let newHeight: number
 
   if (cropWidth.value / cropHeight.value > ratio) {
-    // Current crop is wider, adjust width
     newHeight = cropHeight.value
     newWidth = newHeight * ratio
   } else {
-    // Current crop is taller, adjust height
     newWidth = cropWidth.value
     newHeight = newWidth / ratio
   }
 
-  // Ensure it fits in image
   if (newWidth > displayWidth) {
     newWidth = displayWidth
     newHeight = newWidth / ratio
@@ -571,10 +596,7 @@ function setAspectRatio(ratio: number | null) {
             v-for="ar in aspectRatios"
             :key="ar.label"
             @click="setAspectRatio(ar.value)"
-            class="px-2 py-1 text-xs rounded transition-colors cursor-pointer"
-            :class="[
-              'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            ]"
+            class="px-2 py-1 text-xs rounded transition-colors cursor-pointer bg-gray-700 text-gray-300 hover:bg-gray-600"
           >
             {{ ar.label }}
           </button>
@@ -599,12 +621,13 @@ function setAspectRatio(ratio: number | null) {
     </div>
 
     <!-- Main content -->
-    <div class="flex">
+    <div class="flex flex-col lg:flex-row">
       <!-- Canvas area -->
       <div ref="containerRef" class="flex-1 p-4">
         <canvas
           ref="canvasRef"
-          class="w-full cursor-move"
+          class="w-full rounded-lg block"
+          :style="{ cursor: currentCursor, height: '400px' }"
           @mousedown="handleMouseDown"
           @mousemove="handleMouseMove"
           @mouseup="handleMouseUp"
@@ -613,7 +636,7 @@ function setAspectRatio(ratio: number | null) {
       </div>
 
       <!-- Sidebar -->
-      <div class="w-72 bg-gray-800 p-4 space-y-6">
+      <div class="w-full lg:w-72 bg-gray-800 p-4 space-y-6">
         <!-- Preview -->
         <div>
           <h4 class="text-sm font-medium text-white mb-2">Aperçu</h4>
@@ -627,9 +650,9 @@ function setAspectRatio(ratio: number | null) {
           <h4 class="text-sm font-medium text-white mb-2">Format</h4>
           <div class="flex gap-2">
             <button
-              v-for="fmt in ['jpeg', 'png', 'webp'] as const"
+              v-for="fmt in outputFormats"
               :key="fmt"
-              @click="outputFormat = fmt"
+              @click="setOutputFormat(fmt)"
               class="px-3 py-1.5 text-xs rounded-lg transition-colors cursor-pointer"
               :class="[
                 outputFormat === fmt
@@ -667,9 +690,7 @@ function setAspectRatio(ratio: number | null) {
           <h4 class="text-sm font-medium text-white mb-2">Taille estimée</h4>
           <div
             class="text-lg font-mono"
-            :class="[
-              sizeWarning ? 'text-red-400' : 'text-green-400'
-            ]"
+            :class="[sizeWarning ? 'text-red-400' : 'text-green-400']"
           >
             {{ formatSize(estimatedSize) }}
           </div>
@@ -695,12 +716,12 @@ function setAspectRatio(ratio: number | null) {
         </div>
 
         <!-- Tips -->
-        <div class="text-xs text-gray-500">
-          <p class="mb-1"><strong>Astuce:</strong></p>
-          <ul class="list-disc list-inside space-y-1">
-            <li>Glissez pour déplacer la zone</li>
-            <li>Utilisez les coins pour redimensionner</li>
-            <li>Réduisez la qualité pour un fichier plus léger</li>
+        <div class="text-xs text-gray-500 border-t border-gray-700 pt-4">
+          <p class="font-medium mb-1 text-gray-400">Astuces:</p>
+          <ul class="space-y-1">
+            <li>- Glissez le centre pour déplacer</li>
+            <li>- Tirez les coins pour redimensionner</li>
+            <li>- Tirez les bords pour ajuster</li>
           </ul>
         </div>
       </div>
@@ -727,19 +748,20 @@ input[type="range"] {
 
 input[type="range"]::-webkit-slider-thumb {
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: #3695d8;
   cursor: pointer;
+  border: 2px solid #fff;
 }
 
 input[type="range"]::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: #3695d8;
   cursor: pointer;
-  border: none;
+  border: 2px solid #fff;
 }
 </style>
