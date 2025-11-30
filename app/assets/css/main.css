@@ -1,3 +1,9 @@
+/* ============================================================================
+   POLICES DE CARACTÈRES - Google Fonts
+   (L'import doit être en premier)
+   ============================================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Inter:wght@200;300;400;500;600;700;800;900&display=swap');
+
 @import "tailwindcss";
 
 /* ============================================================================
@@ -20,8 +26,6 @@
    - Folio BdCn BT → Barlow Condensed (similaire condensé)
    - Geomanist → Inter (similaire sans-serif moderne)
    ============================================================================ */
-
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Inter:wght@200;300;400;500;600;700;800;900&display=swap');
 
 /* ============================================================================
    VARIABLES CSS PERSONNALISÉES

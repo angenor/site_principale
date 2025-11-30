@@ -1,35 +1,29 @@
 <script setup lang="ts">
-// Axes stratégiques (à terme, chargés depuis la base de données)
-const axes = ref([
-  {
-    id: 1,
-    title: 'Transparence',
-    description: 'Promouvoir la divulgation des informations sur les activités minières et les flux financiers.',
-    icon: 'eye',
-    color: '#3695d8' // ti-blue
-  },
-  {
-    id: 2,
-    title: 'Redevabilité',
-    description: 'Assurer que les acteurs du secteur minier rendent compte de leurs actions et engagements.',
-    icon: 'scale-balanced',
-    color: '#22c55e' // success
-  },
-  {
-    id: 3,
-    title: 'Durabilité',
-    description: 'Encourager des pratiques minières respectueuses de l\'environnement et des générations futures.',
-    icon: 'leaf',
-    color: '#c4d600' // ti-lime
-  },
-  {
-    id: 4,
-    title: 'Inclusion',
-    description: 'Garantir la participation des communautés locales dans les décisions affectant leurs territoires.',
-    icon: 'users',
-    color: '#ffb81c' // ti-orange
-  }
-])
+interface StrategicAxis {
+  id: string
+  title: string
+  description: string
+  icon: string | null
+  color: string | null
+  backgroundImage: string | null
+  linkUrl: string | null
+  sortOrder: number
+}
+
+// Charger les axes stratégiques depuis l'API
+const { data: axes, pending, error } = await useFetch<StrategicAxis[]>('/api/strategic-axes')
+
+// Valeurs par défaut pour les axes sans icon/color définis
+const defaultAxesConfig: Record<string, { icon: string; color: string }> = {
+  'Transparence': { icon: 'eye', color: '#3695d8' },
+  'Redevabilité': { icon: 'scale-balanced', color: '#22c55e' },
+  'Durabilité': { icon: 'leaf', color: '#c4d600' },
+  'Inclusion': { icon: 'users', color: '#ffb81c' }
+}
+
+// Helper pour obtenir l'icône
+const getIcon = (axe: StrategicAxis) => axe.icon || defaultAxesConfig[axe.title]?.icon || 'bullseye'
+const getColor = (axe: StrategicAxis) => axe.color || defaultAxesConfig[axe.title]?.color || '#3695d8'
 </script>
 
 <template>
@@ -45,8 +39,25 @@ const axes = ref([
         </p>
       </div>
 
+      <!-- État de chargement -->
+      <div v-if="pending" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+        <div v-for="i in 4" :key="i" class="animate-pulse bg-white dark:bg-gray-900 rounded-xl p-6">
+          <div class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-xl mb-5"></div>
+          <div class="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-3"></div>
+          <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+          <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+        </div>
+      </div>
+
+      <!-- Message d'erreur -->
+      <div v-else-if="error" class="text-center py-12">
+        <p class="text-red-500 dark:text-red-400">
+          Impossible de charger les axes stratégiques. Veuillez réessayer plus tard.
+        </p>
+      </div>
+
       <!-- Grille des axes -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+      <div v-else-if="axes && axes.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
         <article
           v-for="axe in axes"
           :key="axe.id"
@@ -55,12 +66,12 @@ const axes = ref([
           <!-- Icône -->
           <div
             class="w-16 h-16 rounded-xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110"
-            :style="{ backgroundColor: axe.color + '20' }"
+            :style="{ backgroundColor: getColor(axe) + '20' }"
           >
             <font-awesome-icon
-              :icon="axe.icon"
+              :icon="getIcon(axe)"
               class="w-8 h-8"
-              :style="{ color: axe.color }"
+              :style="{ color: getColor(axe) }"
             />
           </div>
 
@@ -72,6 +83,13 @@ const axes = ref([
             {{ axe.description }}
           </p>
         </article>
+      </div>
+
+      <!-- Message si aucun axe -->
+      <div v-else class="text-center py-12">
+        <p class="text-gray-600 dark:text-gray-400">
+          Aucun axe stratégique disponible pour le moment.
+        </p>
       </div>
     </div>
   </section>

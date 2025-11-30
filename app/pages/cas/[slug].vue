@@ -1,113 +1,58 @@
 <script setup lang="ts">
+// Interfaces
+interface Category {
+  id: number
+  name: string
+  slug: string
+  color: string
+  icon: string | null
+}
+
+interface Region {
+  id: string
+  name: string
+}
+
+interface Media {
+  id: string
+  type: string
+  url: string
+  filename: string | null
+  caption: string | null
+}
+
+interface RelatedCase {
+  id: number
+  slug: string
+  title: string
+  coverImage: string | null
+}
+
+interface CaseStudyDetail {
+  id: number
+  slug: string
+  title: string
+  subtitle: string | null
+  summary: string | null
+  content: string | null
+  coverImage: string | null
+  eventDate: string | null
+  publishedAt: string | null
+  readTime: number | null
+  viewCount: number
+  region: Region | null
+  categories: Category[]
+  keywords: string[]
+  media: Media[]
+  author: string
+  relatedCases: RelatedCase[]
+}
+
 const route = useRoute()
 const slug = route.params.slug as string
 
-// Données simulées (à terme, chargées depuis l'API)
-const caseStudiesData: Record<string, any> = {
-  'exploitation-saphirs-ilakaka': {
-    id: 1,
-    title: 'Exploitation de saphirs à Ilakaka',
-    subtitle: 'Impact sur les communautés locales',
-    coverImage: '/images/cases/ilakaka.jpg',
-    category: { id: 1, name: 'Pierres précieuses', slug: 'pierres-precieuses', color: '#e31c79', icon: 'gem' },
-    region: { id: 13, name: 'Ihorombe' },
-    date: '2025-10-20',
-    author: 'Équipe MOM',
-    readTime: '12 min',
-    keywords: ['saphir', 'exploitation artisanale', 'communautés', 'Ihorombe', 'impacts sociaux'],
-    content: `
-      <h2>Contexte</h2>
-      <p>La découverte de gisements de saphirs à Ilakaka en 1998 a transformé radicalement cette région du sud de Madagascar. En quelques mois, un petit village est devenu l'un des plus grands centres d'exploitation de saphirs au monde, attirant des milliers de chercheurs de pierres précieuses.</p>
-
-      <h2>Situation actuelle</h2>
-      <p>Aujourd'hui, l'exploitation minière à Ilakaka reste largement artisanale et informelle. Les impacts sur les communautés locales sont multiples :</p>
-      <ul>
-        <li><strong>Démographie :</strong> La population a explosé, passant de quelques centaines à plus de 100 000 habitants.</li>
-        <li><strong>Économie :</strong> L'économie locale dépend presque entièrement du secteur minier.</li>
-        <li><strong>Environnement :</strong> Dégradation significative des sols et des ressources en eau.</li>
-        <li><strong>Social :</strong> Augmentation des problèmes sociaux (travail des enfants, prostitution, criminalité).</li>
-      </ul>
-
-      <h2>Enjeux de gouvernance</h2>
-      <p>La formalisation du secteur reste un défi majeur. Malgré les efforts du gouvernement pour encadrer l'activité, une grande partie de l'exploitation échappe au contrôle de l'État, privant ainsi les communautés locales des retombées fiscales.</p>
-
-      <blockquote>
-        "Les revenus générés par l'exploitation des saphirs devraient bénéficier en priorité aux communautés locales qui subissent les impacts négatifs de cette activité."
-      </blockquote>
-
-      <h2>Recommandations</h2>
-      <p>L'Observatoire des Mines de Madagascar formule les recommandations suivantes :</p>
-      <ol>
-        <li>Renforcer le cadre réglementaire pour l'exploitation artisanale</li>
-        <li>Améliorer la traçabilité des pierres précieuses</li>
-        <li>Garantir une redistribution équitable des revenus miniers</li>
-        <li>Mettre en place des programmes de réhabilitation environnementale</li>
-        <li>Lutter contre le travail des enfants dans les mines</li>
-      </ol>
-    `,
-    documents: [
-      { id: 1, name: 'Rapport complet - Ilakaka 2025.pdf', size: '2.4 MB', url: '/documents/rapport-ilakaka-2025.pdf' },
-      { id: 2, name: 'Données statistiques.xlsx', size: '156 KB', url: '/documents/donnees-ilakaka.xlsx' }
-    ],
-    gallery: [
-      { id: 1, src: '/images/cases/ilakaka-1.jpg', alt: 'Vue aérienne des mines d\'Ilakaka' },
-      { id: 2, src: '/images/cases/ilakaka-2.jpg', alt: 'Mineurs artisanaux au travail' },
-      { id: 3, src: '/images/cases/ilakaka-3.jpg', alt: 'Impact environnemental' }
-    ],
-    relatedCases: [
-      { id: 3, title: 'Mines d\'or artisanales à Betsiaka', slug: 'mines-or-betsiaka', image: '/images/cases/betsiaka.jpg' },
-      { id: 6, title: 'Terres rares à Ampasindava', slug: 'terres-rares-ampasindava', image: '/images/cases/terres-rares.jpg' }
-    ]
-  },
-  'projet-qmm-fort-dauphin': {
-    id: 2,
-    title: 'Projet QMM à Fort-Dauphin',
-    subtitle: 'Extraction d\'ilménite et ses conséquences',
-    coverImage: '/images/cases/qmm.jpg',
-    category: { id: 4, name: 'Minerais industriels', slug: 'minerais-industriels', color: '#3695d8', icon: 'industry' },
-    region: { id: 4, name: 'Anosy' },
-    date: '2025-10-15',
-    author: 'Équipe MOM',
-    readTime: '15 min',
-    keywords: ['ilménite', 'QMM', 'Rio Tinto', 'Anosy', 'industrie minière'],
-    content: `
-      <h2>Présentation du projet</h2>
-      <p>QIT Madagascar Minerals (QMM) est une joint-venture entre Rio Tinto (80%) et l'État malgache (20%) pour l'extraction d'ilménite dans la région d'Anosy. Le projet, démarré en 2009, représente l'un des plus grands investissements miniers à Madagascar.</p>
-
-      <h2>Impacts documentés</h2>
-      <p>Notre analyse révèle des impacts significatifs sur plusieurs dimensions :</p>
-
-      <h3>Environnement</h3>
-      <ul>
-        <li>Destruction de la forêt littorale unique de Mandena</li>
-        <li>Contamination des sources d'eau locales</li>
-        <li>Perte de biodiversité endémique</li>
-      </ul>
-
-      <h3>Communautés</h3>
-      <ul>
-        <li>Déplacement de populations locales</li>
-        <li>Perte d'accès aux ressources traditionnelles</li>
-        <li>Promesses non tenues en matière d'emploi local</li>
-      </ul>
-
-      <h2>Enjeux de transparence</h2>
-      <p>Les questions de transparence concernent notamment les revenus générés, leur redistribution, et les engagements environnementaux de l'entreprise.</p>
-    `,
-    documents: [
-      { id: 1, name: 'Analyse QMM 2025.pdf', size: '3.1 MB', url: '/documents/analyse-qmm-2025.pdf' }
-    ],
-    gallery: [],
-    relatedCases: [
-      { id: 4, title: 'Nickel et cobalt à Ambatovy', slug: 'nickel-cobalt-ambatovy', image: '/images/cases/ambatovy.jpg' }
-    ]
-  }
-}
-
-// Charger les données du cas
-const caseStudy = computed(() => {
-  return caseStudiesData[slug] || null
-})
+// Charger les données du cas depuis l'API
+const { data: caseStudy, pending, error } = await useFetch<CaseStudyDetail>(`/api/cases/${slug}`)
 
 // Métadonnées de la page
 useHead(() => ({
@@ -117,19 +62,39 @@ useHead(() => ({
   meta: [
     {
       name: 'description',
-      content: caseStudy.value?.subtitle || 'Étude de cas documentée par l\'Observatoire des Mines de Madagascar'
+      content: caseStudy.value?.subtitle || caseStudy.value?.summary || 'Étude de cas documentée par l\'Observatoire des Mines de Madagascar'
     }
   ]
 }))
 
+// Obtenir la catégorie principale
+const primaryCategory = computed(() => caseStudy.value?.categories[0] || null)
+
 // Formater la date
 const formattedDate = computed(() => {
-  if (!caseStudy.value?.date) return ''
-  return new Date(caseStudy.value.date).toLocaleDateString('fr-FR', {
+  const date = caseStudy.value?.eventDate || caseStudy.value?.publishedAt
+  if (!date) return ''
+  return new Date(date).toLocaleDateString('fr-FR', {
     day: 'numeric',
     month: 'long',
     year: 'numeric'
   })
+})
+
+// Temps de lecture formaté
+const readTimeFormatted = computed(() => {
+  const minutes = caseStudy.value?.readTime || 5
+  return `${minutes} min`
+})
+
+// Filtrer les documents (médias de type document)
+const documents = computed(() => {
+  return caseStudy.value?.media.filter(m => m.type === 'DOCUMENT') || []
+})
+
+// Filtrer les images pour la galerie
+const gallery = computed(() => {
+  return caseStudy.value?.media.filter(m => m.type === 'IMAGE') || []
 })
 
 // Partage social
@@ -164,12 +129,47 @@ const copyLink = async () => {
 </script>
 
 <template>
-  <div v-if="caseStudy">
+  <!-- État de chargement -->
+  <div v-if="pending" class="min-h-screen">
+    <div class="h-[400px] lg:h-[500px] bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div class="animate-pulse space-y-4">
+        <div class="h-8 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+        <div class="space-y-2 mt-8">
+          <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Erreur ou cas non trouvé -->
+  <div v-else-if="error || !caseStudy" class="min-h-[60vh] flex items-center justify-center">
+    <div class="text-center">
+      <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+        <font-awesome-icon icon="file-circle-question" class="w-12 h-12 text-gray-400" />
+      </div>
+      <h1 class="text-2xl font-heading font-bold text-gray-900 dark:text-white mb-4">
+        Étude de cas non trouvée
+      </h1>
+      <p class="text-gray-600 dark:text-gray-400 mb-6">
+        L'étude de cas que vous recherchez n'existe pas ou a été déplacée.
+      </p>
+      <NuxtLink to="/cas" class="btn-ti">
+        Voir toutes les études de cas
+      </NuxtLink>
+    </div>
+  </div>
+
+  <!-- Contenu de l'étude de cas -->
+  <div v-else>
     <!-- Image de couverture -->
     <section class="relative h-[400px] lg:h-[500px]">
       <div
         class="absolute inset-0 bg-cover bg-center"
-        :style="{ backgroundImage: `url(${caseStudy.coverImage})` }"
+        :style="{ backgroundImage: `url(${caseStudy.coverImage || '/images/placeholder-case.jpg'})` }"
       />
       <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
@@ -178,34 +178,39 @@ const copyLink = async () => {
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <!-- Badge catégorie -->
           <span
+            v-if="primaryCategory"
             class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold text-white mb-4"
-            :style="{ backgroundColor: caseStudy.category.color }"
+            :style="{ backgroundColor: primaryCategory.color }"
           >
-            <font-awesome-icon :icon="caseStudy.category.icon" class="w-3 h-3 mr-2" />
-            {{ caseStudy.category.name }}
+            <font-awesome-icon v-if="primaryCategory.icon" :icon="primaryCategory.icon" class="w-3 h-3 mr-2" />
+            {{ primaryCategory.name }}
           </span>
 
           <!-- Titre -->
           <h1 class="text-3xl lg:text-5xl font-heading font-bold uppercase text-white mb-3">
             {{ caseStudy.title }}
           </h1>
-          <p class="text-xl text-gray-200 mb-6">
+          <p v-if="caseStudy.subtitle" class="text-xl text-gray-200 mb-6">
             {{ caseStudy.subtitle }}
           </p>
 
           <!-- Métadonnées -->
           <div class="flex flex-wrap items-center gap-4 text-sm text-gray-300">
-            <span class="flex items-center">
+            <span v-if="formattedDate" class="flex items-center">
               <font-awesome-icon icon="calendar" class="w-4 h-4 mr-2" />
               {{ formattedDate }}
             </span>
-            <span class="flex items-center">
+            <span v-if="caseStudy.region" class="flex items-center">
               <font-awesome-icon icon="location-dot" class="w-4 h-4 mr-2" />
               {{ caseStudy.region.name }}
             </span>
             <span class="flex items-center">
               <font-awesome-icon icon="clock" class="w-4 h-4 mr-2" />
-              {{ caseStudy.readTime }} de lecture
+              {{ readTimeFormatted }} de lecture
+            </span>
+            <span class="flex items-center">
+              <font-awesome-icon icon="eye" class="w-4 h-4 mr-2" />
+              {{ caseStudy.viewCount }} vues
             </span>
           </div>
         </div>
@@ -220,12 +225,18 @@ const copyLink = async () => {
           <article class="lg:flex-1">
             <!-- Contenu HTML -->
             <div
+              v-if="caseStudy.content"
               class="prose prose-lg dark:prose-invert max-w-none prose-headings:font-heading prose-headings:uppercase prose-headings:tracking-wide prose-a:text-ti-blue dark:prose-a:text-ti-blue-400"
               v-html="caseStudy.content"
             />
 
+            <!-- Message si pas de contenu -->
+            <div v-else class="text-gray-600 dark:text-gray-400">
+              <p>{{ caseStudy.summary || 'Contenu à venir...' }}</p>
+            </div>
+
             <!-- Mots-clés -->
-            <div class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+            <div v-if="caseStudy.keywords.length > 0" class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
               <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-4">
                 Mots-clés
               </h3>
@@ -241,13 +252,13 @@ const copyLink = async () => {
             </div>
 
             <!-- Documents téléchargeables -->
-            <div v-if="caseStudy.documents?.length" class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+            <div v-if="documents.length > 0" class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
               <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-4">
                 Documents à télécharger
               </h3>
               <div class="space-y-3">
                 <a
-                  v-for="doc in caseStudy.documents"
+                  v-for="doc in documents"
                   :key="doc.id"
                   :href="doc.url"
                   download
@@ -257,11 +268,30 @@ const copyLink = async () => {
                     <font-awesome-icon icon="file-pdf" class="w-5 h-5 text-ti-blue" />
                   </div>
                   <div class="flex-1">
-                    <p class="font-medium text-gray-900 dark:text-white">{{ doc.name }}</p>
-                    <p class="text-sm text-gray-500">{{ doc.size }}</p>
+                    <p class="font-medium text-gray-900 dark:text-white">{{ doc.filename || doc.caption || 'Document' }}</p>
                   </div>
                   <font-awesome-icon icon="download" class="w-5 h-5 text-gray-400" />
                 </a>
+              </div>
+            </div>
+
+            <!-- Galerie d'images -->
+            <div v-if="gallery.length > 0" class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+              <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-4">
+                Galerie
+              </h3>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div
+                  v-for="img in gallery"
+                  :key="img.id"
+                  class="aspect-square rounded-lg overflow-hidden"
+                >
+                  <img
+                    :src="img.url"
+                    :alt="img.caption || img.filename || 'Image'"
+                    class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
               </div>
             </div>
 
@@ -321,7 +351,7 @@ const copyLink = async () => {
           >
             <div class="aspect-video relative overflow-hidden">
               <img
-                :src="related.image"
+                :src="related.coverImage || '/images/placeholder-case.jpg'"
                 :alt="related.title"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
@@ -351,54 +381,53 @@ const copyLink = async () => {
       </div>
     </section>
   </div>
-
-  <!-- Page non trouvée -->
-  <div v-else class="min-h-[60vh] flex items-center justify-center">
-    <div class="text-center">
-      <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-        <font-awesome-icon icon="file-circle-question" class="w-12 h-12 text-gray-400" />
-      </div>
-      <h1 class="text-2xl font-heading font-bold text-gray-900 dark:text-white mb-4">
-        Étude de cas non trouvée
-      </h1>
-      <p class="text-gray-600 dark:text-gray-400 mb-6">
-        L'étude de cas que vous recherchez n'existe pas ou a été déplacée.
-      </p>
-      <NuxtLink to="/cas" class="btn-ti">
-        Voir toutes les études de cas
-      </NuxtLink>
-    </div>
-  </div>
 </template>
 
 <style scoped>
 /* Styles pour le contenu HTML */
 :deep(.prose h2) {
-  @apply text-2xl mt-10 mb-4;
+  font-size: 1.5rem;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
 }
 
 :deep(.prose h3) {
-  @apply text-xl mt-8 mb-3;
+  font-size: 1.25rem;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
 }
 
 :deep(.prose p) {
-  @apply mb-4;
+  margin-bottom: 1rem;
 }
 
 :deep(.prose ul),
 :deep(.prose ol) {
-  @apply mb-4 pl-6;
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
 }
 
 :deep(.prose li) {
-  @apply mb-2;
+  margin-bottom: 0.5rem;
 }
 
 :deep(.prose blockquote) {
-  @apply border-l-4 border-ti-blue pl-6 py-2 my-6 italic bg-gray-50 dark:bg-gray-800 rounded-r-lg;
+  border-left: 4px solid var(--color-ti-blue);
+  padding-left: 1.5rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-style: italic;
+  background-color: #f9fafb;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.dark :deep(.prose blockquote) {
+  background-color: #1f2937;
 }
 
 :deep(.prose strong) {
-  @apply font-semibold;
+  font-weight: 600;
 }
 </style>

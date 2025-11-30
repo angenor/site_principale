@@ -127,37 +127,39 @@
 ## Phase 4 : Développement Backend (API)
 
 ### 4.1 Configuration serveur
-- [ ] Structure des routes API (`server/api/`)
+- [x] Structure des routes API (`server/api/`)
+- [x] Utilitaire Prisma singleton (`server/utils/prisma.ts`)
 - [ ] Middleware d'authentification
 - [ ] Gestion des erreurs centralisée
 - [ ] Validation des données (Zod)
 
 ### 4.2 API Études de cas
-- [ ] `GET /api/cases` - Liste des cas publiés
-- [ ] `GET /api/cases/[slug]` - Détail d'un cas
-- [ ] `GET /api/cases/featured` - Cas mis en avant
+- [x] `GET /api/cases` - Liste des cas publiés (avec filtres, pagination)
+- [x] `GET /api/cases/[slug]` - Détail d'un cas
+- [x] `GET /api/cases/featured` - Cas mis en avant
 - [ ] `POST /api/cases` - Créer un cas (admin)
 - [ ] `PUT /api/cases/[id]` - Modifier un cas (admin)
 - [ ] `DELETE /api/cases/[id]` - Supprimer un cas (admin)
 
 ### 4.3 API Catégories et Régions
-- [ ] `GET /api/categories` - Liste des catégories
-- [ ] `GET /api/regions` - Liste des régions
+- [x] `GET /api/categories` - Liste des catégories
+- [x] `GET /api/regions` - Liste des régions
 
 ### 4.4 API Actualités
-- [ ] `GET /api/news` - Liste des actualités
-- [ ] `GET /api/news/[slug]` - Détail d'une actualité
+- [x] `GET /api/news` - Liste des actualités
+- [x] `GET /api/news/[slug]` - Détail d'une actualité
 - [ ] CRUD pour administration
 
 ### 4.5 API Contenu statique
-- [ ] `GET /api/strategic-axes` - Axes stratégiques
-- [ ] `GET /api/partners` - Partenaires
-- [ ] `GET /api/gallery` - Images du slider
-- [ ] `GET /api/about` - Contenu page À propos
-- [ ] `GET /api/config` - Configuration du site
+- [x] `GET /api/strategic-axes` - Axes stratégiques
+- [x] `GET /api/partners` - Partenaires
+- [x] `GET /api/gallery` - Images du slider
+- [x] `GET /api/sliders` - Slides du hero (galerie homepage)
+- [x] `GET /api/about` - Contenu page À propos
+- [x] `GET /api/config` - Configuration du site
 
 ### 4.6 API Contact / Signalement
-- [ ] `POST /api/contact` - Soumettre un signalement
+- [x] `POST /api/contact` - Soumettre un signalement
 - [ ] `GET /api/contacts` - Liste des signalements (admin)
 - [ ] `PUT /api/contacts/[id]` - Mettre à jour statut (admin)
 
@@ -166,52 +168,58 @@
 - [ ] `GET /api/media` - Liste des médias (admin)
 - [ ] `DELETE /api/media/[id]` - Supprimer un média (admin)
 
+### 4.8 Page Signalement (Frontend)
+- [x] Page `/signaler` avec formulaire complet
+- [x] Option signalement anonyme
+- [x] Validation des champs
+- [x] Confirmation d'envoi
+
 ---
 
 ## Phase 5 : Back-office (Administration)
 
 ### 5.1 Authentification
-- [ ] Page de connexion (`/admin/login`)
-- [ ] Système de sessions (JWT ou cookies)
-- [ ] Gestion des rôles (ADMIN, EDITOR)
+- [x] Page de connexion (`/admin/login`)
+- [x] Système de sessions (JWT + cookies)
+- [x] Gestion des rôles (ADMIN, EDITOR)
 - [ ] Récupération de mot de passe
 
 ### 5.2 Dashboard (`/admin`)
-- [ ] Vue d'ensemble (stats)
-- [ ] Nombre de visites
-- [ ] Nombre de téléchargements
-- [ ] Signalements récents
+- [x] Vue d'ensemble (stats)
+- [x] Nombre de visites
+- [~] Nombre de téléchargements
+- [x] Signalements récents
 
 ### 5.3 Gestion des études de cas (`/admin/cases`)
-- [ ] Liste avec recherche et filtres
-- [ ] Formulaire de création/édition
-- [ ] Éditeur de contenu riche (WYSIWYG ou Markdown)
+- [x] Liste avec recherche et filtres
+- [x] Formulaire de création/édition
+- [x] Éditeur de contenu (HTML)
 - [ ] Upload d'images et documents
-- [ ] Gestion des catégories et mots-clés
-- [ ] Publication / Dépublication
+- [x] Gestion des catégories et mots-clés
+- [x] Publication / Dépublication
 
 ### 5.4 Gestion des actualités (`/admin/news`)
-- [ ] Liste des actualités
-- [ ] Formulaire de création/édition
-- [ ] Publication / Dépublication
+- [x] Liste des actualités
+- [x] Formulaire de création/édition
+- [x] Publication / Dépublication
 
 ### 5.5 Gestion du contenu (`/admin/content`)
-- [ ] Édition des axes stratégiques
-- [ ] Édition des partenaires
-- [ ] Édition des images du slider
+- [x] Édition des axes stratégiques
+- [x] Édition des partenaires
+- [x] Édition des images du slider
 - [ ] Édition du contenu "À propos"
 - [ ] Configuration générale du site
 
 ### 5.6 Gestion des signalements (`/admin/contacts`)
-- [ ] Liste des signalements
-- [ ] Filtres par statut (nouveau, en cours, traité)
-- [ ] Détail et notes internes
-- [ ] Archivage
+- [x] Liste des signalements
+- [x] Filtres par statut (nouveau, en cours, traité)
+- [x] Détail et notes internes
+- [x] Archivage
 
 ### 5.7 Gestion des utilisateurs (`/admin/users`)
-- [ ] Liste des utilisateurs
-- [ ] Création/modification de comptes
-- [ ] Activation/désactivation
+- [x] Liste des utilisateurs
+- [x] Création/modification de comptes
+- [x] Activation/désactivation
 
 ---
 
@@ -358,9 +366,9 @@
 |-------|-------------|------------|
 | 1 | Configuration et Infrastructure | 100% |
 | 2 | Charte graphique | 100% |
-| 3 | Développement Frontend | 85% |
-| 4 | Développement Backend (API) | 0% |
-| 5 | Back-office (Administration) | 0% |
+| 3 | Développement Frontend | 95% |
+| 4 | Développement Backend (API) | 75% |
+| 5 | Back-office (Administration) | 90% |
 | 6 | Fonctionnalités avancées | 0% |
 | 7 | SEO et Performance | 0% |
 | 8 | Tests et Qualité | 0% |
@@ -369,7 +377,7 @@
 | 11 | Formation et Documentation | 10% |
 | 12 | Livraison et SAV | 0% |
 
-**Avancement global estimé : ~25%**
+**Avancement global estimé : ~55%**
 
 ---
 
@@ -380,9 +388,24 @@
 3. ~~**Implémentation de la page d'accueil**~~ ✓
 4. ~~**Page des études de cas** (`/cas` et `/cas/[slug]`)~~ ✓
 5. ~~**Page À propos** (`/a-propos`)~~ ✓
-6. **Création des API endpoints** de base (Phase 4)
-7. **Page de signalement** (`/signaler`)
-8. **Composants manquants** (Button, Modal, Loader)
+6. ~~**Création des API endpoints** de base (Phase 4)~~ ✓
+7. ~~**Page de signalement** (`/signaler`)~~ ✓
+8. ~~**Connecter le frontend aux API** (remplacer les données mockées)~~ ✓
+9. ~~**Phase 5 : Back-office** (authentification, dashboard admin)~~ Terminé (~90%)
+   - [x] Page de connexion admin
+   - [x] Système JWT + cookies
+   - [x] Layout admin avec sidebar
+   - [x] Dashboard avec stats
+   - [x] Liste des études de cas avec filtres
+   - [x] Formulaire de création/édition des cas
+   - [x] Gestion des actualités (liste + formulaire)
+   - [x] Gestion des signalements (liste + détail + notes)
+   - [x] Gestion du contenu statique (axes, partenaires, slider)
+   - [x] Gestion des utilisateurs (admin uniquement)
+   - [ ] Édition contenu "À propos"
+   - [ ] Configuration générale du site
+10. **Phase 6 : Fonctionnalités avancées** (recherche, analytics)
+11. **Phase 7 : SEO et Performance**
 
 ---
 

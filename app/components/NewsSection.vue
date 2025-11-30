@@ -1,41 +1,32 @@
 <script setup lang="ts">
-// Actualités (à terme, chargées depuis la base de données)
-const news = ref([
-  {
-    id: 1,
-    title: 'Lancement de l\'Observatoire des Mines de Madagascar',
-    excerpt: 'TI Madagascar et PCQVP lancent une nouvelle plateforme pour renforcer la transparence dans le secteur minier.',
-    image: '/images/news/launch.jpg',
-    date: '2025-11-15',
-    slug: 'lancement-observatoire-mines'
-  },
-  {
-    id: 2,
-    title: 'Rapport sur les impacts environnementaux à Ilakaka',
-    excerpt: 'Une nouvelle étude révèle les conséquences de l\'exploitation de saphirs sur l\'écosystème local.',
-    image: '/images/news/environment.jpg',
-    date: '2025-11-10',
-    slug: 'rapport-impacts-ilakaka'
-  },
-  {
-    id: 3,
-    title: 'Consultation communautaire à Moramanga',
-    excerpt: 'Les communautés locales s\'expriment sur les projets d\'exploitation de nickel dans la région.',
-    image: '/images/news/community.jpg',
-    date: '2025-11-05',
-    slug: 'consultation-moramanga'
-  }
-])
-
-// Formater la date
-const formatDate = (dateStr: string) => {
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  })
+interface NewsItem {
+  id: number
+  title: string
+  summary: string | null
+  coverImage: string | null
+  publishedAt: string | null
+  slug: string
 }
+
+interface NewsResponse {
+  data: NewsItem[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+}
+
+// Charger les actualités depuis l'API
+const { data: newsResponse, pending, error } = await useFetch<NewsResponse>('/api/news', {
+  query: {
+    limit: 3
+  }
+})
+
+// Computed pour faciliter l'accès aux données
+const news = computed(() => newsResponse.value?.data || [])
 </script>
 
 <template>
@@ -60,18 +51,41 @@ const formatDate = (dateStr: string) => {
         </NuxtLink>
       </div>
 
+      <!-- État de chargement -->
+      <div v-if="pending" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div v-for="i in 3" :key="i" class="animate-pulse">
+          <div class="bg-gray-200 dark:bg-gray-700 aspect-video rounded-xl mb-4"></div>
+          <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+          <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+        </div>
+      </div>
+
+      <!-- Message d'erreur -->
+      <div v-else-if="error" class="text-center py-12">
+        <p class="text-red-500 dark:text-red-400">
+          Impossible de charger les actualités. Veuillez réessayer plus tard.
+        </p>
+      </div>
+
       <!-- Grille des actualités -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+      <div v-else-if="news.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
         <AppCard
           v-for="item in news"
           :key="item.id"
-          :image="item.image"
+          :image="item.coverImage || '/images/placeholder-news.jpg'"
           :title="item.title"
-          :description="item.excerpt"
-          :date="item.date"
+          :description="item.summary || ''"
+          :date="item.publishedAt || undefined"
           :link-to="`/actualites/${item.slug}`"
           variant="default"
         />
+      </div>
+
+      <!-- Message si aucune actualité -->
+      <div v-else class="text-center py-12">
+        <p class="text-gray-600 dark:text-gray-400">
+          Aucune actualité disponible pour le moment.
+        </p>
       </div>
     </div>
   </section>

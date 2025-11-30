@@ -1,34 +1,21 @@
 <script setup lang="ts">
-// Partenaires (à terme, chargés depuis la base de données)
-const partners = ref([
-  {
-    id: 1,
-    name: 'Transparency International Madagascar',
-    logo: '/images/logos/logo_fond_bleu_texte_blanc.jpeg',
-    url: 'https://www.transparency.mg'
-  },
-  {
-    id: 2,
-    name: 'PCQVP Madagascar',
-    logo: '/images/partners/pcqvp.png',
-    url: 'https://www.pwyp.org'
-  },
-  {
-    id: 3,
-    name: 'Transparency International',
-    logo: '/images/partners/ti-global.png',
-    url: 'https://www.transparency.org'
-  },
-  {
-    id: 4,
-    name: 'EITI Madagascar',
-    logo: '/images/partners/eiti.png',
-    url: 'https://eiti.org'
-  }
-])
+interface Partner {
+  id: string
+  name: string
+  logo: string
+  websiteUrl: string | null
+  description: string | null
+  sortOrder: number
+}
+
+// Charger les partenaires depuis l'API
+const { data: partners, pending, error } = await useFetch<Partner[]>('/api/partners')
 
 // Dupliquer les partenaires pour créer un effet de défilement infini
-const duplicatedPartners = computed(() => [...partners.value, ...partners.value])
+const duplicatedPartners = computed(() => {
+  const p = partners.value || []
+  return [...p, ...p]
+})
 </script>
 
 <template>
@@ -45,8 +32,22 @@ const duplicatedPartners = computed(() => [...partners.value, ...partners.value]
       </div>
     </div>
 
+    <!-- État de chargement -->
+    <div v-if="pending" class="flex justify-center gap-8 lg:gap-12">
+      <div v-for="i in 4" :key="i" class="animate-pulse">
+        <div class="h-12 lg:h-16 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      </div>
+    </div>
+
+    <!-- Message d'erreur -->
+    <div v-else-if="error" class="text-center py-8">
+      <p class="text-red-500 dark:text-red-400">
+        Impossible de charger les partenaires.
+      </p>
+    </div>
+
     <!-- Logos défilants -->
-    <div class="relative">
+    <div v-else-if="partners && partners.length > 0" class="relative">
       <!-- Gradient masques -->
       <div class="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-white dark:from-gray-900 to-transparent z-10" />
       <div class="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-white dark:from-gray-900 to-transparent z-10" />
@@ -59,7 +60,8 @@ const duplicatedPartners = computed(() => [...partners.value, ...partners.value]
           class="flex-shrink-0 mx-8 lg:mx-12"
         >
           <a
-            :href="partner.url"
+            v-if="partner.websiteUrl"
+            :href="partner.websiteUrl"
             target="_blank"
             rel="noopener noreferrer"
             class="block grayscale hover:grayscale-0 opacity-60 hover:opacity-100 transition-all duration-300"
@@ -71,8 +73,26 @@ const duplicatedPartners = computed(() => [...partners.value, ...partners.value]
               class="h-12 lg:h-16 w-auto object-contain"
             />
           </a>
+          <div
+            v-else
+            class="grayscale opacity-60"
+            :title="partner.name"
+          >
+            <img
+              :src="partner.logo"
+              :alt="partner.name"
+              class="h-12 lg:h-16 w-auto object-contain"
+            />
+          </div>
         </div>
       </div>
+    </div>
+
+    <!-- Message si aucun partenaire -->
+    <div v-else class="text-center py-8">
+      <p class="text-gray-600 dark:text-gray-400">
+        Aucun partenaire disponible pour le moment.
+      </p>
     </div>
 
     <!-- CTA -->

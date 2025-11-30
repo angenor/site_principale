@@ -1,55 +1,43 @@
 <script setup lang="ts">
-// Études de cas mises en avant (à terme, chargées depuis la base de données)
-const caseStudies = ref([
-  {
-    id: 1,
-    title: 'Exploitation de saphirs à Ilakaka',
-    subtitle: 'Impact sur les communautés locales',
-    image: '/images/cases/ilakaka.jpg',
-    category: 'Pierres précieuses',
-    categoryColor: '#e31c79',
-    region: 'Ihorombe',
-    date: '2025-10-20',
-    slug: 'exploitation-saphirs-ilakaka'
-  },
-  {
-    id: 2,
-    title: 'Projet QMM à Fort-Dauphin',
-    subtitle: 'Extraction d\'ilménite et ses conséquences',
-    image: '/images/cases/qmm.jpg',
-    category: 'Minerais industriels',
-    categoryColor: '#3695d8',
-    region: 'Anosy',
-    date: '2025-10-15',
-    slug: 'projet-qmm-fort-dauphin'
-  },
-  {
-    id: 3,
-    title: 'Mines d\'or artisanales à Betsiaka',
-    subtitle: 'Enjeux de formalisation',
-    image: '/images/cases/betsiaka.jpg',
-    category: 'Or',
-    categoryColor: '#ffb81c',
-    region: 'Diana',
-    date: '2025-10-10',
-    slug: 'mines-or-betsiaka'
-  },
-  {
-    id: 4,
-    title: 'Nickel et cobalt à Ambatovy',
-    subtitle: 'Le plus grand investissement minier du pays',
-    image: '/images/cases/ambatovy.jpg',
-    category: 'Métaux de base',
-    categoryColor: '#22c55e',
-    region: 'Alaotra-Mangoro',
-    date: '2025-10-05',
-    slug: 'nickel-cobalt-ambatovy'
+interface Category {
+  id: number
+  name: string
+  slug: string
+  color: string
+  icon: string | null
+}
+
+interface Region {
+  id: number
+  name: string
+}
+
+interface CaseStudy {
+  id: number
+  slug: string
+  title: string
+  subtitle: string | null
+  summary: string | null
+  coverImage: string | null
+  eventDate: string | null
+  publishedAt: string | null
+  region: Region | null
+  category: Category | null
+}
+
+// Charger les études de cas depuis l'API
+const { data: caseStudies, pending, error } = await useFetch<CaseStudy[]>('/api/cases/featured', {
+  query: {
+    limit: 4
   }
-])
+})
 
 // Cas mis en avant (le premier de la liste)
-const featuredCase = computed(() => caseStudies.value[0])
-const otherCases = computed(() => caseStudies.value.slice(1))
+const featuredCase = computed(() => caseStudies.value?.[0] || null)
+const otherCases = computed(() => caseStudies.value?.slice(1) || [])
+
+// Helper pour obtenir la date à afficher
+const getDisplayDate = (cs: CaseStudy) => cs.eventDate || cs.publishedAt || undefined
 </script>
 
 <template>
@@ -74,18 +62,39 @@ const otherCases = computed(() => caseStudies.value.slice(1))
         </NuxtLink>
       </div>
 
+      <!-- État de chargement -->
+      <div v-if="pending" class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+        <div class="lg:row-span-2 animate-pulse">
+          <div class="bg-gray-200 dark:bg-gray-700 rounded-xl h-[400px] lg:h-full"></div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div v-for="i in 3" :key="i" class="animate-pulse">
+            <div class="bg-gray-200 dark:bg-gray-700 aspect-video rounded-xl mb-4"></div>
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+            <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message d'erreur -->
+      <div v-else-if="error" class="text-center py-12">
+        <p class="text-red-500 dark:text-red-400">
+          Impossible de charger les études de cas. Veuillez réessayer plus tard.
+        </p>
+      </div>
+
       <!-- Layout : Featured + Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+      <div v-else-if="featuredCase" class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
         <!-- Cas mis en avant -->
         <div class="lg:row-span-2">
           <AppCard
-            :image="featuredCase.image"
+            :image="featuredCase.coverImage || '/images/placeholder-case.jpg'"
             :title="featuredCase.title"
-            :subtitle="featuredCase.subtitle"
-            :category="featuredCase.category"
-            :category-color="featuredCase.categoryColor"
-            :region="featuredCase.region"
-            :date="featuredCase.date"
+            :subtitle="featuredCase.subtitle || undefined"
+            :category="featuredCase.category?.name"
+            :category-color="featuredCase.category?.color"
+            :region="featuredCase.region?.name"
+            :date="getDisplayDate(featuredCase)"
             :link-to="`/cas/${featuredCase.slug}`"
             variant="featured"
             aspect-ratio="portrait"
@@ -98,16 +107,23 @@ const otherCases = computed(() => caseStudies.value.slice(1))
           <AppCard
             v-for="caseStudy in otherCases"
             :key="caseStudy.id"
-            :image="caseStudy.image"
+            :image="caseStudy.coverImage || '/images/placeholder-case.jpg'"
             :title="caseStudy.title"
-            :category="caseStudy.category"
-            :category-color="caseStudy.categoryColor"
-            :region="caseStudy.region"
+            :category="caseStudy.category?.name"
+            :category-color="caseStudy.category?.color"
+            :region="caseStudy.region?.name"
             :link-to="`/cas/${caseStudy.slug}`"
             variant="default"
             aspect-ratio="video"
           />
         </div>
+      </div>
+
+      <!-- Message si aucune étude de cas -->
+      <div v-else class="text-center py-12">
+        <p class="text-gray-600 dark:text-gray-400">
+          Aucune étude de cas disponible pour le moment.
+        </p>
       </div>
     </div>
   </section>

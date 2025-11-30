@@ -1,25 +1,49 @@
 <script setup lang="ts">
-// Images du slider (à terme, chargées depuis la base de données)
-const slides = ref([
+interface Slide {
+  id: string
+  title: string | null
+  description: string | null
+  imageUrl: string
+  linkUrl: string | null
+  sortOrder: number
+}
+
+// Slides par défaut si la base de données est vide
+const defaultSlides: Slide[] = [
   {
-    id: 1,
-    image: '/images/hero/mining-1.jpg',
+    id: 'default-1',
     title: 'Observatoire des Mines de Madagascar',
-    subtitle: 'Promouvoir la transparence et la bonne gouvernance dans le secteur minier'
+    description: 'Promouvoir la transparence et la bonne gouvernance dans le secteur minier',
+    imageUrl: '/images/hero/mining-1.jpg',
+    linkUrl: null,
+    sortOrder: 1
   },
   {
-    id: 2,
-    image: '/images/hero/mining-2.jpg',
+    id: 'default-2',
     title: 'Transparence des revenus miniers',
-    subtitle: 'Suivre l\'utilisation des revenus issus de l\'exploitation minière'
+    description: 'Suivre l\'utilisation des revenus issus de l\'exploitation minière',
+    imageUrl: '/images/hero/mining-2.jpg',
+    linkUrl: null,
+    sortOrder: 2
   },
   {
-    id: 3,
-    image: '/images/hero/community.jpg',
+    id: 'default-3',
     title: 'Impact sur les communautés',
-    subtitle: 'Documenter les effets de l\'exploitation minière sur les populations locales'
+    description: 'Documenter les effets de l\'exploitation minière sur les populations locales',
+    imageUrl: '/images/hero/community.jpg',
+    linkUrl: null,
+    sortOrder: 3
   }
-])
+]
+
+// Charger les slides depuis l'API
+const { data: slidersData } = await useFetch<Slide[]>('/api/sliders')
+
+// Utiliser les slides de la DB ou les defaults
+const slides = computed(() => {
+  const dbSlides = slidersData.value || []
+  return dbSlides.length > 0 ? dbSlides : defaultSlides
+})
 
 const currentSlide = ref(0)
 let slideInterval: ReturnType<typeof setInterval> | null = null
@@ -40,7 +64,9 @@ const goToSlide = (index: number) => {
 
 // Auto-play
 const startInterval = () => {
-  slideInterval = setInterval(nextSlide, 6000)
+  if (slides.value.length > 1) {
+    slideInterval = setInterval(nextSlide, 6000)
+  }
 }
 
 const resetInterval = () => {
@@ -74,7 +100,7 @@ onUnmounted(() => {
         <!-- Image de fond -->
         <div
           class="absolute inset-0 bg-cover bg-center transition-transform duration-700"
-          :style="{ backgroundImage: `url(${slide.image})` }"
+          :style="{ backgroundImage: `url(${slide.imageUrl})` }"
         />
         <!-- Overlay gradient -->
         <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
@@ -88,10 +114,10 @@ onUnmounted(() => {
           <Transition name="fade-up" mode="out-in">
             <div :key="currentSlide">
               <h1 class="text-4xl md:text-5xl lg:text-6xl font-heading font-bold uppercase text-white leading-tight mb-4">
-                {{ slides[currentSlide].title }}
+                {{ slides[currentSlide]?.title || 'Observatoire des Mines de Madagascar' }}
               </h1>
               <p class="text-lg md:text-xl text-gray-200 mb-8">
-                {{ slides[currentSlide].subtitle }}
+                {{ slides[currentSlide]?.description || 'Promouvoir la transparence et la bonne gouvernance dans le secteur minier' }}
               </p>
             </div>
           </Transition>
@@ -111,8 +137,8 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- Navigation du slider -->
-    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
+    <!-- Navigation du slider (visible seulement si plusieurs slides) -->
+    <div v-if="slides.length > 1" class="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
       <!-- Indicateurs -->
       <div class="flex gap-2">
         <button
@@ -130,21 +156,23 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- Flèches de navigation -->
-    <button
-      @click="prevSlide"
-      class="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-black/30 text-white hover:bg-ti-blue transition-colors duration-200 cursor-pointer"
-      aria-label="Slide précédente"
-    >
-      <font-awesome-icon icon="chevron-left" class="w-5 h-5" />
-    </button>
-    <button
-      @click="nextSlide"
-      class="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-black/30 text-white hover:bg-ti-blue transition-colors duration-200 cursor-pointer"
-      aria-label="Slide suivante"
-    >
-      <font-awesome-icon icon="chevron-right" class="w-5 h-5" />
-    </button>
+    <!-- Flèches de navigation (visible seulement si plusieurs slides) -->
+    <template v-if="slides.length > 1">
+      <button
+        @click="prevSlide"
+        class="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-black/30 text-white hover:bg-ti-blue transition-colors duration-200 cursor-pointer"
+        aria-label="Slide précédente"
+      >
+        <font-awesome-icon icon="chevron-left" class="w-5 h-5" />
+      </button>
+      <button
+        @click="nextSlide"
+        class="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-black/30 text-white hover:bg-ti-blue transition-colors duration-200 cursor-pointer"
+        aria-label="Slide suivante"
+      >
+        <font-awesome-icon icon="chevron-right" class="w-5 h-5" />
+      </button>
+    </template>
 
     <!-- Scroll indicator -->
     <div class="absolute bottom-8 right-8 z-20 animate-bounce hidden md:block">
