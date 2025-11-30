@@ -4,12 +4,35 @@ const { isDark } = useDarkMode()
 // État du menu mobile
 const isMobileMenuOpen = ref(false)
 
+// État de la recherche
+const isSearchOpen = ref(false)
+const searchQuery = ref('')
+const router = useRouter()
+
 // Liens de navigation
 const navLinks = [
   { name: 'Accueil', path: '/' },
   { name: 'Études de cas', path: '/cas' },
+  { name: 'Actualités', path: '/actualites' },
   { name: 'À propos', path: '/a-propos' }
 ]
+
+// Soumettre la recherche
+const submitSearch = () => {
+  if (searchQuery.value.trim()) {
+    router.push({ path: '/recherche', query: { q: searchQuery.value.trim() } })
+    isSearchOpen.value = false
+    searchQuery.value = ''
+    isMobileMenuOpen.value = false
+  }
+}
+
+// Fermer la recherche avec Escape
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') {
+    isSearchOpen.value = false
+  }
+}
 
 // Fermer le menu mobile lors du changement de route
 const route = useRoute()
@@ -58,6 +81,15 @@ const closeMenu = () => {
 
         <!-- Actions Desktop -->
         <div class="hidden md:flex items-center space-x-3">
+          <!-- Bouton Recherche -->
+          <button
+            @click="isSearchOpen = !isSearchOpen"
+            class="inline-flex items-center justify-center w-10 h-10 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-ti-blue dark:hover:text-ti-blue-400 transition-colors duration-200 cursor-pointer"
+            aria-label="Rechercher"
+          >
+            <font-awesome-icon icon="search" class="w-5 h-5" />
+          </button>
+
           <!-- Bouton Signaler -->
           <NuxtLink
             to="/signaler"
@@ -112,6 +144,19 @@ const closeMenu = () => {
               {{ link.name }}
             </NuxtLink>
 
+            <!-- Recherche Mobile -->
+            <form @submit.prevent="submitSearch" class="mx-4 mt-4">
+              <div class="relative">
+                <input
+                  v-model="searchQuery"
+                  type="text"
+                  placeholder="Rechercher..."
+                  class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-ti-blue focus:border-transparent transition-colors"
+                />
+                <font-awesome-icon icon="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+              </div>
+            </form>
+
             <!-- Bouton Signaler Mobile -->
             <NuxtLink
               to="/signaler"
@@ -120,6 +165,45 @@ const closeMenu = () => {
               <font-awesome-icon icon="bullhorn" class="mr-2" />
               Signaler un cas
             </NuxtLink>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Barre de recherche Desktop -->
+      <Transition
+        enter-active-class="transition ease-out duration-200"
+        enter-from-class="opacity-0 -translate-y-2"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition ease-in duration-150"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 -translate-y-2"
+      >
+        <div
+          v-if="isSearchOpen"
+          class="hidden md:block absolute left-0 right-0 top-full bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg"
+          @keydown="handleKeydown"
+        >
+          <div class="max-w-3xl mx-auto px-4 py-4">
+            <form @submit.prevent="submitSearch" class="relative">
+              <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="Rechercher des études de cas, actualités..."
+                class="w-full pl-12 pr-12 py-3 text-lg rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-ti-blue focus:border-transparent transition-colors"
+                autofocus
+              />
+              <font-awesome-icon icon="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <button
+                type="button"
+                @click="isSearchOpen = false"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer"
+              >
+                <font-awesome-icon icon="times" class="w-5 h-5" />
+              </button>
+            </form>
+            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              Appuyez sur Entrée pour rechercher ou Échap pour fermer
+            </p>
           </div>
         </div>
       </Transition>

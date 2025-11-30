@@ -91,6 +91,15 @@ import {
   faLock,
   faXmark,
   faFileLines,
+  // Icônes pour les axes stratégiques
+  faHeartPulse,
+  faPeopleGroup,
+  faBriefcase,
+  faDroplet,
+  faHandHoldingHeart,
+  faHandshake,
+  faBalanceScale,
+  faTreeCity,
 } from '@fortawesome/free-solid-svg-icons'
 
 // Regular icons
@@ -106,6 +115,7 @@ import {
   faFacebook,
   faFacebookF,
   faTwitter,
+  faXTwitter,
   faLinkedin,
   faLinkedinIn,
   faGithub,
@@ -207,6 +217,15 @@ library.add(
   faLock,
   faXmark,
   faFileLines,
+  // Icônes pour les axes stratégiques
+  faHeartPulse,
+  faPeopleGroup,
+  faBriefcase,
+  faDroplet,
+  faHandHoldingHeart,
+  faHandshake,
+  faBalanceScale,
+  faTreeCity,
   // Regular
   farHeart,
   farStar,
@@ -216,6 +235,7 @@ library.add(
   faFacebook,
   faFacebookF,
   faTwitter,
+  faXTwitter,
   faLinkedin,
   faLinkedinIn,
   faGithub,

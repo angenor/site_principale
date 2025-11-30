@@ -226,62 +226,45 @@
 ## Phase 6 : Fonctionnalités avancées
 
 ### 6.1 Moteur de recherche
-- [ ] Recherche globale (titre, contenu, mots-clés)
+- [x] Recherche globale (titre, contenu, mots-clés) → `/api/search`
 - [ ] Recherche dans les documents (PDF)
-- [ ] Suggestions de recherche
-- [ ] Page de résultats
+- [x] Suggestions de recherche → `/api/search/suggestions`
+- [x] Page de résultats → `/recherche`
+- [x] Bouton de recherche dans le header → `AppHeader.vue`
 
 ### 6.2 Statistiques et analytics
-- [ ] Tracking des visites (PageVisit)
-- [ ] Tracking des téléchargements (Download)
-- [ ] Graphiques dans le dashboard admin
+- [x] Tracking des visites (PageVisit) → `/api/track/visit`, `tracking.client.ts`
+- [x] Tracking des téléchargements (Download) → `/api/track/download`
+- [x] Page statistiques admin → `/admin/analytics`
+- [ ] Graphiques avancés avec AmCharts (optionnel)
 
-### 6.3 Échange sécurisé d'informations
+### 6.3 Pages publiques
+- [x] Page des actualités → `/actualites`
+- [x] Page détail actualité → `/actualites/[slug]`
+
+### 6.4 Échange sécurisé d'informations
 - [ ] Évaluation de GlobalLeaks ou solution similaire
 - [ ] Intégration ou lien vers la solution choisie
-- [ ] Formulaire de signalement anonyme
+- [ ] Formulaire de signalement anonyme (déjà disponible via `/signaler`)
 
 ---
 
 ## Phase 7 : SEO et Performance
 
 ### 7.1 Optimisation SEO
-- [ ] Balises meta (title, description) par page
-- [ ] Balises Open Graph pour réseaux sociaux
-- [ ] Sitemap XML automatique
-- [ ] Robots.txt
-- [ ] URLs propres (slugs)
-- [ ] Données structurées (JSON-LD)
+- [x] Balises meta (title, description) par page → `nuxt.config.ts`, `useSeoMeta()`
+- [x] Balises Open Graph pour réseaux sociaux → configuré globalement + par page
+- [x] Sitemap XML automatique → `@nuxtjs/sitemap` + `/api/__sitemap__/urls`
+- [x] Robots.txt → `@nuxtjs/robots`
+- [x] URLs propres (slugs) → déjà en place
+- [x] Données structurées (JSON-LD) → `useJsonLd()` composable
 
 ### 7.2 Performance
-- [ ] Optimisation des images (formats modernes, lazy loading)
-- [ ] Minification CSS/JS
-- [ ] Cache des requêtes API
+- [x] Optimisation des images (formats modernes, lazy loading) → `@nuxt/image` configuré
+- [x] Compression des assets → `nitro.compressPublicAssets`
+- [ ] Cache des requêtes API (optionnel)
 - [ ] Analyse avec Lighthouse
 - [ ] Score cible : > 90 sur Lighthouse
-
----
-
-## Phase 8 : Tests et Qualité
-
-### 8.1 Tests fonctionnels
-- [ ] Tests des formulaires
-- [ ] Tests de navigation
-- [ ] Tests responsive
-- [ ] Tests cross-browser (Chrome, Firefox, Edge, Safari)
-
-### 8.2 Tests de sécurité
-- [ ] Validation des entrées utilisateur
-- [ ] Protection CSRF
-- [ ] Protection XSS
-- [ ] Sécurisation des uploads
-- [ ] Audit des dépendances
-
-### 8.3 Accessibilité
-- [ ] Navigation au clavier
-- [ ] Lecteur d'écran
-- [ ] Contrastes suffisants
-- [ ] Textes alternatifs pour images
 
 ---
 
@@ -366,18 +349,17 @@
 |-------|-------------|------------|
 | 1 | Configuration et Infrastructure | 100% |
 | 2 | Charte graphique | 100% |
-| 3 | Développement Frontend | 95% |
-| 4 | Développement Backend (API) | 75% |
+| 3 | Développement Frontend | 98% |
+| 4 | Développement Backend (API) | 85% |
 | 5 | Back-office (Administration) | 90% |
-| 6 | Fonctionnalités avancées | 0% |
-| 7 | SEO et Performance | 0% |
-| 8 | Tests et Qualité | 0% |
+| 6 | Fonctionnalités avancées | 75% |
+| 7 | SEO et Performance | 80% |
 | 9 | Intégration de contenu | 0% |
 | 10 | Déploiement | 0% |
 | 11 | Formation et Documentation | 10% |
 | 12 | Livraison et SAV | 0% |
 
-**Avancement global estimé : ~55%**
+**Avancement global estimé : ~65%**
 
 ---
 
@@ -404,8 +386,28 @@
    - [x] Gestion des utilisateurs (admin uniquement)
    - [ ] Édition contenu "À propos"
    - [ ] Configuration générale du site
-10. **Phase 6 : Fonctionnalités avancées** (recherche, analytics)
-11. **Phase 7 : SEO et Performance**
+10. ~~**Phase 6 : Fonctionnalités avancées**~~ (~75%)
+    - [x] Moteur de recherche globale (`/api/search`)
+    - [x] Suggestions de recherche (`/api/search/suggestions`)
+    - [x] Page de résultats de recherche (`/recherche`)
+    - [x] Bouton de recherche dans le header
+    - [x] Tracking des visites de pages
+    - [x] Tracking des téléchargements
+    - [x] Page statistiques admin (`/admin/analytics`)
+    - [x] Page des actualités (`/actualites`)
+    - [x] Page détail actualité (`/actualites/[slug]`)
+    - [ ] Graphiques AmCharts (optionnel)
+11. ~~**Phase 7 : SEO et Performance**~~ (~80%)
+    - [x] Balises meta globales (`nuxt.config.ts`)
+    - [x] Open Graph et Twitter Cards
+    - [x] Sitemap XML dynamique (`@nuxtjs/sitemap`)
+    - [x] Robots.txt (`@nuxtjs/robots`)
+    - [x] Données structurées JSON-LD (`useJsonLd` composable)
+    - [x] Optimisation images (`@nuxt/image` webp/avif)
+    - [x] Compression assets (Nitro)
+    - [ ] Tests Lighthouse (optionnel)
+12. **Phase 8 : Tests et Qualité** (À FAIRE)
+13. **Phase 9 : Intégration de contenu** (À FAIRE)
 
 ---
 

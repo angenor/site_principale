@@ -1,26 +1,20 @@
 <script setup lang="ts">
+const { setWebsiteSchema, setOrganizationSchema } = useJsonLd()
+
 // Métadonnées de la page
-useHead({
-  title: 'Observatoire des Mines de Madagascar - Accueil',
-  meta: [
-    {
-      name: 'description',
-      content: 'L\'Observatoire des Mines de Madagascar (MOM) promeut la transparence et la bonne gouvernance dans le secteur minier malgache.'
-    },
-    {
-      property: 'og:title',
-      content: 'Observatoire des Mines de Madagascar'
-    },
-    {
-      property: 'og:description',
-      content: 'Plateforme de suivi de la gouvernance minière à Madagascar par Transparency International et PCQVP.'
-    },
-    {
-      property: 'og:type',
-      content: 'website'
-    }
-  ]
+useSeoMeta({
+  title: 'Accueil',
+  ogTitle: 'Observatoire des Mines de Madagascar',
+  description: 'L\'Observatoire des Mines de Madagascar (MOM) promeut la transparence et la bonne gouvernance dans le secteur minier malgache.',
+  ogDescription: 'Plateforme de suivi de la gouvernance minière à Madagascar par Transparency International et PCQVP.',
+  ogType: 'website',
+  ogImage: '/images/og-image.jpg',
+  twitterCard: 'summary_large_image'
 })
+
+// Données structurées JSON-LD
+setWebsiteSchema()
+setOrganizationSchema()
 </script>
 
 <template>

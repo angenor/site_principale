@@ -8,6 +8,7 @@ const navigation = [
   { name: 'Actualités', href: '/admin/news', icon: 'newspaper' },
   { name: 'Signalements', href: '/admin/contacts', icon: 'envelope' },
   { name: 'Contenu', href: '/admin/content', icon: 'file-lines' },
+  { name: 'Statistiques', href: '/admin/analytics', icon: 'chart-line' },
   { name: 'Utilisateurs', href: '/admin/users', icon: 'users', adminOnly: true }
 ]
 

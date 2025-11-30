@@ -50,22 +50,41 @@ interface CaseStudyDetail {
 
 const route = useRoute()
 const slug = route.params.slug as string
+const config = useRuntimeConfig()
+const { setArticleSchema, setBreadcrumbSchema } = useJsonLd()
 
 // Charger les données du cas depuis l'API
 const { data: caseStudy, pending, error } = await useFetch<CaseStudyDetail>(`/api/cases/${slug}`)
 
-// Métadonnées de la page
-useHead(() => ({
-  title: caseStudy.value
-    ? `${caseStudy.value.title} - Observatoire des Mines de Madagascar`
-    : 'Étude de cas - Observatoire des Mines de Madagascar',
-  meta: [
-    {
-      name: 'description',
-      content: caseStudy.value?.subtitle || caseStudy.value?.summary || 'Étude de cas documentée par l\'Observatoire des Mines de Madagascar'
-    }
-  ]
-}))
+// Métadonnées SEO
+useSeoMeta({
+  title: () => caseStudy.value?.title || 'Étude de cas',
+  description: () => caseStudy.value?.subtitle || caseStudy.value?.summary || 'Étude de cas documentée par l\'Observatoire des Mines de Madagascar',
+  ogTitle: () => caseStudy.value?.title || 'Étude de cas',
+  ogDescription: () => caseStudy.value?.subtitle || caseStudy.value?.summary || '',
+  ogImage: () => caseStudy.value?.coverImage || '/images/og-image.jpg',
+  ogType: 'article',
+  twitterCard: 'summary_large_image'
+})
+
+// Données structurées JSON-LD
+watchEffect(() => {
+  if (caseStudy.value) {
+    setArticleSchema({
+      title: caseStudy.value.title,
+      description: caseStudy.value.subtitle || caseStudy.value.summary || '',
+      image: caseStudy.value.coverImage || undefined,
+      datePublished: caseStudy.value.publishedAt || caseStudy.value.eventDate || new Date().toISOString(),
+      author: caseStudy.value.author,
+      slug: `/cas/${caseStudy.value.slug}`
+    })
+    setBreadcrumbSchema([
+      { name: 'Accueil', url: '/' },
+      { name: 'Études de cas', url: '/cas' },
+      { name: caseStudy.value.title, url: `/cas/${caseStudy.value.slug}` }
+    ])
+  }
+})
 
 // Obtenir la catégorie principale
 const primaryCategory = computed(() => caseStudy.value?.categories[0] || null)
