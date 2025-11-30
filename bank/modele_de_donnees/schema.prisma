@@ -1,0 +1,355 @@
+// Schéma de données pour l'Observatoire des Mines de Madagascar (MOM)
+// Basé sur le cahier des charges TIMG_MOM_TdR_Conception-Web.md
+// Technologies: Prisma ORM + PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// GESTION DES UTILISATEURS (Back-office)
+// ============================================================================
+
+enum UserRole {
+  ADMIN      // Administrateur - accès complet
+  EDITOR     // Éditeur - gestion du contenu
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  role          UserRole  @default(EDITOR)
+  isActive      Boolean   @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  caseStudies   CaseStudy[]   @relation("CaseStudyAuthor")
+  newsArticles  News[]        @relation("NewsAuthor")
+
+  @@map("users")
+}
+
+// ============================================================================
+// ÉTUDES DE CAS (Élément central du site)
+// ============================================================================
+
+model CaseStudy {
+  id              String    @id @default(cuid())
+  slug            String    @unique // URL-friendly identifier
+  title           String    // Nom du cas
+  subtitle        String?   // Sous-titre résumant le contexte
+  summary         String    // Court résumé (pour les cartes)
+  content         String    @db.Text // Description détaillée (HTML/Markdown)
+  coverImage      String?   // Image de couverture (URL ou chemin)
+  eventDate       DateTime? // Date de l'événement
+  location        String?   // Lieu précis
+  isPublished     Boolean   @default(false)
+  publishedAt     DateTime?
+  viewCount       Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  authorId        String
+  author          User      @relation("CaseStudyAuthor", fields: [authorId], references: [id])
+  regionId        String?
+  region          Region?   @relation(fields: [regionId], references: [id])
+  categories      CaseStudyCategory[]
+  media           CaseStudyMedia[]
+  keywords        CaseStudyKeyword[]
+
+  @@index([publishedAt])
+  @@index([regionId])
+  @@map("case_studies")
+}
+
+// Table pivot pour les catégories des études de cas
+model CaseStudyCategory {
+  caseStudyId String
+  categoryId  String
+  caseStudy   CaseStudy @relation(fields: [caseStudyId], references: [id], onDelete: Cascade)
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([caseStudyId, categoryId])
+  @@map("case_study_categories")
+}
+
+// Médias associés aux études de cas (photos, vidéos, documents)
+model CaseStudyMedia {
+  id          String    @id @default(cuid())
+  caseStudyId String
+  caseStudy   CaseStudy @relation(fields: [caseStudyId], references: [id], onDelete: Cascade)
+  mediaId     String
+  media       Media     @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  caption     String?   // Légende optionnelle
+  sortOrder   Int       @default(0)
+
+  @@index([caseStudyId])
+  @@map("case_study_media")
+}
+
+// Mots-clés pour les études de cas
+model CaseStudyKeyword {
+  id          String    @id @default(cuid())
+  caseStudyId String
+  caseStudy   CaseStudy @relation(fields: [caseStudyId], references: [id], onDelete: Cascade)
+  keyword     String
+
+  @@index([caseStudyId])
+  @@index([keyword])
+  @@map("case_study_keywords")
+}
+
+// ============================================================================
+// CATÉGORIES / THÉMATIQUES
+// ============================================================================
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  icon        String?   // Nom de l'icône FontAwesome ou URL
+  color       String?   // Couleur associée (hex)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  caseStudies CaseStudyCategory[]
+
+  @@map("categories")
+}
+
+// ============================================================================
+// RÉGIONS DE MADAGASCAR
+// ============================================================================
+
+model Region {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  code        String?   @unique // Code région
+  description String?
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  caseStudies CaseStudy[]
+
+  @@map("regions")
+}
+
+// ============================================================================
+// ACTUALITÉS
+// ============================================================================
+
+model News {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       String
+  summary     String    // Court texte descriptif
+  content     String    @db.Text // Contenu complet
+  coverImage  String?   // Image d'illustration
+  externalUrl String?   // Lien externe (bouton "view")
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+  viewCount   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  authorId    String
+  author      User      @relation("NewsAuthor", fields: [authorId], references: [id])
+
+  @@index([publishedAt])
+  @@map("news")
+}
+
+// ============================================================================
+// AXES STRATÉGIQUES ET MISSIONS
+// ============================================================================
+
+model StrategicAxis {
+  id              String    @id @default(cuid())
+  title           String
+  description     String    // Court texte explicatif
+  backgroundImage String?   // Image de fond
+  linkUrl         String?   // Lien vers page "À propos" ou autre
+  sortOrder       Int       @default(0)
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("strategic_axes")
+}
+
+// ============================================================================
+// PARTENAIRES
+// ============================================================================
+
+model Partner {
+  id          String    @id @default(cuid())
+  name        String
+  logo        String    // URL ou chemin du logo
+  websiteUrl  String?   // Lien vers leur site web
+  description String?
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("partners")
+}
+
+// ============================================================================
+// GALERIE D'IMAGES (Slider page d'accueil)
+// ============================================================================
+
+model GalleryImage {
+  id          String    @id @default(cuid())
+  title       String?
+  description String?
+  imageUrl    String
+  linkUrl     String?   // Lien optionnel au clic
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("gallery_images")
+}
+
+// ============================================================================
+// GESTION DES MÉDIAS (Fichiers uploadés)
+// ============================================================================
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT // PDF, etc.
+}
+
+model Media {
+  id            String    @id @default(cuid())
+  filename      String    // Nom original du fichier
+  filepath      String    // Chemin de stockage
+  url           String    // URL publique
+  mimeType      String
+  mediaType     MediaType
+  fileSize      Int       // Taille en octets
+  width         Int?      // Pour les images/vidéos
+  height        Int?      // Pour les images/vidéos
+  duration      Int?      // Pour audio/vidéo (en secondes)
+  altText       String?   // Texte alternatif (accessibilité)
+  downloadCount Int       @default(0)
+  createdAt     DateTime  @default(now())
+
+  // Relations
+  caseStudies   CaseStudyMedia[]
+
+  @@index([mediaType])
+  @@map("media")
+}
+
+// ============================================================================
+// SIGNALEMENT DE CAS / CONTACT
+// ============================================================================
+
+enum ContactStatus {
+  NEW
+  IN_REVIEW
+  PROCESSED
+  ARCHIVED
+}
+
+model Contact {
+  id          String        @id @default(cuid())
+  name        String?
+  email       String?
+  phone       String?
+  subject     String
+  message     String        @db.Text
+  status      ContactStatus @default(NEW)
+  isAnonymous Boolean       @default(false)
+  ipAddress   String?
+  createdAt   DateTime      @default(now())
+  processedAt DateTime?
+  notes       String?       @db.Text // Notes internes
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("contacts")
+}
+
+// ============================================================================
+// STATISTIQUES ET SUIVI
+// ============================================================================
+
+model PageVisit {
+  id          String    @id @default(cuid())
+  path        String    // URL de la page visitée
+  referrer    String?   // Page de provenance
+  userAgent   String?
+  ipAddress   String?
+  country     String?
+  city        String?
+  visitedAt   DateTime  @default(now())
+
+  @@index([path])
+  @@index([visitedAt])
+  @@map("page_visits")
+}
+
+model Download {
+  id          String    @id @default(cuid())
+  mediaId     String
+  ipAddress   String?
+  userAgent   String?
+  downloadedAt DateTime @default(now())
+
+  @@index([mediaId])
+  @@index([downloadedAt])
+  @@map("downloads")
+}
+
+// ============================================================================
+// CONFIGURATION DU SITE
+// ============================================================================
+
+model SiteConfig {
+  id          String    @id @default(cuid())
+  key         String    @unique
+  value       String    @db.Text
+  description String?
+  updatedAt   DateTime  @updatedAt
+
+  @@map("site_config")
+}
+
+// ============================================================================
+// CONTENU DE LA PAGE "À PROPOS"
+// ============================================================================
+
+model AboutContent {
+  id          String    @id @default(cuid())
+  section     String    @unique // ex: "mission", "vision", "history"
+  title       String
+  content     String    @db.Text
+  image       String?
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  updatedAt   DateTime  @updatedAt
+
+  @@map("about_content")
+}

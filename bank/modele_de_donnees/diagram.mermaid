@@ -1,0 +1,199 @@
+erDiagram
+    %% Observatoire des Mines de Madagascar - Diagramme ER
+
+    %% ===== GESTION UTILISATEURS =====
+    User {
+        string id PK
+        string email UK
+        string passwordHash
+        string firstName
+        string lastName
+        enum role "ADMIN | EDITOR"
+        boolean isActive
+        datetime lastLoginAt
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    %% ===== ETUDES DE CAS =====
+    CaseStudy {
+        string id PK
+        string slug UK
+        string title
+        string subtitle
+        string summary
+        text content
+        string coverImage
+        datetime eventDate
+        string location
+        boolean isPublished
+        datetime publishedAt
+        int viewCount
+        string authorId FK
+        string regionId FK
+    }
+
+    Category {
+        string id PK
+        string name UK
+        string slug UK
+        string description
+        string icon
+        string color
+        int sortOrder
+    }
+
+    Region {
+        string id PK
+        string name UK
+        string code UK
+        string description
+    }
+
+    CaseStudyCategory {
+        string caseStudyId PK,FK
+        string categoryId PK,FK
+    }
+
+    CaseStudyMedia {
+        string id PK
+        string caseStudyId FK
+        string mediaId FK
+        string caption
+        int sortOrder
+    }
+
+    CaseStudyKeyword {
+        string id PK
+        string caseStudyId FK
+        string keyword
+    }
+
+    %% ===== ACTUALITES =====
+    News {
+        string id PK
+        string slug UK
+        string title
+        string summary
+        text content
+        string coverImage
+        string externalUrl
+        boolean isPublished
+        datetime publishedAt
+        int viewCount
+        string authorId FK
+    }
+
+    %% ===== PAGE ACCUEIL =====
+    StrategicAxis {
+        string id PK
+        string title
+        string description
+        string backgroundImage
+        string linkUrl
+        int sortOrder
+        boolean isActive
+    }
+
+    GalleryImage {
+        string id PK
+        string title
+        string description
+        string imageUrl
+        string linkUrl
+        int sortOrder
+        boolean isActive
+    }
+
+    Partner {
+        string id PK
+        string name
+        string logo
+        string websiteUrl
+        string description
+        int sortOrder
+        boolean isActive
+    }
+
+    %% ===== MEDIAS =====
+    Media {
+        string id PK
+        string filename
+        string filepath
+        string url
+        string mimeType
+        enum mediaType "IMAGE | VIDEO | AUDIO | DOCUMENT"
+        int fileSize
+        int width
+        int height
+        int duration
+        string altText
+        int downloadCount
+    }
+
+    %% ===== CONTACT / SIGNALEMENT =====
+    Contact {
+        string id PK
+        string name
+        string email
+        string phone
+        string subject
+        text message
+        enum status "NEW | IN_REVIEW | PROCESSED | ARCHIVED"
+        boolean isAnonymous
+        string ipAddress
+        datetime createdAt
+        datetime processedAt
+        text notes
+    }
+
+    %% ===== STATISTIQUES =====
+    PageVisit {
+        string id PK
+        string path
+        string referrer
+        string userAgent
+        string ipAddress
+        string country
+        string city
+        datetime visitedAt
+    }
+
+    Download {
+        string id PK
+        string mediaId FK
+        string ipAddress
+        string userAgent
+        datetime downloadedAt
+    }
+
+    %% ===== CONFIGURATION =====
+    SiteConfig {
+        string id PK
+        string key UK
+        text value
+        string description
+    }
+
+    AboutContent {
+        string id PK
+        string section UK
+        string title
+        text content
+        string image
+        int sortOrder
+        boolean isActive
+    }
+
+    %% ===== RELATIONS =====
+    User ||--o{ CaseStudy : "creates"
+    User ||--o{ News : "creates"
+
+    CaseStudy }o--|| Region : "located in"
+    CaseStudy ||--o{ CaseStudyCategory : "has"
+    Category ||--o{ CaseStudyCategory : "classifies"
+    CaseStudy ||--o{ CaseStudyMedia : "contains"
+    Media ||--o{ CaseStudyMedia : "attached to"
+    CaseStudy ||--o{ CaseStudyKeyword : "tagged with"
+
+    Media ||--o{ Download : "tracked by"
