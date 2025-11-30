@@ -42,21 +42,11 @@
 
 ---
 
-## Phase 2 : Design et Maquettes
-
-### 2.1 Charte graphique
+## Phase 2 : Charte graphique
 - [ ] Réception de la charte graphique de TIMG
 - [ ] Définition de la palette de couleurs
 - [ ] Choix des typographies
 - [ ] Création des variables CSS personnalisées
-
-### 2.2 Maquettes graphiques
-- [ ] Maquette de la page d'accueil (desktop + mobile)
-- [ ] Maquette de la page "Études de cas" (liste)
-- [ ] Maquette de la page "Fiche de cas" (détail)
-- [ ] Maquette de la page "À propos"
-- [ ] Maquette du header et footer
-- [ ] Validation des maquettes par TIMG
 
 ---
 
