@@ -359,8 +359,8 @@ async function deleteImage(id: string) {
                 </div>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image de fond (URL)</label>
-                <input v-model="newAxis.backgroundImage" type="url" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image de fond</label>
+                <ImageUpload v-model="newAxis.backgroundImage" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lien</label>
@@ -423,9 +423,8 @@ async function deleteImage(id: string) {
                 <input v-model="newPartner.name" type="text" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Logo (URL) *</label>
-                <input v-model="newPartner.logo" type="url" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
-                <img v-if="newPartner.logo" :src="newPartner.logo" alt="Aperçu" class="mt-2 h-12 object-contain" />
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Logo *</label>
+                <ImageUpload v-model="newPartner.logo" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Site web</label>
@@ -483,9 +482,8 @@ async function deleteImage(id: string) {
             </h3>
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">URL de l'image *</label>
-                <input v-model="newImage.imageUrl" type="url" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
-                <img v-if="newImage.imageUrl" :src="newImage.imageUrl" alt="Aperçu" class="mt-2 h-32 w-full object-cover rounded-lg" />
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image *</label>
+                <ImageUpload v-model="newImage.imageUrl" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Titre</label>
