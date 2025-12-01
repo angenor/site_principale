@@ -67,13 +67,17 @@ const cardClasses = computed(() => {
 
 <template>
   <article :class="cardClasses">
+    <!-- Placeholder pour maintenir la hauteur minimale en mode featured -->
+    <div v-if="variant === 'featured'" class="aspect-[3/4] w-full" aria-hidden="true" />
+
     <!-- Image -->
     <div
       v-if="showImage && image"
       :class="[
-        'relative overflow-hidden',
-        variant === 'horizontal' ? 'md:w-2/5 flex-shrink-0' : '',
-        variant === 'compact' ? 'w-24 h-24 flex-shrink-0' : aspectRatioClasses
+        'overflow-hidden',
+        variant === 'horizontal' ? 'relative md:w-2/5 flex-shrink-0' : '',
+        variant === 'compact' ? 'relative w-24 h-24 flex-shrink-0' : '',
+        variant === 'featured' ? 'absolute inset-0' : 'relative ' + aspectRatioClasses
       ]"
     >
       <img
@@ -131,7 +135,7 @@ const cardClasses = computed(() => {
         v-if="title"
         :class="[
           'font-heading font-bold uppercase tracking-wide',
-          variant === 'compact' ? 'text-sm line-clamp-2' : 'text-lg lg:text-xl',
+          variant === 'compact' ? 'text-sm line-clamp-2' : 'text-lg lg:text-xl line-clamp-2',
           variant === 'featured' ? 'text-white' : 'text-gray-900 dark:text-white'
         ]"
       >

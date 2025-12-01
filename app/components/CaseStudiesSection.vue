@@ -103,7 +103,7 @@ const getDisplayDate = (cs: CaseStudy) => cs.eventDate || cs.publishedAt || unde
         </div>
 
         <!-- Autres cas -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 content-start">
           <AppCard
             v-for="caseStudy in otherCases"
             :key="caseStudy.id"
@@ -115,6 +115,7 @@ const getDisplayDate = (cs: CaseStudy) => cs.eventDate || cs.publishedAt || unde
             :link-to="`/cas/${caseStudy.slug}`"
             variant="default"
             aspect-ratio="video"
+            class="h-fit"
           />
         </div>
       </div>
