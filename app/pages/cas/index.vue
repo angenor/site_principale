@@ -294,26 +294,13 @@ const getDisplayDate = (cs: CaseStudy) => cs.eventDate || cs.publishedAt || unde
         </div>
 
         <!-- Pagination -->
-        <div v-if="pagination.totalPages > 1" class="mt-8 flex justify-center gap-2">
-          <button
-            :disabled="currentPage === 1"
-            @click="currentPage--"
-            class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          >
-            <font-awesome-icon icon="chevron-left" class="w-4 h-4" />
-          </button>
-
-          <span class="px-4 py-2 text-gray-700 dark:text-gray-300">
-            Page {{ currentPage }} sur {{ pagination.totalPages }}
-          </span>
-
-          <button
-            :disabled="currentPage >= pagination.totalPages"
-            @click="currentPage++"
-            class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          >
-            <font-awesome-icon icon="chevron-right" class="w-4 h-4" />
-          </button>
+        <div class="mt-8">
+          <AppPagination
+            v-model:current-page="currentPage"
+            :total-pages="pagination.totalPages"
+            :total-items="pagination.total"
+            :items-per-page="12"
+          />
         </div>
       </div>
     </section>

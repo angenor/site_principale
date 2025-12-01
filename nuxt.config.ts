@@ -116,5 +116,29 @@ export default defineNuxtConfig({
       crawlLinks: true,
       routes: ['/']
     }
+  },
+
+  // Configuration du cache pour les API publiques
+  routeRules: {
+    // Cache les données statiques (1 heure)
+    '/api/categories': { cache: { maxAge: 3600 } },
+    '/api/regions': { cache: { maxAge: 3600 } },
+    '/api/strategic-axes': { cache: { maxAge: 3600 } },
+    '/api/partners': { cache: { maxAge: 3600 } },
+    '/api/config': { cache: { maxAge: 3600 } },
+    '/api/about': { cache: { maxAge: 3600 } },
+    // Cache les listes (10 minutes)
+    '/api/cases': { cache: { maxAge: 600 } },
+    '/api/cases/featured': { cache: { maxAge: 600 } },
+    '/api/news': { cache: { maxAge: 600 } },
+    '/api/gallery': { cache: { maxAge: 600 } },
+    '/api/sliders': { cache: { maxAge: 600 } },
+    // Cache les suggestions de recherche (5 minutes)
+    '/api/search/suggestions': { cache: { maxAge: 300 } },
+    // Pas de cache pour les routes admin et tracking
+    '/api/admin/**': { cache: false },
+    '/api/auth/**': { cache: false },
+    '/api/track/**': { cache: false },
+    '/api/contact': { cache: false }
   }
 })

@@ -80,9 +80,10 @@
 - [x] Header (logo + navigation sticky) → `AppHeader.vue`
 - [x] Footer (contact, adresse) → `AppFooter.vue`
 - [x] Composant Card générique → `AppCard.vue`
-- [ ] Composant Button
-- [ ] Composant Modal
-- [ ] Loader / Skeleton
+- [x] Composant Button → `AppButton.vue`
+- [x] Composant Modal → `AppModal.vue`
+- [x] Loader / Skeleton → `AppLoader.vue`
+- [x] Composant Pagination → `AppPagination.vue`
 
 ### 3.2 Page d'accueil (`/`)
 - [x] Section Hero / Galerie d'images (slider) → `HeroSection.vue`
@@ -94,7 +95,7 @@
 ### 3.3 Page Études de cas (`/cas`) → `pages/cas/index.vue`
 - [x] Liste des études de cas (grille)
 - [x] Filtres par catégorie/région
-- [ ] Pagination ou infinite scroll
+- [x] Pagination → `AppPagination.vue`
 - [x] Tri par date (récent → ancien)
 
 ### 3.4 Page Fiche de cas (`/cas/[slug]`) → `pages/cas/[slug].vue`
@@ -137,9 +138,9 @@
 - [x] `GET /api/cases` - Liste des cas publiés (avec filtres, pagination)
 - [x] `GET /api/cases/[slug]` - Détail d'un cas
 - [x] `GET /api/cases/featured` - Cas mis en avant
-- [ ] `POST /api/cases` - Créer un cas (admin)
-- [ ] `PUT /api/cases/[id]` - Modifier un cas (admin)
-- [ ] `DELETE /api/cases/[id]` - Supprimer un cas (admin)
+- [x] `POST /api/admin/cases` - Créer un cas (admin)
+- [x] `PUT /api/admin/cases/[id]` - Modifier un cas (admin)
+- [x] `DELETE /api/admin/cases/[id]` - Supprimer un cas (admin)
 
 ### 4.3 API Catégories et Régions
 - [x] `GET /api/categories` - Liste des catégories
@@ -148,7 +149,7 @@
 ### 4.4 API Actualités
 - [x] `GET /api/news` - Liste des actualités
 - [x] `GET /api/news/[slug]` - Détail d'une actualité
-- [ ] CRUD pour administration
+- [x] CRUD admin → `api/admin/news/`
 
 ### 4.5 API Contenu statique
 - [x] `GET /api/strategic-axes` - Axes stratégiques
@@ -160,13 +161,13 @@
 
 ### 4.6 API Contact / Signalement
 - [x] `POST /api/contact` - Soumettre un signalement
-- [ ] `GET /api/contacts` - Liste des signalements (admin)
-- [ ] `PUT /api/contacts/[id]` - Mettre à jour statut (admin)
+- [x] `GET /api/admin/contacts` - Liste des signalements (admin)
+- [x] `PUT /api/admin/contacts/[id]` - Mettre à jour statut (admin)
 
 ### 4.7 API Médias
-- [ ] `POST /api/upload` - Upload de fichiers
-- [ ] `GET /api/media` - Liste des médias (admin)
-- [ ] `DELETE /api/media/[id]` - Supprimer un média (admin)
+- [x] `POST /api/admin/upload` - Upload de fichiers
+- [ ] `GET /api/media` - Liste des médias (admin) - optionnel
+- [ ] `DELETE /api/media/[id]` - Supprimer un média (admin) - optionnel
 
 ### 4.8 Page Signalement (Frontend)
 - [x] Page `/signaler` avec formulaire complet
@@ -194,7 +195,7 @@
 - [x] Liste avec recherche et filtres
 - [x] Formulaire de création/édition
 - [x] Éditeur de contenu (HTML)
-- [ ] Upload d'images et documents
+- [x] Upload d'images et documents → `ImageUpload.vue`, `ImageEditor.client.vue`
 - [x] Gestion des catégories et mots-clés
 - [x] Publication / Dépublication
 
@@ -207,8 +208,8 @@
 - [x] Édition des axes stratégiques
 - [x] Édition des partenaires
 - [x] Édition des images du slider
-- [ ] Édition du contenu "À propos"
-- [ ] Configuration générale du site
+- [x] Édition du contenu "À propos" → `/admin/about`
+- [x] Configuration générale du site → `/admin/config`
 
 ### 5.6 Gestion des signalements (`/admin/contacts`)
 - [x] Liste des signalements
@@ -262,9 +263,9 @@
 ### 7.2 Performance
 - [x] Optimisation des images (formats modernes, lazy loading) → `@nuxt/image` configuré
 - [x] Compression des assets → `nitro.compressPublicAssets`
-- [ ] Cache des requêtes API (optionnel)
-- [ ] Analyse avec Lighthouse
-- [ ] Score cible : > 90 sur Lighthouse
+- [x] Cache des requêtes API → `routeRules` dans `nuxt.config.ts`
+- [ ] Analyse avec Lighthouse (optionnel)
+- [ ] Score cible : > 90 sur Lighthouse (optionnel)
 
 ---
 
@@ -349,17 +350,17 @@
 |-------|-------------|------------|
 | 1 | Configuration et Infrastructure | 100% |
 | 2 | Charte graphique | 100% |
-| 3 | Développement Frontend | 98% |
-| 4 | Développement Backend (API) | 85% |
-| 5 | Back-office (Administration) | 90% |
-| 6 | Fonctionnalités avancées | 75% |
-| 7 | SEO et Performance | 80% |
+| 3 | Développement Frontend | 100% |
+| 4 | Développement Backend (API) | 95% |
+| 5 | Back-office (Administration) | 100% |
+| 6 | Fonctionnalités avancées | 85% |
+| 7 | SEO et Performance | 95% |
 | 9 | Intégration de contenu | 0% |
 | 10 | Déploiement | 0% |
 | 11 | Formation et Documentation | 10% |
 | 12 | Livraison et SAV | 0% |
 
-**Avancement global estimé : ~65%**
+**Avancement global estimé : ~70%**
 
 ---
 
@@ -373,7 +374,7 @@
 6. ~~**Création des API endpoints** de base (Phase 4)~~ ✓
 7. ~~**Page de signalement** (`/signaler`)~~ ✓
 8. ~~**Connecter le frontend aux API** (remplacer les données mockées)~~ ✓
-9. ~~**Phase 5 : Back-office** (authentification, dashboard admin)~~ Terminé (~90%)
+9. ~~**Phase 5 : Back-office** (authentification, dashboard admin)~~ ✓ Terminé (100%)
    - [x] Page de connexion admin
    - [x] Système JWT + cookies
    - [x] Layout admin avec sidebar
@@ -384,9 +385,9 @@
    - [x] Gestion des signalements (liste + détail + notes)
    - [x] Gestion du contenu statique (axes, partenaires, slider)
    - [x] Gestion des utilisateurs (admin uniquement)
-   - [ ] Édition contenu "À propos"
-   - [ ] Configuration générale du site
-10. ~~**Phase 6 : Fonctionnalités avancées**~~ (~75%)
+   - [x] Édition contenu "À propos" → `/admin/about`
+   - [x] Configuration générale du site → `/admin/config`
+10. ~~**Phase 6 : Fonctionnalités avancées**~~ (~85%)
     - [x] Moteur de recherche globale (`/api/search`)
     - [x] Suggestions de recherche (`/api/search/suggestions`)
     - [x] Page de résultats de recherche (`/recherche`)
@@ -397,7 +398,7 @@
     - [x] Page des actualités (`/actualites`)
     - [x] Page détail actualité (`/actualites/[slug]`)
     - [ ] Graphiques AmCharts (optionnel)
-11. ~~**Phase 7 : SEO et Performance**~~ (~80%)
+11. ~~**Phase 7 : SEO et Performance**~~ (~95%)
     - [x] Balises meta globales (`nuxt.config.ts`)
     - [x] Open Graph et Twitter Cards
     - [x] Sitemap XML dynamique (`@nuxtjs/sitemap`)
@@ -405,9 +406,9 @@
     - [x] Données structurées JSON-LD (`useJsonLd` composable)
     - [x] Optimisation images (`@nuxt/image` webp/avif)
     - [x] Compression assets (Nitro)
+    - [x] Cache API (`routeRules` dans `nuxt.config.ts`)
     - [ ] Tests Lighthouse (optionnel)
-12. **Phase 8 : Tests et Qualité** (À FAIRE)
-13. **Phase 9 : Intégration de contenu** (À FAIRE)
+12. **Phase 9 : Intégration de contenu** (PROCHAINE ÉTAPE)
 
 ---
 
