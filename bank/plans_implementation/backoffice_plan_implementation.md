@@ -290,36 +290,34 @@
 ## Phase 5 : Service API
 
 ### 5.1 Configuration HTTP
-- [ ] `services/api.ts` :
-  - [ ] Instance fetch/axios configurée
-  - [ ] Base URL depuis `runtimeConfig.public.apiBaseUrl`
-  - [ ] Intercepteur pour token Authorization
-  - [ ] Intercepteur pour refresh token sur 401
-  - [ ] Gestion globale des erreurs
-  - [ ] Typage des réponses
+- [x] `services/api.ts` :
+  - [x] Instance fetch configurée avec `useApi()` composable
+  - [x] Base URL depuis `runtimeConfig.public.apiBaseUrl`
+  - [x] Intercepteur pour token Authorization via `getAuthHeaders()`
+  - [x] Intercepteur pour refresh token sur 401
+  - [x] Gestion globale des erreurs (`ApiError`, `handleApiError`)
+  - [x] Typage des réponses (`PaginatedResponse<T>`, `PaginationParams`)
+  - [x] Méthodes HTTP simplifiées (get, post, put, patch, delete)
+  - [x] Upload de fichiers et téléchargement de blobs
 
 ### 5.2 Services par domaine
-- [ ] `services/auth.service.ts` - Authentification
-- [ ] `services/geo.service.ts` - Géographie (provinces, régions, communes)
-- [ ] `services/exercices.service.ts` - Exercices fiscaux
-- [ ] `services/tableaux.service.ts` - Tableaux de données financières
-- [ ] `services/recettes.service.ts` - Données recettes
-- [ ] `services/depenses.service.ts` - Données dépenses
-- [ ] `services/projets.service.ts` - Projets et sociétés minières
-- [ ] `services/revenus.service.ts` - Revenus miniers
-- [ ] `services/documents.service.ts` - Documents
-- [ ] `services/cms.service.ts` - Pages et sections CMS
-- [ ] `services/utilisateurs.service.ts` - Gestion utilisateurs
-- [ ] `services/newsletter.service.ts` - Abonnés newsletter
-- [ ] `services/statistiques.service.ts` - Statistiques et audit
-- [ ] `services/export.service.ts` - Export Excel/Word
-- [ ] `services/import.service.ts` - Import de données
-- [ ] `services/upload.service.ts` - Upload de fichiers
+- [x] `services/geo.service.ts` - Régions, Districts, Communes (CRUD complet)
+- [x] `services/comptes-administratifs.service.ts` - Comptes, Lignes, Rubriques, Catégories, Colonnes
+- [x] `services/projets.service.ts` - Sociétés, Projets miniers, Revenus miniers
+- [x] `services/documents.service.ts` - Documents, Upload, Téléchargement
+- [x] `services/utilisateurs.service.ts` - Utilisateurs, Sessions, Rôles, Profil
+- [x] `services/newsletter.service.ts` - Abonnés, Stats, Import/Export
+- [x] `services/statistiques.service.ts` - Dashboard, Visites, Audit, Activité
+- [x] `services/cms.service.ts` - Pages, Sections (10 types), Types de sections
+- [x] `services/import.service.ts` - Import Excel/CSV, Templates, Historique
+- [x] `services/export.service.ts` - Export multi-format, Rapports Word/PDF
+- [x] `services/index.ts` - Barrel export pour tous les services
 
 ### 5.3 Composables de données
-- [ ] `composables/useApi.ts` - Wrapper générique avec loading/error
-- [ ] `composables/usePagination.ts` - Gestion pagination
-- [ ] `composables/useFilters.ts` - Gestion filtres URL
+- [x] `composables/usePagination.ts` - Gestion pagination avec sync URL
+- [x] `composables/useFilters.ts` - Gestion filtres avec debounce et sync URL
+- [x] `composables/useAsyncState.ts` - État asynchrone avec loading/error/retry
+- [x] `useAsyncList` - Liste paginée avec filtres intégrés
 
 ---
 
@@ -704,7 +702,7 @@
 | 2 | Authentification | 95% |
 | 3 | Layout et Navigation Admin | 90% |
 | 4 | Composants Réutilisables | 75% |
-| 5 | Service API | 0% |
+| 5 | Service API | 100% |
 | 6 | Dashboard Admin | 0% |
 | 7 | Gestion des Données Financières | 0% |
 | 8 | Gestion de la Géographie | 0% |
@@ -720,7 +718,7 @@
 | 18 | Optimisation et Performance | 0% |
 | 19 | Déploiement | 0% |
 
-**Avancement global estimé : 20%**
+**Avancement global estimé : 25%**
 
 ---
 
@@ -730,9 +728,10 @@
 2. ~~**Phase 2** - Implémenter `useAuth.ts` et les pages de login~~ ✅ 95%
 3. ~~**Phase 3** - Créer le layout admin avec sidebar~~ ✅ 90%
 4. ~~**Phase 4** - Développer les composants UI de base (DataTable, Modal, Toast)~~ ✅ 75%
-5. **Phase 5** - Configurer les services API avec typage
+5. ~~**Phase 5** - Configurer les services API avec typage~~ ✅ 100%
 6. **Phase 6** - Créer le dashboard admin complet
 7. **Phase 7** - Implémenter la gestion des données financières
+8. **Phase 8** - Implémenter la gestion de la géographie
 
 ---
 
