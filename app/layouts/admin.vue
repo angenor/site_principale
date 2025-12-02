@@ -25,6 +25,9 @@
         <NuxtPage />
       </div>
     </main>
+
+    <!-- Toast notifications -->
+    <UiToastContainer />
   </div>
 </template>
 

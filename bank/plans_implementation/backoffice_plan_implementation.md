@@ -229,54 +229,61 @@
 ## Phase 4 : Composants Réutilisables
 
 ### 4.1 Composants de formulaire
-- [ ] `components/ui/FormInput.vue` - Input avec label, erreur, icône
-- [ ] `components/ui/FormSelect.vue` - Select avec recherche
-- [ ] `components/ui/FormTextarea.vue` - Textarea avec compteur
-- [ ] `components/ui/FormCheckbox.vue` - Checkbox/toggle
-- [ ] `components/ui/FormRadio.vue` - Radio group
+- [x] `components/ui/FormField.vue` - Wrapper générique avec label, erreur, hint
+- [x] `components/ui/FormInput.vue` - Input avec label, erreur, icône, password toggle
+- [x] `components/ui/FormSelect.vue` - Select avec options normalisées
+- [x] `components/ui/FormTextarea.vue` - Textarea avec compteur
+- [x] `components/ui/FormCheckbox.vue` - Checkbox avec support array
+- [x] `components/ui/FormRadio.vue` - Radio button
+- [x] `components/ui/FormSwitch.vue` - Toggle switch
 - [ ] `components/ui/FormDatePicker.vue` - Sélecteur de date
 - [ ] `components/ui/FormFilePicker.vue` - Upload de fichier
 - [ ] `components/ui/FormMoneyInput.vue` - Input monétaire (Ariary)
 
 ### 4.2 Composants de données
-- [ ] `components/ui/DataTable.vue` :
-  - [ ] Colonnes configurables (label, key, sortable, width)
-  - [ ] Tri par colonne (asc/desc)
-  - [ ] Pagination (page, limit, total)
-  - [ ] Recherche globale
+- [x] `components/ui/DataTable.vue` :
+  - [x] Colonnes configurables (label, key, sortable, width, format)
+  - [x] Tri par colonne (asc/desc)
+  - [x] Pagination (page, limit, total)
+  - [x] Recherche globale
+  - [x] Actions par ligne via slots
+  - [x] Sélection multiple (checkbox)
+  - [x] États : chargement, vide, erreur
   - [ ] Filtres par colonne
-  - [ ] Actions par ligne (voir, éditer, supprimer)
-  - [ ] Sélection multiple (checkbox)
   - [ ] Export sélection
-  - [ ] États : chargement, vide, erreur
 - [ ] `components/ui/DataCard.vue` - Carte statistique avec icône
 - [ ] `components/ui/DataList.vue` - Liste avec actions
 - [ ] `components/ui/StatCard.vue` - Carte KPI avec évolution
 
 ### 4.3 Composants de feedback
-- [ ] `components/ui/Modal.vue` - Modal configurable (taille, actions)
-- [ ] `components/ui/ConfirmDialog.vue` - Dialogue de confirmation
-- [ ] `components/ui/Toast.vue` - Notifications toast
-- [ ] `components/ui/Alert.vue` - Alertes inline (success, error, warning, info)
-- [ ] `components/ui/LoadingSpinner.vue` - Indicateur de chargement
-- [ ] `components/ui/Skeleton.vue` - Placeholder de chargement
-- [ ] `components/ui/EmptyState.vue` - État vide avec action
-- [ ] `components/ui/ErrorState.vue` - État d'erreur avec retry
+- [x] `components/ui/Modal.vue` - Modal configurable (5 tailles, focus trap, keyboard)
+- [ ] `components/ui/ConfirmDialog.vue` - Dialogue de confirmation (utilise Modal)
+- [x] `components/ui/Toast.vue` - Notification toast individuelle
+- [x] `components/ui/ToastContainer.vue` - Conteneur de toasts avec positions
+- [x] `components/ui/Alert.vue` - Alertes inline (4 types, dismissible)
+- [x] `components/ui/LoadingSpinner.vue` - Indicateur de chargement (5 tailles)
+- [x] `components/ui/Skeleton.vue` - Placeholder de chargement
+- [x] `components/ui/EmptyState.vue` - État vide avec action
+- [x] `components/ui/ErrorState.vue` - État d'erreur avec retry
 
 ### 4.4 Composants de navigation
-- [ ] `components/ui/Tabs.vue` - Onglets
+- [x] `components/ui/Tabs.vue` - Onglets (3 variantes: underline, pills, boxed)
+- [x] `components/ui/TabPanel.vue` - Panel de contenu pour Tabs
 - [ ] `components/ui/Dropdown.vue` - Menu déroulant
 - [ ] `components/ui/Pagination.vue` - Pagination standalone
-- [ ] `components/ui/Badge.vue` - Badge avec variantes
+- [x] `components/ui/Badge.vue` - Badge avec variantes (7 couleurs, outline, dot)
+- [x] `components/ui/Button.vue` - Bouton générique (7 variantes, 5 tailles, loading)
 
 ### 4.5 Système de notifications (composable)
-- [ ] `composables/useToast.ts` :
-  - [ ] `success(message, options)`
-  - [ ] `error(message, options)`
-  - [ ] `warning(message, options)`
-  - [ ] `info(message, options)`
-  - [ ] Auto-dismiss configurable
-  - [ ] Actions (undo, retry)
+- [x] `composables/useToast.ts` :
+  - [x] `success(message, options)`
+  - [x] `error(message, options)`
+  - [x] `warning(message, options)`
+  - [x] `info(message, options)`
+  - [x] Auto-dismiss configurable
+  - [x] Actions (label + onClick)
+  - [x] Position configurable (6 positions)
+  - [x] Max toasts limite
 
 ---
 
@@ -696,7 +703,7 @@
 | 1 | Charte Graphique et Design System | 80% |
 | 2 | Authentification | 95% |
 | 3 | Layout et Navigation Admin | 90% |
-| 4 | Composants Réutilisables | 0% |
+| 4 | Composants Réutilisables | 75% |
 | 5 | Service API | 0% |
 | 6 | Dashboard Admin | 0% |
 | 7 | Gestion des Données Financières | 0% |
@@ -713,7 +720,7 @@
 | 18 | Optimisation et Performance | 0% |
 | 19 | Déploiement | 0% |
 
-**Avancement global estimé : 15%**
+**Avancement global estimé : 20%**
 
 ---
 
@@ -722,9 +729,10 @@
 1. ~~**Phase 1** - Définir la charte graphique (couleurs, typographies, tokens CSS)~~ ✅ 80%
 2. ~~**Phase 2** - Implémenter `useAuth.ts` et les pages de login~~ ✅ 95%
 3. ~~**Phase 3** - Créer le layout admin avec sidebar~~ ✅ 90%
-4. **Phase 4** - Développer les composants UI de base (DataTable, Modal, Toast)
+4. ~~**Phase 4** - Développer les composants UI de base (DataTable, Modal, Toast)~~ ✅ 75%
 5. **Phase 5** - Configurer les services API avec typage
 6. **Phase 6** - Créer le dashboard admin complet
+7. **Phase 7** - Implémenter la gestion des données financières
 
 ---
 
