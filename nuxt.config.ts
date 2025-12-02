@@ -15,11 +15,29 @@ export default defineNuxtConfig({
     ],
   },
 
-  // Configuration des transitions de pages
+  // Configuration des transitions de pages et polices
   app: {
     pageTransition: {
       name: 'page',
       mode: 'out-in'
+    },
+    head: {
+      link: [
+        // Google Fonts - Barlow Condensed (équivalent Folio BdCn BT pour les titres)
+        {
+          rel: 'preconnect',
+          href: 'https://fonts.googleapis.com'
+        },
+        {
+          rel: 'preconnect',
+          href: 'https://fonts.gstatic.com',
+          crossorigin: ''
+        },
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap'
+        }
+      ]
     }
   },
 
