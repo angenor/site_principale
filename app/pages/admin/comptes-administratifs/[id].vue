@@ -1012,21 +1012,9 @@ const isEditable = computed(() => {
 })
 
 const totaux = computed(() => {
-  // Calcul des totaux depuis tableauComplet (données réelles de l'API)
-  let recettes = 0
-  let depenses = 0
-
-  if (tableauComplet.value?.recettes?.sections) {
-    recettes = tableauComplet.value.recettes.sections.reduce((sum: number, section: SectionTableauRecettesAPI) => {
-      return sum + (section.total_or_admis || 0)
-    }, 0)
-  }
-
-  if (tableauComplet.value?.depenses?.sections) {
-    depenses = tableauComplet.value.depenses.sections.reduce((sum: number, section: SectionTableauDepensesAPI) => {
-      return sum + (section.total_mandat_admis || 0)
-    }, 0)
-  }
+  // Utilisation des totaux généraux de l'API
+  const recettes = Number(tableauComplet.value?.recettes?.total_general_or_admis) || 0
+  const depenses = Number(tableauComplet.value?.depenses?.total_general_mandat_admis) || 0
 
   return {
     recettes,
@@ -1043,14 +1031,14 @@ const previewRecettesFonctionnement = computed(() => {
       code: l.code,
       intitule: l.intitule,
       niveau: l.niveau,
-      budget_primitif: l.budget_primitif,
-      budget_additionnel: l.budget_additionnel,
-      modifications: l.modifications,
-      previsions_definitives: l.previsions_definitives,
-      or_admis: l.or_admis,
-      recouvrement: l.recouvrement,
-      reste_a_recouvrer: l.reste_a_recouvrer,
-      taux_execution: l.taux_execution ? l.taux_execution / 100 : 0,
+      budget_primitif: Number(l.budget_primitif) || 0,
+      budget_additionnel: Number(l.budget_additionnel) || 0,
+      modifications: Number(l.modifications) || 0,
+      previsions_definitives: Number(l.previsions_definitives) || 0,
+      or_admis: Number(l.or_admis) || 0,
+      recouvrement: Number(l.recouvrement) || 0,
+      reste_a_recouvrer: Number(l.reste_a_recouvrer) || 0,
+      taux_execution: l.taux_execution ? Number(l.taux_execution) / 100 : 0,
     }))
   }
   return []
@@ -1066,14 +1054,14 @@ const previewRecettesInvestissement = computed(() => {
       code: l.code,
       intitule: l.intitule,
       niveau: l.niveau,
-      budget_primitif: l.budget_primitif,
-      budget_additionnel: l.budget_additionnel,
-      modifications: l.modifications,
-      previsions_definitives: l.previsions_definitives,
-      or_admis: l.or_admis,
-      recouvrement: l.recouvrement,
-      reste_a_recouvrer: l.reste_a_recouvrer,
-      taux_execution: l.taux_execution ? l.taux_execution / 100 : 0,
+      budget_primitif: Number(l.budget_primitif) || 0,
+      budget_additionnel: Number(l.budget_additionnel) || 0,
+      modifications: Number(l.modifications) || 0,
+      previsions_definitives: Number(l.previsions_definitives) || 0,
+      or_admis: Number(l.or_admis) || 0,
+      recouvrement: Number(l.recouvrement) || 0,
+      reste_a_recouvrer: Number(l.reste_a_recouvrer) || 0,
+      taux_execution: l.taux_execution ? Number(l.taux_execution) / 100 : 0,
     }))
   }
   return []
@@ -1126,15 +1114,15 @@ const previewDepensesFonctionnement = computed(() => {
       code: l.code,
       intitule: l.intitule,
       niveau: l.niveau,
-      budget_primitif: l.budget_primitif,
-      budget_additionnel: l.budget_additionnel,
-      modifications: l.modifications,
-      previsions_definitives: l.previsions_definitives,
-      engagement: l.engagement,
-      mandat_admis: l.mandat_admis,
-      paiement: l.paiement,
-      reste_a_payer: l.reste_a_payer,
-      taux_execution: l.taux_execution ? l.taux_execution / 100 : 0,
+      budget_primitif: Number(l.budget_primitif) || 0,
+      budget_additionnel: Number(l.budget_additionnel) || 0,
+      modifications: Number(l.modifications) || 0,
+      previsions_definitives: Number(l.previsions_definitives) || 0,
+      engagement: Number(l.engagement) || 0,
+      mandat_admis: Number(l.mandat_admis) || 0,
+      paiement: Number(l.paiement) || 0,
+      reste_a_payer: Number(l.reste_a_payer) || 0,
+      taux_execution: l.taux_execution ? Number(l.taux_execution) / 100 : 0,
     }))
   }
   return []
@@ -1150,15 +1138,15 @@ const previewDepensesInvestissement = computed(() => {
       code: l.code,
       intitule: l.intitule,
       niveau: l.niveau,
-      budget_primitif: l.budget_primitif,
-      budget_additionnel: l.budget_additionnel,
-      modifications: l.modifications,
-      previsions_definitives: l.previsions_definitives,
-      engagement: l.engagement,
-      mandat_admis: l.mandat_admis,
-      paiement: l.paiement,
-      reste_a_payer: l.reste_a_payer,
-      taux_execution: l.taux_execution ? l.taux_execution / 100 : 0,
+      budget_primitif: Number(l.budget_primitif) || 0,
+      budget_additionnel: Number(l.budget_additionnel) || 0,
+      modifications: Number(l.modifications) || 0,
+      previsions_definitives: Number(l.previsions_definitives) || 0,
+      engagement: Number(l.engagement) || 0,
+      mandat_admis: Number(l.mandat_admis) || 0,
+      paiement: Number(l.paiement) || 0,
+      reste_a_payer: Number(l.reste_a_payer) || 0,
+      taux_execution: l.taux_execution ? Number(l.taux_execution) / 100 : 0,
     }))
   }
   return []
@@ -1463,12 +1451,16 @@ const getStatutLabel = (statut: string): string => {
   return labels[statut] || statut
 }
 
-const formatMontant = (montant: number): string => {
+const formatMontant = (montant: number | string | null | undefined): string => {
+  const value = Number(montant)
+  if (isNaN(value) || montant === null || montant === undefined) {
+    return '0 Ar'
+  }
   return new Intl.NumberFormat('fr-MG', {
     style: 'decimal',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(montant) + ' Ar'
+  }).format(value) + ' Ar'
 }
 
 const formatDate = (date: string): string => {
@@ -1481,14 +1473,16 @@ const formatDate = (date: string): string => {
   })
 }
 
-const formatNumber = (value: number | null | undefined): string => {
-  if (value === null || value === undefined || value === 0) return ''
-  return new Intl.NumberFormat('fr-FR').format(value)
+const formatNumber = (value: number | string | null | undefined): string => {
+  const num = Number(value)
+  if (isNaN(num) || value === null || value === undefined) return '0'
+  return new Intl.NumberFormat('fr-FR').format(num)
 }
 
-const formatPercent = (value: number | null | undefined): string => {
-  if (value === null || value === undefined || value === 0) return ''
-  return (value * 100).toFixed(1) + '%'
+const formatPercent = (value: number | string | null | undefined): string => {
+  const num = Number(value)
+  if (isNaN(num) || value === null || value === undefined) return '0%'
+  return (num * 100).toFixed(1) + '%'
 }
 
 // ============================================================================
