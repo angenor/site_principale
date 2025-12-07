@@ -110,47 +110,9 @@
         </div>
       </div>
 
-      <!-- Tabs -->
+      <!-- Tableaux budgétaires stylisés -->
       <div class="bg-[var(--bg-card)] rounded-xl border border-[var(--border-default)] overflow-hidden">
-        <UiTabs v-model="activeTab" variant="underline">
-          <UiTabPanel name="recettes" label="Recettes">
-            <div class="p-4">
-              <AdminComptesLignesTable
-                :lignes="lignesRecettes"
-                :colonnes="colonnes"
-                :loading="isLoadingLignes"
-                :editable="isEditable"
-                @update="handleLigneUpdate"
-              />
-            </div>
-          </UiTabPanel>
-
-          <UiTabPanel name="depenses" label="Dépenses">
-            <div class="p-4">
-              <AdminComptesLignesTable
-                :lignes="lignesDepenses"
-                :colonnes="colonnes"
-                :loading="isLoadingLignes"
-                :editable="isEditable"
-                @update="handleLigneUpdate"
-              />
-            </div>
-          </UiTabPanel>
-
-          <UiTabPanel name="equilibre" label="Équilibre">
-            <div class="p-4">
-              <AdminComptesLignesTable
-                :lignes="lignesEquilibre"
-                :colonnes="colonnes"
-                :loading="isLoadingLignes"
-                :editable="isEditable"
-                @update="handleLigneUpdate"
-              />
-            </div>
-          </UiTabPanel>
-
-          <UiTabPanel name="apercu" label="Aperçu Excel">
-            <div class="p-6 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+        <div class="p-6 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
               <!-- Sélecteur de feuille avec design moderne -->
               <div class="flex gap-2 bg-gray-100 dark:bg-gray-800 p-1.5 rounded-xl shadow-inner mb-6 w-fit">
                 <button
@@ -870,18 +832,7 @@
                   Télécharger Excel
                 </UiButton>
               </div>
-            </div>
-          </UiTabPanel>
-
-          <UiTabPanel name="historique" label="Historique">
-            <div class="p-4">
-              <div class="text-center py-8 text-[var(--text-muted)]">
-                <font-awesome-icon :icon="['fas', 'history']" class="text-4xl mb-3" />
-                <p>Historique des modifications à venir</p>
-              </div>
-            </div>
-          </UiTabPanel>
-        </UiTabs>
+        </div>
       </div>
 
       <!-- Notes section -->
@@ -1035,7 +986,6 @@ const isLoading = ref(true)
 const isLoadingLignes = ref(false)
 const isLoadingTableau = ref(false)
 const error = ref<string | null>(null)
-const activeTab = ref('recettes')
 const activeSheet = ref<'RECETTE' | 'DEPENSES' | 'EQUILIBRE'>('RECETTE')
 
 // Données des tableaux (API)
