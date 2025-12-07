@@ -2,6 +2,8 @@
  * Service pour l'import de données
  */
 
+import { useApi } from './api'
+
 const BASE_PATH = '/api/v1/admin/import'
 
 export interface ImportResult {

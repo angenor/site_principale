@@ -4,6 +4,7 @@
  */
 
 import type { PaginatedResponse, PaginationParams } from './api'
+import { useApi } from './api'
 import type {
   CompteAdministratif,
   CompteAdministratifFormData,

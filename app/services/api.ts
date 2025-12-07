@@ -46,7 +46,6 @@ export const useApi = () => {
   const config = useRuntimeConfig()
   const baseUrl = config.public.apiBaseUrl as string
   const { getAuthHeaders, refreshAccessToken, logout } = useAuth()
-  const toast = useToast()
 
   /**
    * Construit l'URL avec les paramètres de requête

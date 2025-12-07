@@ -60,6 +60,7 @@
 
 <script setup lang="ts">
 import type { DashboardStats, ActivityLog } from '~/types'
+import { useStatistiquesService } from '../../services'
 
 definePageMeta({
   layout: 'admin',

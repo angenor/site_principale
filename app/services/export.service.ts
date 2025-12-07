@@ -2,6 +2,8 @@
  * Service pour l'export de données
  */
 
+import { useApi } from './api'
+
 const BASE_PATH = '/api/v1/export'
 
 export interface ExportOptions {

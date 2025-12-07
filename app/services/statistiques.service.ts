@@ -3,6 +3,7 @@
  */
 
 import type { PaginatedResponse, PaginationParams } from './api'
+import { useApi } from './api'
 import type { ActivityLog, AnalyticsVisite, DashboardStats } from '~/types'
 
 const BASE_PATH = '/api/v1/admin/statistiques'

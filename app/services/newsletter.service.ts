@@ -3,6 +3,7 @@
  */
 
 import type { PaginatedResponse, PaginationParams } from './api'
+import { useApi } from './api'
 import type { NewsletterSubscriber, NewsletterSubscriberFormData } from '~/types/autres-modules'
 
 const BASE_PATH = '/api/v1/admin/newsletter'

@@ -33,7 +33,7 @@ const { toasts, position, removeToast } = useToast()
 
 // Position classes for the container
 const positionClasses = computed(() => {
-  const positions = {
+  const positions: Record<string, string> = {
     'top-right': 'top-4 right-4',
     'top-left': 'top-4 left-4',
     'bottom-right': 'bottom-4 right-4',
@@ -41,12 +41,14 @@ const positionClasses = computed(() => {
     'top-center': 'top-4 left-1/2 -translate-x-1/2',
     'bottom-center': 'bottom-4 left-1/2 -translate-x-1/2',
   }
-  return positions[position.value]
+  const pos = position?.value ?? 'top-right'
+  return positions[pos] || positions['top-right']
 })
 
 // Stack direction based on position
 const stackDirection = computed(() => {
-  if (position.value.startsWith('bottom')) {
+  const pos = position?.value ?? 'top-right'
+  if (pos.startsWith('bottom')) {
     return 'flex-col-reverse'
   }
   return 'flex-col'

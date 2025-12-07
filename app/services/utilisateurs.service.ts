@@ -3,6 +3,7 @@
  */
 
 import type { PaginatedResponse, PaginationParams } from './api'
+import { useApi } from './api'
 import type { User, Role, Session } from '~/types/auth'
 
 const BASE_PATH = '/api/v1/admin/utilisateurs'
