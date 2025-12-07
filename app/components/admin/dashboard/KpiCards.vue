@@ -3,10 +3,9 @@
     <UiStatCard
       label="Communes avec données"
       :value="stats?.communes_avec_donnees || 0"
-      :suffix="`/ ${stats?.total_communes || 0}`"
+      :suffix="`/ ${stats?.communes_total || 0}`"
       :icon="['fas', 'city']"
       icon-variant="primary"
-      :trend="stats?.evolution_communes"
       trend-label="vs année dernière"
       :loading="loading"
       :progress="progressCommunes"
@@ -39,32 +38,20 @@
 
     <UiStatCard
       label="Projets Miniers Actifs"
-      :value="stats?.projets_actifs || 0"
+      :value="stats?.projets_miniers_actifs || 0"
       :icon="['fas', 'gem']"
       icon-variant="warning"
       :trend="stats?.evolution_projets"
       :loading="loading"
-      :description="stats?.total_revenus_miniers ? `${formatCurrency(stats.total_revenus_miniers)} Ar de revenus` : undefined"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-interface DashboardKpis {
-  communes_avec_donnees: number
-  total_communes: number
-  evolution_communes?: number
-  total_recettes: number
-  evolution_recettes?: number
-  total_depenses: number
-  evolution_depenses?: number
-  projets_actifs: number
-  evolution_projets?: number
-  total_revenus_miniers?: number
-}
+import type { DashboardStats } from '~/types'
 
 interface Props {
-  stats: DashboardKpis | null
+  stats: DashboardStats | null
   loading?: boolean
 }
 
@@ -74,21 +61,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 // Progress for communes coverage
 const progressCommunes = computed(() => {
-  if (!props.stats?.total_communes) return 0
-  return Math.round((props.stats.communes_avec_donnees / props.stats.total_communes) * 100)
+  if (!props.stats?.communes_total) return 0
+  return Math.round((props.stats.communes_avec_donnees / props.stats.communes_total) * 100)
 })
-
-// Format currency
-const formatCurrency = (value: number): string => {
-  if (value >= 1_000_000_000) {
-    return `${(value / 1_000_000_000).toFixed(1)} Mrd`
-  }
-  if (value >= 1_000_000) {
-    return `${(value / 1_000_000).toFixed(1)} M`
-  }
-  if (value >= 1_000) {
-    return `${(value / 1_000).toFixed(1)} K`
-  }
-  return String(value)
-}
 </script>

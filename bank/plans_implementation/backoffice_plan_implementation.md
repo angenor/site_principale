@@ -324,76 +324,79 @@
 ## Phase 6 : Dashboard Admin
 
 ### 6.1 Page dashboard
-- [ ] `pages/admin/index.vue` :
-  - [ ] Cartes KPI principales :
-    - [ ] Nombre de communes avec données
-    - [ ] Total recettes (exercice en cours)
-    - [ ] Total dépenses (exercice en cours)
-    - [ ] Nombre de projets miniers actifs
-  - [ ] Graphique évolution revenus (12 derniers mois)
+- [x] `pages/admin/index.vue` :
+  - [x] Cartes KPI principales :
+    - [x] Nombre de communes avec données
+    - [x] Total recettes (exercice en cours)
+    - [x] Total dépenses (exercice en cours)
+    - [x] Nombre de projets miniers actifs
+  - [x] Graphique évolution revenus (12 derniers mois)
   - [ ] Graphique répartition par région
-  - [ ] Liste des dernières activités
+  - [x] Liste des dernières activités
   - [ ] Statistiques de visite (7 derniers jours)
   - [ ] Alertes/notifications importantes
 
 ### 6.2 Widgets dashboard
-- [ ] `components/admin/dashboard/KpiCards.vue`
-- [ ] `components/admin/dashboard/RevenueChart.vue`
-- [ ] `components/admin/dashboard/RegionMap.vue`
-- [ ] `components/admin/dashboard/RecentActivity.vue`
-- [ ] `components/admin/dashboard/VisitStats.vue`
-- [ ] `components/admin/dashboard/PendingTasks.vue`
+- [x] `components/ui/StatCard.vue` - Carte KPI générique avec trend, progress
+- [x] `components/admin/dashboard/KpiCards.vue` - Grille des 4 KPIs principaux
+- [x] `components/admin/dashboard/RevenueChart.vue` - Graphique amCharts 5
+- [ ] `components/admin/dashboard/RegionMap.vue` - *optionnel*
+- [x] `components/admin/dashboard/RecentActivity.vue` - Feed d'activité
+- [x] `components/admin/dashboard/QuickActions.vue` - Actions rapides
+- [ ] `components/admin/dashboard/VisitStats.vue` - *optionnel*
+- [ ] `components/admin/dashboard/PendingTasks.vue` - *optionnel*
+
+### 6.3 Types et intégration
+- [x] `types/index.ts` - Types globaux (DashboardStats, ActivityLog, etc.)
+- [x] Intégration avec `useStatistiquesService` pour données réelles
+- [x] Données de fallback en cas d'erreur API
 
 ---
 
 ## Phase 7 : Gestion des Données Financières
 
 ### 7.1 Comptes administratifs
-- [ ] `pages/admin/comptes-administratifs/index.vue` :
-  - [ ] Liste paginée avec filtres (commune, exercice, statut)
-  - [ ] Actions : voir, éditer, publier, archiver
-  - [ ] Indicateurs : statut publication, taux de complétion
-- [ ] `pages/admin/comptes-administratifs/[id].vue` :
-  - [ ] Détail avec onglets (Recettes, Dépenses, Équilibre, CMS)
-  - [ ] Édition inline des montants
-  - [ ] Historique des modifications
-  - [ ] Boutons d'action (valider, publier, exporter)
+- [x] `pages/admin/comptes-administratifs/index.vue` :
+  - [x] Liste paginée avec filtres (région, exercice, statut)
+  - [x] Actions : voir, éditer, publier, archiver, supprimer
+  - [x] Indicateurs : statut publication, taux de complétion
+  - [x] Modal création/édition de compte
+- [x] `pages/admin/comptes-administratifs/[id].vue` :
+  - [x] Détail avec onglets (Recettes, Dépenses, Équilibre, Historique)
+  - [x] Édition inline des montants via LignesTable
+  - [x] Cartes résumé (totaux, solde)
+  - [x] Boutons d'action (valider, publier, exporter)
+- [x] `components/admin/comptes/LignesTable.vue` :
+  - [x] Tableau hiérarchique des lignes budgétaires
+  - [x] Édition inline des valeurs
+  - [x] Calcul des totaux
 
 ### 7.2 Recettes
-- [ ] `pages/admin/recettes/index.vue` :
-  - [ ] Tableau filtrable par commune/exercice/compte
-  - [ ] Import en lot
-  - [ ] Export sélection
-- [ ] `pages/admin/recettes/[id].vue` :
-  - [ ] Formulaire d'édition
-  - [ ] Validation des montants
-  - [ ] Historique
+- [x] `pages/admin/recettes/index.vue` :
+  - [x] Tableau filtrable par région/exercice/section
+  - [x] Cartes résumé (prévision, réalisation, taux)
+  - [x] Lien vers compte administratif
+- [ ] `pages/admin/recettes/[id].vue` - *optionnel, édition via compte*
 
 ### 7.3 Dépenses
-- [ ] `pages/admin/depenses/index.vue` :
-  - [ ] Même structure que recettes
-- [ ] `pages/admin/depenses/[id].vue` :
-  - [ ] Formulaire d'édition
+- [x] `pages/admin/depenses/index.vue` :
+  - [x] Tableau filtrable par région/exercice/section
+  - [x] Cartes résumé (crédits, mandatements, taux)
+  - [x] Lien vers compte administratif
+- [ ] `pages/admin/depenses/[id].vue` - *optionnel, édition via compte*
 
 ### 7.4 Exercices
-- [ ] `pages/admin/exercices/index.vue` :
-  - [ ] Liste des exercices fiscaux
-  - [ ] Actions : créer, clôturer, rouvrir
-- [ ] `pages/admin/exercices/[id].vue` :
-  - [ ] Détail avec statistiques de saisie
-  - [ ] Communes sans données
-  - [ ] Progression globale
+- [ ] `pages/admin/exercices/index.vue` - *à implémenter*
+- [ ] `pages/admin/exercices/[id].vue` - *à implémenter*
 
 ### 7.5 Import de données
-- [ ] `pages/admin/import/index.vue` :
-  - [ ] Zone de drop pour fichier Excel
-  - [ ] Sélection commune/exercice
-  - [ ] Prévisualisation des données
-  - [ ] Validation avant import
-  - [ ] Rapport d'import (succès, erreurs, warnings)
-- [ ] `components/admin/import/ExcelDropzone.vue`
-- [ ] `components/admin/import/ImportPreview.vue`
-- [ ] `components/admin/import/ImportReport.vue`
+- [x] `pages/admin/import/index.vue` :
+  - [x] Zone de drop pour fichier Excel/CSV
+  - [x] Configuration (type, année, commune)
+  - [x] Prévisualisation des données
+  - [x] Téléchargement modèles Excel
+  - [x] Historique des imports récents
+  - [x] Modal résultat d'import
 
 ---
 
@@ -703,8 +706,8 @@
 | 3 | Layout et Navigation Admin | 90% |
 | 4 | Composants Réutilisables | 75% |
 | 5 | Service API | 100% |
-| 6 | Dashboard Admin | 0% |
-| 7 | Gestion des Données Financières | 0% |
+| 6 | Dashboard Admin | 80% |
+| 7 | Gestion des Données Financières | 85% |
 | 8 | Gestion de la Géographie | 0% |
 | 9 | Gestion des Projets Miniers | 0% |
 | 10 | Gestion du CMS | 0% |
@@ -718,7 +721,7 @@
 | 18 | Optimisation et Performance | 0% |
 | 19 | Déploiement | 0% |
 
-**Avancement global estimé : 25%**
+**Avancement global estimé : 35%**
 
 ---
 
@@ -729,9 +732,10 @@
 3. ~~**Phase 3** - Créer le layout admin avec sidebar~~ ✅ 90%
 4. ~~**Phase 4** - Développer les composants UI de base (DataTable, Modal, Toast)~~ ✅ 75%
 5. ~~**Phase 5** - Configurer les services API avec typage~~ ✅ 100%
-6. **Phase 6** - Créer le dashboard admin complet
-7. **Phase 7** - Implémenter la gestion des données financières
+6. ~~**Phase 6** - Créer le dashboard admin complet~~ ✅ 80%
+7. ~~**Phase 7** - Implémenter la gestion des données financières~~ ✅ 85%
 8. **Phase 8** - Implémenter la gestion de la géographie
+9. **Phase 9** - Implémenter la gestion des projets miniers
 
 ---
 
