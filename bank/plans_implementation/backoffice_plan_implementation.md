@@ -3,7 +3,7 @@
 **Projet**: Plateforme de Suivi des Revenus Miniers des Collectivités Territoriales
 **Client**: Transparency International - Initiative Madagascar (TI MG) / PCQVP Madagascar
 **Référence**: PCQVP_Plateforme
-**Dernière mise à jour**: 02 décembre 2025
+**Dernière mise à jour**: 07 décembre 2025
 
 ---
 
@@ -553,47 +553,76 @@
 ## Phase 11 : Gestion des Documents
 
 ### 11.1 Liste et CRUD documents
-- [ ] `pages/admin/documents/index.vue` :
-  - [ ] Liste avec filtres (type, commune, public/privé)
-  - [ ] Prévisualisation miniature
-  - [ ] Actions : télécharger, éditer, supprimer
-- [ ] `pages/admin/documents/[id].vue` :
-  - [ ] Métadonnées : titre, description, type, commune
-  - [ ] Visibilité (public/privé)
-  - [ ] Téléchargement
-- [ ] `pages/admin/documents/upload.vue` :
-  - [ ] Zone de drop multi-fichiers
-  - [ ] Métadonnées par fichier
-  - [ ] Barre de progression
+- [x] `pages/admin/documents/index.vue` :
+  - [x] Liste avec filtres (type, commune, public/privé)
+  - [x] Prévisualisation miniature par type de fichier
+  - [x] Cartes statistiques (total, public, privé, téléchargements)
+  - [x] Actions : voir, télécharger, supprimer avec confirmation
+  - [x] Grid layout responsive avec cartes documents
+- [x] `pages/admin/documents/[id].vue` :
+  - [x] Métadonnées : titre, description, type, compte administratif
+  - [x] Mode édition avec formulaire
+  - [x] Gestion des tags (ajout/suppression)
+  - [x] Visibilité (public/privé) avec toggle
+  - [x] Téléchargement et compteur
+  - [x] Zone de danger avec suppression
+- [x] `pages/admin/documents/upload.vue` :
+  - [x] Zone de drop multi-fichiers avec validation
+  - [x] Liste des fichiers sélectionnés avec métadonnées éditables
+  - [x] Paramètres communs (visibilité, compte, tags)
+  - [x] Barre de progression par fichier
+  - [x] Résumé de l'upload (réussis, échoués, en attente)
 
 ### 11.2 Composants upload
-- [ ] `components/admin/upload/FileDropzone.vue`
-- [ ] `components/admin/upload/FilePreview.vue`
-- [ ] `components/admin/upload/UploadProgress.vue`
+- [x] `components/admin/upload/FileDropzone.vue` :
+  - [x] Zone de drag & drop avec validation
+  - [x] Support multi-fichiers
+  - [x] Tailles configurables (sm, md, lg)
+  - [x] Formats et taille max configurables
+- [x] `components/admin/upload/FilePreview.vue` :
+  - [x] Aperçu fichier avec icône par type
+  - [x] Barre de progression intégrée
+  - [x] Statuts (pending, uploading, success, error)
+  - [x] Actions : aperçu, supprimer
+- [x] `components/admin/upload/UploadProgress.vue` :
+  - [x] Barre de progression configurable
+  - [x] Tailles multiples (xs, sm, md, lg)
+  - [x] Affichage détails (taille, vitesse, temps restant)
+  - [x] Animation optionnelle
 
 ---
 
 ## Phase 12 : Gestion des Utilisateurs
 
 ### 12.1 Liste et CRUD utilisateurs
-- [ ] `pages/admin/utilisateurs/index.vue` :
-  - [ ] Liste avec filtres (rôle, actif, commune)
-  - [ ] Recherche par nom/email
-  - [ ] Actions : voir, éditer, activer/désactiver, supprimer
-- [ ] `pages/admin/utilisateurs/[id].vue` :
-  - [ ] Informations : nom, email, rôle, commune associée
-  - [ ] Historique de connexion
-  - [ ] Sessions actives
-  - [ ] Bouton réinitialiser mot de passe
-- [ ] `pages/admin/utilisateurs/create.vue` :
-  - [ ] Formulaire de création
+- [x] `pages/admin/utilisateurs/index.vue` :
+  - [x] Liste avec filtres (rôle, actif)
+  - [x] Recherche par nom/email
+  - [x] Cartes statistiques (total, actifs, inactifs, admins)
+  - [x] Actions : voir, éditer, activer/désactiver, supprimer
+  - [x] Pagination complète
+  - [x] Avatars colorés par rôle
+- [x] `pages/admin/utilisateurs/[id].vue` :
+  - [x] Informations : nom, email, rôle, commune associée
+  - [x] Mode édition avec formulaire complet
+  - [x] Historique de connexion (mock)
+  - [x] Sessions actives avec révocation
+  - [x] Réinitialisation et définition du mot de passe
+  - [x] Zone de danger avec suppression
+- [x] `pages/admin/utilisateurs/create.vue` :
+  - [x] Formulaire de création complet
+  - [x] Sélection du rôle avec affichage des permissions
+  - [x] Option génération ou définition manuelle du mot de passe
+  - [x] Indicateur de force du mot de passe
+  - [x] Sélection commune pour rôle commune
 
 ### 12.2 Profil utilisateur connecté
-- [ ] `pages/admin/profil/index.vue` :
-  - [ ] Informations personnelles
-  - [ ] Changement de mot de passe
-  - [ ] Préférences (thème, langue)
-  - [ ] Sessions actives avec déconnexion
+- [x] `pages/admin/profil/index.vue` :
+  - [x] Informations personnelles éditables
+  - [x] Changement de mot de passe avec confirmation
+  - [x] Préférences (thème clair/sombre, langue, notifications)
+  - [x] Sessions actives avec déconnexion individuelle
+  - [x] Déconnexion de toutes les autres sessions
 
 ---
 
@@ -750,8 +779,8 @@
 | 8 | Gestion de la Géographie | 100% |
 | 9 | Gestion des Projets Miniers | 95% |
 | 10 | Gestion du CMS | 100% |
-| 11 | Gestion des Documents | 0% |
-| 12 | Gestion des Utilisateurs | 0% |
+| 11 | Gestion des Documents | 100% |
+| 12 | Gestion des Utilisateurs | 100% |
 | 13 | Gestion Newsletter | 0% |
 | 14 | Statistiques et Audit | 0% |
 | 15 | Paramètres | 0% |
@@ -760,7 +789,7 @@
 | 18 | Optimisation et Performance | 0% |
 | 19 | Déploiement | 0% |
 
-**Avancement global estimé : 52%**
+**Avancement global estimé : 63%**
 
 ---
 
@@ -775,9 +804,11 @@
 7. ~~**Phase 7** - Implémenter la gestion des données financières~~ ✅ 85%
 8. ~~**Phase 8** - Implémenter la gestion de la géographie~~ ✅ 100%
 9. ~~**Phase 9** - Implémenter la gestion des projets miniers~~ ✅ 95%
-10. ~~**Phase 10** - Implémenter la gestion du CMS~~ ✅ 90%
-11. **Phase 11** - Implémenter la gestion des documents
-12. **Phase 12** - Implémenter la gestion des utilisateurs
+10. ~~**Phase 10** - Implémenter la gestion du CMS~~ ✅ 100%
+11. ~~**Phase 11** - Implémenter la gestion des documents~~ ✅ 100%
+12. ~~**Phase 12** - Implémenter la gestion des utilisateurs~~ ✅ 100%
+13. **Phase 13** - Implémenter la gestion newsletter
+14. **Phase 14** - Implémenter statistiques et audit
 
 ---
 
