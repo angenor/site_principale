@@ -990,7 +990,6 @@ const activeSheet = ref<'RECETTE' | 'DEPENSES' | 'EQUILIBRE'>('RECETTE')
 
 // Données des tableaux (API)
 const tableauComplet = ref<TableauCompletAPI | null>(null)
-const useMockData = ref(false) // Flag pour utiliser les données mock si l'API échoue
 
 // Action states
 const isValidating = ref(false)
@@ -1012,28 +1011,22 @@ const isEditable = computed(() => {
   return compte.value?.statut === 'brouillon' || compte.value?.statut === 'valide'
 })
 
-const lignesRecettes = computed(() => {
-  return lignes.value.filter(l => l.rubrique?.type === 'recette')
-})
-
-const lignesDepenses = computed(() => {
-  return lignes.value.filter(l => l.rubrique?.type === 'depense')
-})
-
-const lignesEquilibre = computed(() => {
-  return lignes.value.filter(l => l.rubrique?.type === 'equilibre')
-})
-
 const totaux = computed(() => {
-  const recettes = lignesRecettes.value.reduce((sum, l) => {
-    const montant = l.valeurs?.realisation || l.valeurs?.prevision || 0
-    return sum + (typeof montant === 'number' ? montant : 0)
-  }, 0)
+  // Calcul des totaux depuis tableauComplet (données réelles de l'API)
+  let recettes = 0
+  let depenses = 0
 
-  const depenses = lignesDepenses.value.reduce((sum, l) => {
-    const montant = l.valeurs?.realisation || l.valeurs?.prevision || 0
-    return sum + (typeof montant === 'number' ? montant : 0)
-  }, 0)
+  if (tableauComplet.value?.recettes?.sections) {
+    recettes = tableauComplet.value.recettes.sections.reduce((sum: number, section: SectionTableauRecettesAPI) => {
+      return sum + (section.total_or_admis || 0)
+    }, 0)
+  }
+
+  if (tableauComplet.value?.depenses?.sections) {
+    depenses = tableauComplet.value.depenses.sections.reduce((sum: number, section: SectionTableauDepensesAPI) => {
+      return sum + (section.total_mandat_admis || 0)
+    }, 0)
+  }
 
   return {
     recettes,
@@ -1042,21 +1035,8 @@ const totaux = computed(() => {
   }
 })
 
-// Données mock par défaut pour le développement
-const mockRecettesFonctionnement = [
-  { code: '70', intitule: 'IMPOTS SUR LES REVENUS, BENEFICES ET GAINS', niveau: 1, budget_primitif: 5000000, budget_additionnel: 500000, modifications: 0, previsions_definitives: 5500000, or_admis: 4800000, recouvrement: 4500000, reste_a_recouvrer: 300000, taux_execution: 0.87 },
-  { code: '708', intitule: 'Autres impôts sur les revenus', niveau: 2, budget_primitif: 0, budget_additionnel: 0, modifications: 0, previsions_definitives: 0, or_admis: 0, recouvrement: 0, reste_a_recouvrer: 0, taux_execution: 0 },
-  { code: '7080', intitule: 'Autres impôts - Impôt synthétique', niveau: 3, budget_primitif: 5000000, budget_additionnel: 500000, modifications: 0, previsions_definitives: 5500000, or_admis: 4800000, recouvrement: 4500000, reste_a_recouvrer: 300000, taux_execution: 0.87 },
-  { code: '71', intitule: 'IMPOTS SUR LE PATRIMOINE', niveau: 1, budget_primitif: 8000000, budget_additionnel: 1000000, modifications: 200000, previsions_definitives: 9200000, or_admis: 8500000, recouvrement: 8000000, reste_a_recouvrer: 500000, taux_execution: 0.92 },
-  { code: '714', intitule: 'Impôts fonciers sur les terrains - IFT', niveau: 2, budget_primitif: 0, budget_additionnel: 0, modifications: 0, previsions_definitives: 0, or_admis: 0, recouvrement: 0, reste_a_recouvrer: 0, taux_execution: 0 },
-  { code: '7140', intitule: 'Impôts fonciers sur les terrains - IFT', niveau: 3, budget_primitif: 4000000, budget_additionnel: 500000, modifications: 100000, previsions_definitives: 4600000, or_admis: 4200000, recouvrement: 4000000, reste_a_recouvrer: 200000, taux_execution: 0.91 },
-  { code: '72', intitule: 'IMPOTS ET TAXES SUR BIENS ET SERVICES', niveau: 1, budget_primitif: 3000000, budget_additionnel: 200000, modifications: 0, previsions_definitives: 3200000, or_admis: 2800000, recouvrement: 2600000, reste_a_recouvrer: 200000, taux_execution: 0.88 },
-]
-
 // Preview data for Excel visualization - RECETTES DE FONCTIONNEMENT
-// Utilise les données de l'API si disponibles, sinon fallback sur mock
 const previewRecettesFonctionnement = computed(() => {
-  // Si données API disponibles (section 0 = FONCTIONNEMENT)
   const apiSection = tableauComplet.value?.recettes?.sections?.find(s => s.section === 'fonctionnement')
   if (apiSection?.lignes?.length) {
     return apiSection.lignes.map(l => ({
@@ -1073,24 +1053,11 @@ const previewRecettesFonctionnement = computed(() => {
       taux_execution: l.taux_execution ? l.taux_execution / 100 : 0,
     }))
   }
-  // Fallback mock
-  return mockRecettesFonctionnement
+  return []
 })
-
-// Données mock pour recettes investissement
-const mockRecettesInvestissement = [
-  { code: '20', intitule: 'SUBVENTIONS D\'INVESTISSEMENT', niveau: 1, budget_primitif: 15000000, budget_additionnel: 2000000, modifications: 500000, previsions_definitives: 17500000, or_admis: 16000000, recouvrement: 14500000, reste_a_recouvrer: 1500000, taux_execution: 0.91 },
-  { code: '201', intitule: 'Subventions d\'équipement de l\'État', niveau: 2, budget_primitif: 0, budget_additionnel: 0, modifications: 0, previsions_definitives: 0, or_admis: 0, recouvrement: 0, reste_a_recouvrer: 0, taux_execution: 0 },
-  { code: '2010', intitule: 'Dotations d\'équipement des collectivités', niveau: 3, budget_primitif: 10000000, budget_additionnel: 1500000, modifications: 300000, previsions_definitives: 11800000, or_admis: 11000000, recouvrement: 10000000, reste_a_recouvrer: 1000000, taux_execution: 0.91 },
-  { code: '21', intitule: 'EMPRUNTS', niveau: 1, budget_primitif: 5000000, budget_additionnel: 0, modifications: 0, previsions_definitives: 5000000, or_admis: 5000000, recouvrement: 5000000, reste_a_recouvrer: 0, taux_execution: 1.0 },
-  { code: '211', intitule: 'Emprunts bancaires', niveau: 2, budget_primitif: 0, budget_additionnel: 0, modifications: 0, previsions_definitives: 0, or_admis: 0, recouvrement: 0, reste_a_recouvrer: 0, taux_execution: 0 },
-  { code: '2110', intitule: 'Emprunts à long terme', niveau: 3, budget_primitif: 5000000, budget_additionnel: 0, modifications: 0, previsions_definitives: 5000000, or_admis: 5000000, recouvrement: 5000000, reste_a_recouvrer: 0, taux_execution: 1.0 },
-  { code: '22', intitule: 'CESSIONS D\'ACTIFS', niveau: 1, budget_primitif: 2000000, budget_additionnel: 500000, modifications: 0, previsions_definitives: 2500000, or_admis: 2000000, recouvrement: 1800000, reste_a_recouvrer: 200000, taux_execution: 0.80 },
-]
 
 // Preview data for Excel visualization - RECETTES D'INVESTISSEMENT
 const previewRecettesInvestissement = computed(() => {
-  // Si données API disponibles (section INVESTISSEMENT)
   const apiSection = tableauComplet.value?.recettes?.sections?.find(
     (s: SectionTableauRecettesAPI) => s.section === 'investissement'
   )
@@ -1109,7 +1076,7 @@ const previewRecettesInvestissement = computed(() => {
       taux_execution: l.taux_execution ? l.taux_execution / 100 : 0,
     }))
   }
-  return mockRecettesInvestissement
+  return []
 })
 
 // Totaux des recettes (Fonctionnement + Investissement + Général)
@@ -1149,20 +1116,8 @@ const totauxRecettes = computed(() => {
   return { fonctionnement, investissement, general }
 })
 
-// Données mock pour dépenses fonctionnement
-const mockDepensesFonctionnement = [
-  { code: '60', intitule: 'CHARGES DE PERSONNEL', niveau: 1, budget_primitif: 6000000, budget_additionnel: 500000, modifications: 0, previsions_definitives: 6500000, engagement: 6500000, mandat_admis: 6000000, paiement: 5800000, reste_a_payer: 200000, taux_execution: 0.92 },
-  { code: '601', intitule: 'Salaires et accessoires', niveau: 2, budget_primitif: 0, budget_additionnel: 0, modifications: 0, previsions_definitives: 0, engagement: 0, mandat_admis: 0, paiement: 0, reste_a_payer: 0, taux_execution: 0 },
-  { code: '6011', intitule: 'Personnel permanent', niveau: 3, budget_primitif: 4000000, budget_additionnel: 300000, modifications: 0, previsions_definitives: 4300000, engagement: 4300000, mandat_admis: 4000000, paiement: 3900000, reste_a_payer: 100000, taux_execution: 0.93 },
-  { code: '61', intitule: 'ACHATS DE BIENS', niveau: 1, budget_primitif: 3000000, budget_additionnel: 200000, modifications: 100000, previsions_definitives: 3300000, engagement: 3300000, mandat_admis: 3000000, paiement: 2800000, reste_a_payer: 200000, taux_execution: 0.91 },
-  { code: '611', intitule: 'Achats de biens de fonctionnement', niveau: 2, budget_primitif: 0, budget_additionnel: 0, modifications: 0, previsions_definitives: 0, engagement: 0, mandat_admis: 0, paiement: 0, reste_a_payer: 0, taux_execution: 0 },
-  { code: '6111', intitule: 'Fournitures et articles de bureau', niveau: 3, budget_primitif: 1500000, budget_additionnel: 100000, modifications: 50000, previsions_definitives: 1650000, engagement: 1650000, mandat_admis: 1500000, paiement: 1400000, reste_a_payer: 100000, taux_execution: 0.91 },
-  { code: '62', intitule: 'ACHATS DE SERVICES', niveau: 1, budget_primitif: 2000000, budget_additionnel: 150000, modifications: 0, previsions_definitives: 2150000, engagement: 2150000, mandat_admis: 2000000, paiement: 1900000, reste_a_payer: 100000, taux_execution: 0.93 },
-]
-
 // Preview data for Excel visualization - DÉPENSES DE FONCTIONNEMENT
 const previewDepensesFonctionnement = computed(() => {
-  // Si données API disponibles (section FONCTIONNEMENT)
   const apiSection = tableauComplet.value?.depenses?.sections?.find(
     (s: SectionTableauDepensesAPI) => s.section === 'fonctionnement'
   )
@@ -1182,23 +1137,11 @@ const previewDepensesFonctionnement = computed(() => {
       taux_execution: l.taux_execution ? l.taux_execution / 100 : 0,
     }))
   }
-  return mockDepensesFonctionnement
+  return []
 })
-
-// Données mock pour dépenses investissement
-const mockDepensesInvestissement = [
-  { code: '20', intitule: 'IMMOBILISATIONS INCORPORELLES', niveau: 1, budget_primitif: 2000000, budget_additionnel: 300000, modifications: 0, previsions_definitives: 2300000, engagement: 2300000, mandat_admis: 2100000, paiement: 2000000, reste_a_payer: 100000, taux_execution: 0.91 },
-  { code: '201', intitule: 'Logiciels et brevets', niveau: 2, budget_primitif: 0, budget_additionnel: 0, modifications: 0, previsions_definitives: 0, engagement: 0, mandat_admis: 0, paiement: 0, reste_a_payer: 0, taux_execution: 0 },
-  { code: '2010', intitule: 'Logiciels informatiques', niveau: 3, budget_primitif: 2000000, budget_additionnel: 300000, modifications: 0, previsions_definitives: 2300000, engagement: 2300000, mandat_admis: 2100000, paiement: 2000000, reste_a_payer: 100000, taux_execution: 0.91 },
-  { code: '21', intitule: 'IMMOBILISATIONS CORPORELLES', niveau: 1, budget_primitif: 12000000, budget_additionnel: 1500000, modifications: 500000, previsions_definitives: 14000000, engagement: 14000000, mandat_admis: 13000000, paiement: 12000000, reste_a_payer: 1000000, taux_execution: 0.92 },
-  { code: '211', intitule: 'Constructions', niveau: 2, budget_primitif: 0, budget_additionnel: 0, modifications: 0, previsions_definitives: 0, engagement: 0, mandat_admis: 0, paiement: 0, reste_a_payer: 0, taux_execution: 0 },
-  { code: '2110', intitule: 'Bâtiments administratifs', niveau: 3, budget_primitif: 8000000, budget_additionnel: 1000000, modifications: 300000, previsions_definitives: 9300000, engagement: 9300000, mandat_admis: 8700000, paiement: 8000000, reste_a_payer: 700000, taux_execution: 0.92 },
-  { code: '22', intitule: 'REMBOURSEMENT D\'EMPRUNTS', niveau: 1, budget_primitif: 3000000, budget_additionnel: 0, modifications: 0, previsions_definitives: 3000000, engagement: 3000000, mandat_admis: 3000000, paiement: 3000000, reste_a_payer: 0, taux_execution: 1.0 },
-]
 
 // Preview data for Excel visualization - DÉPENSES D'INVESTISSEMENT
 const previewDepensesInvestissement = computed(() => {
-  // Si données API disponibles (section INVESTISSEMENT)
   const apiSection = tableauComplet.value?.depenses?.sections?.find(
     (s: SectionTableauDepensesAPI) => s.section === 'investissement'
   )
@@ -1218,7 +1161,7 @@ const previewDepensesInvestissement = computed(() => {
       taux_execution: l.taux_execution ? l.taux_execution / 100 : 0,
     }))
   }
-  return mockDepensesInvestissement
+  return []
 })
 
 // Totaux des dépenses (Fonctionnement + Investissement + Général)
@@ -1408,102 +1351,6 @@ const loadTableauComplet = async () => {
     isLoadingTableau.value = false
   }
 }
-
-// Génère un compte mock pour le développement
-// Format ID attendu: {commune_id}-{exercice_id}
-const generateMockCompte = (id: string): CompteAdministratif => {
-  const communes = [
-    'Antananarivo Renivohitra', 'Toamasina I', 'Antsirabe I',
-    'Fianarantsoa I', 'Mahajanga I', 'Toliara I', 'Antsiranana I', 'Ambatondrazaka'
-  ]
-
-  // Parse l'ID au format {commune_id}-{exercice_id}
-  const parts = id.split('-')
-  const communeId = parts[0] || '1'
-  const exerciceId = parts[1] || '1'
-  const idx = parseInt(communeId) - 1 || 0
-  const exerciceIdx = parseInt(exerciceId) - 1 || 0
-
-  const communeNom = communes[idx % communes.length]
-  const currentYear = new Date().getFullYear()
-
-  return {
-    id,
-    commune_id: communeId,
-    commune: { id: communeId, code: `COM${communeId.padStart(3, '0')}`, nom: communeNom } as any,
-    district_id: null,
-    district: null,
-    region_id: null,
-    region: null,
-    annee: currentYear - exerciceIdx,
-    statut: idx % 3 === 0 ? 'brouillon' : idx % 3 === 1 ? 'valide' : 'publie',
-    notes: 'Compte administratif de démonstration',
-    created_at: new Date(Date.now() - 30 * 86400000).toISOString(),
-    updated_at: new Date().toISOString(),
-  }
-}
-
-// Génère des lignes budgétaires mock
-const generateMockLignes = (): LigneBudgetaire[] => {
-  const rubriquesRecettes = [
-    { code: '70', intitule: 'IMPOTS SUR LES REVENUS' },
-    { code: '71', intitule: 'IMPOTS SUR LE PATRIMOINE' },
-    { code: '72', intitule: 'IMPOTS SUR LES BIENS ET SERVICES' },
-    { code: '73', intitule: 'DROITS ET TAXES DIVERSES' },
-  ]
-  const rubriquesDepenses = [
-    { code: '60', intitule: 'CHARGES DE PERSONNEL' },
-    { code: '61', intitule: 'ACHATS DE BIENS' },
-    { code: '62', intitule: 'ACHATS DE SERVICES' },
-    { code: '63', intitule: 'CHARGES FINANCIERES' },
-  ]
-
-  const lignes: LigneBudgetaire[] = []
-  let idCounter = 1
-
-  // Recettes
-  rubriquesRecettes.forEach(r => {
-    lignes.push({
-      id: String(idCounter++),
-      compte_administratif_id: compteId.value,
-      rubrique_id: r.code,
-      rubrique: { id: r.code, code: r.code, intitule: r.intitule, type: 'recette' } as any,
-      valeurs: {
-        budget_primitif: Math.floor(Math.random() * 50000000) + 10000000,
-        prevision: Math.floor(Math.random() * 60000000) + 15000000,
-        realisation: Math.floor(Math.random() * 55000000) + 12000000,
-      },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-  })
-
-  // Dépenses
-  rubriquesDepenses.forEach(r => {
-    lignes.push({
-      id: String(idCounter++),
-      compte_administratif_id: compteId.value,
-      rubrique_id: r.code,
-      rubrique: { id: r.code, code: r.code, intitule: r.intitule, type: 'depense' } as any,
-      valeurs: {
-        budget_primitif: Math.floor(Math.random() * 40000000) + 8000000,
-        prevision: Math.floor(Math.random() * 45000000) + 10000000,
-        realisation: Math.floor(Math.random() * 42000000) + 9000000,
-      },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-  })
-
-  return lignes
-}
-
-// Génère des colonnes mock
-const generateMockColonnes = (): ColonneDynamique[] => [
-  { id: '1', cle: 'budget_primitif', label: 'Budget Primitif', type_donnee: 'nombre', applicable_a: 'tous', ordre: 1, est_editable: true, est_visible: true, est_active: true } as ColonneDynamique,
-  { id: '2', cle: 'prevision', label: 'Prévision', type_donnee: 'nombre', applicable_a: 'tous', ordre: 2, est_editable: true, est_visible: true, est_active: true } as ColonneDynamique,
-  { id: '3', cle: 'realisation', label: 'Réalisation', type_donnee: 'nombre', applicable_a: 'tous', ordre: 3, est_editable: true, est_visible: true, est_active: true } as ColonneDynamique,
-]
 
 const loadLignes = async () => {
   isLoadingLignes.value = true
