@@ -403,111 +403,150 @@
 ## Phase 8 : Gestion de la Géographie
 
 ### 8.1 Provinces
-- [ ] `pages/admin/geo/provinces/index.vue` :
-  - [ ] Liste des 6 provinces
-  - [ ] Compteurs par province (régions, communes)
-- [ ] `pages/admin/geo/provinces/[id].vue` :
-  - [ ] Détail avec liste des régions
-  - [ ] Statistiques agrégées
+- [x] `pages/admin/geo/provinces/index.vue` :
+  - [x] Liste des 6 provinces avec cartes visuelles
+  - [x] Compteurs par province (régions, communes)
+  - [x] Récapitulatif global
+- [x] `pages/admin/geo/provinces/[id].vue` :
+  - [x] Détail avec liste des régions
+  - [x] Navigation vers les régions
 
 ### 8.2 Régions
-- [ ] `pages/admin/geo/regions/index.vue` :
-  - [ ] Liste des 22 régions
-  - [ ] Filtre par province
-  - [ ] Compteurs (communes, population)
-- [ ] `pages/admin/geo/regions/[id].vue` :
-  - [ ] Détail avec liste des communes
-  - [ ] Statistiques financières agrégées
+- [x] `pages/admin/geo/regions/index.vue` :
+  - [x] Liste des 22 régions avec pagination
+  - [x] Filtre par province
+  - [x] Recherche par nom/code
+  - [x] Compteurs (communes)
+- [x] `pages/admin/geo/regions/[id].vue` :
+  - [x] Détail avec liste des communes
+  - [x] Filtres par type (urbaine/rurale)
+  - [x] Recherche
 
 ### 8.3 Communes
-- [ ] `pages/admin/geo/communes/index.vue` :
-  - [ ] Liste paginée avec recherche
-  - [ ] Filtres : province, région, type (urbaine/rurale)
-  - [ ] Actions : voir, éditer, créer
-- [ ] `pages/admin/geo/communes/[id].vue` :
-  - [ ] Formulaire d'édition (nom, type, code, population, maire)
-  - [ ] Lien vers comptes administratifs
-  - [ ] Lien vers projets miniers associés
-- [ ] `pages/admin/geo/communes/create.vue` :
-  - [ ] Formulaire de création
+- [x] `pages/admin/geo/communes/index.vue` :
+  - [x] Liste paginée avec DataTable
+  - [x] Filtres : province, région, type (urbaine/rurale)
+  - [x] Recherche
+  - [x] Actions : voir, éditer, supprimer
+  - [x] Modal de confirmation de suppression
+- [x] `pages/admin/geo/communes/[id].vue` :
+  - [x] Affichage détaillé avec cartes (localisation, stats, comptes)
+  - [x] Mode édition avec formulaire
+  - [x] Lien vers comptes administratifs
+- [x] `pages/admin/geo/communes/create.vue` :
+  - [x] Formulaire de création complet
+  - [x] Sélection province → région cascadée
+  - [x] Validation des champs
 
 ---
 
 ## Phase 9 : Gestion des Projets Miniers
 
 ### 9.1 Sociétés minières
-- [ ] `pages/admin/projets/societes/index.vue` :
-  - [ ] Liste avec recherche
-  - [ ] Nombre de projets par société
-- [ ] `pages/admin/projets/societes/[id].vue` :
-  - [ ] Détail avec projets associés
-  - [ ] Édition des informations (nom, contact, site web)
-- [ ] `pages/admin/projets/societes/create.vue` :
-  - [ ] Formulaire de création
+- [x] `pages/admin/projets/societes/index.vue` :
+  - [x] Liste avec recherche
+  - [x] Nombre de projets par société
+  - [x] Cartes visuelles avec informations de contact
+  - [x] Actions : voir, supprimer avec confirmation
+- [x] `pages/admin/projets/societes/[id].vue` :
+  - [x] Détail avec projets associés
+  - [x] Édition des informations (nom, code, contact, site web, adresse)
+  - [x] Cartes d'information (contact, adresse, projets)
+- [x] `pages/admin/projets/societes/create.vue` :
+  - [x] Formulaire de création complet
 
 ### 9.2 Projets miniers
-- [ ] `pages/admin/projets/index.vue` :
-  - [ ] Liste avec filtres (société, statut, type minerai)
-  - [ ] Carte des localisations (optionnel)
-- [ ] `pages/admin/projets/[id].vue` :
-  - [ ] Formulaire : nom, code, type minerai, société, statut, coordonnées GPS
-  - [ ] Association aux communes (relation N-N)
-  - [ ] Liste des revenus générés
-- [ ] `pages/admin/projets/create.vue` :
-  - [ ] Formulaire de création
+- [x] `pages/admin/projets/index.vue` :
+  - [x] Liste avec filtres (société, statut, type minerai)
+  - [x] DataTable avec tri et pagination
+  - [x] Recherche globale
+  - [x] Actions : voir, modifier, supprimer
+- [x] `pages/admin/projets/[id].vue` :
+  - [x] Formulaire : nom, code, type minerai, société, statut, coordonnées GPS
+  - [x] Cartes résumé (minerai, société, dates, revenus)
+  - [x] Liste des revenus générés
+  - [x] Mode édition intégré
+- [x] `pages/admin/projets/create.vue` :
+  - [x] Formulaire de création complet
+  - [x] Pré-remplissage société si passé via query
 
 ### 9.3 Revenus miniers
-- [ ] `pages/admin/revenus/index.vue` :
-  - [ ] Liste avec filtres (commune, projet, type, année)
-  - [ ] Import en lot
-- [ ] `pages/admin/revenus/[id].vue` :
-  - [ ] Formulaire d'édition (projet, commune, type, montant, année)
-- [ ] `pages/admin/revenus/create.vue` :
-  - [ ] Formulaire de création
+- [x] `pages/admin/revenus/index.vue` :
+  - [x] Liste avec filtres (commune, projet, type, année, trimestre, région)
+  - [x] Cartes statistiques (total, ristournes, redevances, autres)
+  - [x] DataTable avec tri et pagination
+  - [ ] Import en lot (à implémenter)
+- [x] `pages/admin/revenus/[id].vue` :
+  - [x] Formulaire d'édition (projet, commune, type, montant, année, trimestre)
+  - [x] Cartes résumé (montant, projet, commune)
+- [x] `pages/admin/revenus/create.vue` :
+  - [x] Formulaire de création complet
+  - [x] Carte récapitulative du projet sélectionné
 
 ---
 
 ## Phase 10 : Gestion du CMS
 
 ### 10.1 Pages compte administratif
-- [ ] `pages/admin/cms/pages/index.vue` :
-  - [ ] Liste des pages (brouillon, publiée, archivée)
-  - [ ] Filtres : commune, exercice, statut
-  - [ ] Actions : créer, éditer, publier, archiver
-- [ ] `pages/admin/cms/pages/[id].vue` :
-  - [ ] En-tête : titre, description, statut
-  - [ ] Liste des sections ordonnables (drag & drop)
-  - [ ] Prévisualisation
-- [ ] `pages/admin/cms/pages/create.vue` :
-  - [ ] Formulaire : commune, exercice, titre, description
+- [x] `pages/admin/cms/pages/index.vue` :
+  - [x] Liste des pages (brouillon, publiée, archivée)
+  - [x] Filtres : compte administratif, statut, recherche
+  - [x] Actions : créer, éditer, publier, archiver, dupliquer, supprimer
+  - [x] Cartes statistiques (total, publiées, brouillons, archivées)
+  - [x] Pagination
+- [x] `pages/admin/cms/pages/[id].vue` :
+  - [x] En-tête : titre, description, statut, actions
+  - [x] Cartes info (informations, SEO, contenu)
+  - [x] Liste des sections ordonnables (monter/descendre)
+  - [x] Ajout de sections par type
+  - [x] Édition inline des sections via modal
+  - [x] Prévisualisation
+  - [x] Mode édition des métadonnées
+- [x] `pages/admin/cms/pages/create.vue` :
+  - [x] Formulaire : compte administratif, titre, slug, description
+  - [x] Génération automatique du slug
+  - [x] Options SEO (meta title, meta description)
+  - [x] Carte de prévisualisation
 
 ### 10.2 Sections CMS
-- [ ] `pages/admin/cms/sections/[id].vue` :
-  - [ ] Formulaire selon le type de section
-  - [ ] Types supportés :
-    - [ ] `editorjs` - Éditeur de texte riche
-    - [ ] `bloc_image_gauche` / `bloc_image_droite` - Image + texte
-    - [ ] `carte_fond_image` - Carte avec fond
-    - [ ] `grille_cartes` - Grille de cartes informatives
-    - [ ] `galerie_photos` - Galerie d'images
-    - [ ] `liens_utiles` - Liste de liens
-    - [ ] `note_informative` - Note
-    - [ ] `tableau_financier` - Tableau intégré
-    - [ ] `graphiques_analytiques` - Graphiques
+- [x] Édition des sections intégrée dans `pages/[id].vue` via modal
+- [x] Types supportés (10 types) :
+  - [x] `editorjs` - Éditeur de texte riche simplifié
+  - [x] `bloc_image_gauche` / `bloc_image_droite` - Image + texte
+  - [x] `carte_fond_image` - Carte avec fond et overlay
+  - [x] `grille_cartes` - Grille de cartes informatives
+  - [x] `galerie_photos` - Galerie d'images avec légendes
+  - [x] `liens_utiles` - Liste de liens
+  - [x] `note_informative` - Note (info, success, warning, error)
+  - [x] `tableau_financier` - Configuration tableau budgétaire
+  - [x] `graphiques_analytiques` - Configuration graphiques
 
 ### 10.3 Composants CMS
-- [ ] `components/admin/cms/SectionList.vue` - Liste drag & drop
-- [ ] `components/admin/cms/SectionEditor.vue` - Éditeur selon type
-- [ ] `components/admin/cms/EditorJSBlock.vue` - Éditeur texte riche
-- [ ] `components/admin/cms/ImageTextBlock.vue` - Bloc image/texte
-- [ ] `components/admin/cms/GalleryEditor.vue` - Gestion galerie photos
-- [ ] `components/admin/cms/CardsGridEditor.vue` - Gestion grille cartes
-- [ ] `components/admin/cms/LinksEditor.vue` - Gestion liens utiles
+- [x] `components/admin/cms/SectionEditor.vue` - Éditeur principal selon type
+- [x] `components/admin/cms/EditorJSBlock.vue` - Éditeur texte riche (titres, paragraphes, listes, citations)
+- [x] `components/admin/cms/ImageTextBlock.vue` - Bloc image/texte avec aperçu
+- [x] `components/admin/cms/CardBackgroundEditor.vue` - Carte avec fond image et overlay
+- [x] `components/admin/cms/GalleryEditor.vue` - Gestion galerie photos
+- [x] `components/admin/cms/CardsGridEditor.vue` - Gestion grille cartes
+- [x] `components/admin/cms/LinksEditor.vue` - Gestion liens utiles
+- [x] `components/admin/cms/NoteEditor.vue` - Note informative
+- [x] `components/admin/cms/FinancialTableEditor.vue` - Configuration tableau financier
+- [x] `components/admin/cms/ChartEditor.vue` - Configuration graphiques
 
 ### 10.4 Intégration Editor.js
-- [ ] Installation de `@editorjs/editorjs` et plugins
-- [ ] Configuration des outils (header, list, image, quote, table)
-- [ ] Composable `useEditorJS.ts`
+- [x] Installation de `@editorjs/editorjs` et plugins :
+  - [x] `@editorjs/editorjs` - Core
+  - [x] `@editorjs/header` - Titres H1-H4
+  - [x] `@editorjs/paragraph` - Paragraphes
+  - [x] `@editorjs/list` - Listes ordonnées/non ordonnées
+  - [x] `@editorjs/quote` - Citations
+  - [x] `@editorjs/delimiter` - Séparateurs
+- [x] `composables/useEditorJS.ts` :
+  - [x] Initialisation et destruction d'instances
+  - [x] Configuration des outils (header, paragraph, list, quote, delimiter)
+  - [x] Callback onChange pour sync v-model
+  - [x] Méthodes save, clear, render, destroy
+- [x] `EditorJSBlock.vue` avec styling dark mode
 
 ---
 
@@ -708,9 +747,9 @@
 | 5 | Service API | 100% |
 | 6 | Dashboard Admin | 80% |
 | 7 | Gestion des Données Financières | 85% |
-| 8 | Gestion de la Géographie | 0% |
-| 9 | Gestion des Projets Miniers | 0% |
-| 10 | Gestion du CMS | 0% |
+| 8 | Gestion de la Géographie | 100% |
+| 9 | Gestion des Projets Miniers | 95% |
+| 10 | Gestion du CMS | 100% |
 | 11 | Gestion des Documents | 0% |
 | 12 | Gestion des Utilisateurs | 0% |
 | 13 | Gestion Newsletter | 0% |
@@ -721,7 +760,7 @@
 | 18 | Optimisation et Performance | 0% |
 | 19 | Déploiement | 0% |
 
-**Avancement global estimé : 35%**
+**Avancement global estimé : 52%**
 
 ---
 
@@ -734,8 +773,11 @@
 5. ~~**Phase 5** - Configurer les services API avec typage~~ ✅ 100%
 6. ~~**Phase 6** - Créer le dashboard admin complet~~ ✅ 80%
 7. ~~**Phase 7** - Implémenter la gestion des données financières~~ ✅ 85%
-8. **Phase 8** - Implémenter la gestion de la géographie
-9. **Phase 9** - Implémenter la gestion des projets miniers
+8. ~~**Phase 8** - Implémenter la gestion de la géographie~~ ✅ 100%
+9. ~~**Phase 9** - Implémenter la gestion des projets miniers~~ ✅ 95%
+10. ~~**Phase 10** - Implémenter la gestion du CMS~~ ✅ 90%
+11. **Phase 11** - Implémenter la gestion des documents
+12. **Phase 12** - Implémenter la gestion des utilisateurs
 
 ---
 

@@ -21,14 +21,26 @@
           TI Madagascar
         </span>
       </NuxtLink>
+      <!-- Collapse button (when expanded) -->
       <button
         v-if="!isCollapsed"
         @click="$emit('toggle')"
         class="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--interactive-hover)] transition-colors cursor-pointer"
+        title="Réduire la sidebar"
       >
         <font-awesome-icon :icon="['fas', 'chevron-left']" />
       </button>
     </div>
+
+    <!-- Expand button (when collapsed) - positioned at top for visibility -->
+    <button
+      v-if="isCollapsed"
+      @click="$emit('toggle')"
+      class="hidden lg:flex items-center justify-center w-full py-3 text-[var(--text-muted)] hover:text-[var(--color-primary)] hover:bg-[var(--interactive-hover)] transition-colors cursor-pointer border-b border-[var(--border-default)]"
+      title="Agrandir la sidebar"
+    >
+      <font-awesome-icon :icon="['fas', 'chevron-right']" />
+    </button>
 
     <!-- Navigation -->
     <nav class="flex-1 overflow-y-auto py-4 px-2">
@@ -123,15 +135,6 @@
 
     <!-- Footer -->
     <div class="p-4 border-t border-[var(--border-default)]">
-      <!-- Collapse button (desktop only) -->
-      <button
-        v-if="isCollapsed"
-        @click="$emit('toggle')"
-        class="hidden lg:flex w-full items-center justify-center py-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--interactive-hover)] transition-colors cursor-pointer"
-      >
-        <font-awesome-icon :icon="['fas', 'chevron-right']" />
-      </button>
-
       <!-- Version info -->
       <div v-if="!isCollapsed" class="text-center text-xs text-[var(--text-muted)]">
         <p>Version 1.0.0</p>

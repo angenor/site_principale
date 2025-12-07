@@ -1,19 +1,19 @@
 /**
  * Service pour la gestion des données géographiques
- * Régions, Districts, Communes
+ * Structure: Province → Région → Commune
  */
 
 import type { PaginatedResponse, PaginationParams } from './api'
 import { useApi } from './api'
 import type {
+  Province,
+  ProvinceWithStats,
   Region,
-  District,
-  Commune,
-  RegionFormData,
-  DistrictFormData,
-  CommuneFormData,
   RegionWithStats,
-  DistrictWithStats,
+  RegionFormData,
+  Commune,
+  CommuneWithStats,
+  CommuneFormData,
 } from '~/types/collectivites'
 
 const BASE_PATH = '/api/v1/admin/geo'
@@ -22,28 +22,44 @@ export const useGeoService = () => {
   const api = useApi()
 
   // ============================================================================
+  // PROVINCES
+  // ============================================================================
+
+  const getProvinces = async (): Promise<ProvinceWithStats[]> => {
+    return api.get<ProvinceWithStats[]>(`${BASE_PATH}/provinces`)
+  }
+
+  const getProvince = async (id: number): Promise<ProvinceWithStats> => {
+    return api.get<ProvinceWithStats>(`${BASE_PATH}/provinces/${id}`)
+  }
+
+  const getProvinceRegions = async (provinceId: number): Promise<RegionWithStats[]> => {
+    return api.get<RegionWithStats[]>(`${BASE_PATH}/provinces/${provinceId}/regions`)
+  }
+
+  // ============================================================================
   // RÉGIONS
   // ============================================================================
 
   const getRegions = async (
-    params?: PaginationParams & { search?: string }
+    params?: PaginationParams & { province_id?: number; search?: string }
   ): Promise<PaginatedResponse<RegionWithStats>> => {
     return api.get<PaginatedResponse<RegionWithStats>>(`${BASE_PATH}/regions`, params)
   }
 
-  const getRegion = async (id: string): Promise<Region> => {
-    return api.get<Region>(`${BASE_PATH}/regions/${id}`)
+  const getRegion = async (id: number): Promise<RegionWithStats> => {
+    return api.get<RegionWithStats>(`${BASE_PATH}/regions/${id}`)
   }
 
   const createRegion = async (data: RegionFormData): Promise<Region> => {
     return api.post<Region>(`${BASE_PATH}/regions`, data)
   }
 
-  const updateRegion = async (id: string, data: Partial<RegionFormData>): Promise<Region> => {
+  const updateRegion = async (id: number, data: Partial<RegionFormData>): Promise<Region> => {
     return api.put<Region>(`${BASE_PATH}/regions/${id}`, data)
   }
 
-  const deleteRegion = async (id: string): Promise<void> => {
+  const deleteRegion = async (id: number): Promise<void> => {
     return api.delete<void>(`${BASE_PATH}/regions/${id}`)
   }
 
@@ -51,34 +67,8 @@ export const useGeoService = () => {
     return api.get<Region[]>(`${BASE_PATH}/regions/all`)
   }
 
-  // ============================================================================
-  // DISTRICTS
-  // ============================================================================
-
-  const getDistricts = async (
-    params?: PaginationParams & { region_id?: string; search?: string }
-  ): Promise<PaginatedResponse<DistrictWithStats>> => {
-    return api.get<PaginatedResponse<DistrictWithStats>>(`${BASE_PATH}/districts`, params)
-  }
-
-  const getDistrict = async (id: string): Promise<District> => {
-    return api.get<District>(`${BASE_PATH}/districts/${id}`)
-  }
-
-  const createDistrict = async (data: DistrictFormData): Promise<District> => {
-    return api.post<District>(`${BASE_PATH}/districts`, data)
-  }
-
-  const updateDistrict = async (id: string, data: Partial<DistrictFormData>): Promise<District> => {
-    return api.put<District>(`${BASE_PATH}/districts/${id}`, data)
-  }
-
-  const deleteDistrict = async (id: string): Promise<void> => {
-    return api.delete<void>(`${BASE_PATH}/districts/${id}`)
-  }
-
-  const getDistrictsByRegion = async (regionId: string): Promise<District[]> => {
-    return api.get<District[]>(`${BASE_PATH}/regions/${regionId}/districts`)
+  const getRegionCommunes = async (regionId: number): Promise<CommuneWithStats[]> => {
+    return api.get<CommuneWithStats[]>(`${BASE_PATH}/regions/${regionId}/communes`)
   }
 
   // ============================================================================
@@ -87,33 +77,29 @@ export const useGeoService = () => {
 
   const getCommunes = async (
     params?: PaginationParams & {
-      region_id?: string
-      district_id?: string
-      type?: 'urbaine' | 'rurale'
+      province_id?: number
+      region_id?: number
+      type_commune?: 'urbaine' | 'rurale'
       search?: string
     }
-  ): Promise<PaginatedResponse<Commune>> => {
-    return api.get<PaginatedResponse<Commune>>(`${BASE_PATH}/communes`, params)
+  ): Promise<PaginatedResponse<CommuneWithStats>> => {
+    return api.get<PaginatedResponse<CommuneWithStats>>(`${BASE_PATH}/communes`, params)
   }
 
-  const getCommune = async (id: string): Promise<Commune> => {
-    return api.get<Commune>(`${BASE_PATH}/communes/${id}`)
+  const getCommune = async (id: number): Promise<CommuneWithStats> => {
+    return api.get<CommuneWithStats>(`${BASE_PATH}/communes/${id}`)
   }
 
   const createCommune = async (data: CommuneFormData): Promise<Commune> => {
     return api.post<Commune>(`${BASE_PATH}/communes`, data)
   }
 
-  const updateCommune = async (id: string, data: Partial<CommuneFormData>): Promise<Commune> => {
+  const updateCommune = async (id: number, data: Partial<CommuneFormData>): Promise<Commune> => {
     return api.put<Commune>(`${BASE_PATH}/communes/${id}`, data)
   }
 
-  const deleteCommune = async (id: string): Promise<void> => {
+  const deleteCommune = async (id: number): Promise<void> => {
     return api.delete<void>(`${BASE_PATH}/communes/${id}`)
-  }
-
-  const getCommunesByDistrict = async (districtId: string): Promise<Commune[]> => {
-    return api.get<Commune[]>(`${BASE_PATH}/districts/${districtId}/communes`)
   }
 
   const searchCommunes = async (query: string, limit?: number): Promise<Commune[]> => {
@@ -121,6 +107,11 @@ export const useGeoService = () => {
   }
 
   return {
+    // Provinces
+    getProvinces,
+    getProvince,
+    getProvinceRegions,
+
     // Régions
     getRegions,
     getRegion,
@@ -128,14 +119,7 @@ export const useGeoService = () => {
     updateRegion,
     deleteRegion,
     getAllRegions,
-
-    // Districts
-    getDistricts,
-    getDistrict,
-    createDistrict,
-    updateDistrict,
-    deleteDistrict,
-    getDistrictsByRegion,
+    getRegionCommunes,
 
     // Communes
     getCommunes,
@@ -143,7 +127,6 @@ export const useGeoService = () => {
     createCommune,
     updateCommune,
     deleteCommune,
-    getCommunesByDistrict,
     searchCommunes,
   }
 }
