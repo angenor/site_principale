@@ -56,7 +56,7 @@ export interface ExportProgress {
 }
 
 export const useExport = () => {
-  const toast = useToast()
+  const toast = useAppToast()
 
   // État de progression
   const exportProgress = reactive<ExportProgress>({

@@ -178,7 +178,7 @@ const route = useRoute()
 const router = useRouter()
 const projetsService = useProjetsService()
 const geoService = useGeoService()
-const toast = useToast()
+const toast = useAppToast()
 
 // State
 const societes = ref<Societe[]>([])

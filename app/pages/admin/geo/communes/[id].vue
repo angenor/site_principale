@@ -254,7 +254,7 @@ definePageMeta({
 const route = useRoute()
 const router = useRouter()
 const geoService = useGeoService()
-const toast = useToast()
+const toast = useAppToast()
 
 // State
 const commune = ref<CommuneWithStats | null>(null)

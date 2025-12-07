@@ -105,14 +105,17 @@
     >
       <!-- Collectivité column -->
       <template #cell-collectivite="{ row }">
-        <div>
-          <p class="font-medium text-[var(--text-primary)]">
+        <NuxtLink
+          :to="`/admin/comptes-administratifs/${row.id}`"
+          class="block group"
+        >
+          <p class="font-medium text-[var(--text-primary)] group-hover:text-[var(--color-primary)] transition-colors">
             {{ row.commune?.nom || row.district?.nom || row.region?.nom || 'N/A' }}
           </p>
           <p class="text-xs text-[var(--text-muted)]">
             {{ getCollectiviteType(row) }}
           </p>
-        </div>
+        </NuxtLink>
       </template>
 
       <!-- Year column -->
@@ -342,7 +345,7 @@ definePageMeta({
   layout: 'admin',
 })
 
-const toast = useToast()
+const toast = useAppToast()
 const comptesService = useComptesAdministratifsService()
 const geoService = useGeoService()
 

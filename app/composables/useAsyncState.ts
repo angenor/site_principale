@@ -39,7 +39,7 @@ export const useAsyncState = <T, P extends any[] = []>(
     retryDelay = 1000,
   } = options
 
-  const toast = useToast()
+  const toast = useAppToast()
 
   // État
   const state = reactive<AsyncState<T>>({

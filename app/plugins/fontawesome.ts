@@ -112,6 +112,7 @@ import {
   faAnglesLeft,
   faAnglesRight,
   faXmark,
+  faScaleBalanced,
 } from '@fortawesome/free-solid-svg-icons'
 
 // Regular icons
@@ -249,6 +250,7 @@ library.add(
   faAnglesLeft,
   faAnglesRight,
   faXmark,
+  faScaleBalanced,
   // Regular
   farHeart,
   farStar,

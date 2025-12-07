@@ -34,7 +34,7 @@ interface ToastState {
 const DEFAULT_DURATION = 5000
 const DEFAULT_MAX_TOASTS = 5
 
-export const useToast = () => {
+export const useAppToast = () => {
   const state = useState<ToastState>('toasts', () => ({
     toasts: [],
     position: 'top-right',

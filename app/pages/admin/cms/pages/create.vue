@@ -173,7 +173,7 @@ const route = useRoute()
 const router = useRouter()
 const cmsService = useCMSService()
 const comptesService = useComptesAdministratifsService()
-const toast = useToast()
+const toast = useAppToast()
 
 // State
 const comptes = ref<Array<{ id: string; annee: number; commune?: { id: string; nom: string } }>>([])

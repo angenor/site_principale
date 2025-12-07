@@ -191,7 +191,7 @@ definePageMeta({
 })
 
 const projetsService = useProjetsService()
-const toast = useToast()
+const toast = useAppToast()
 
 // State
 const societes = ref<Societe[]>([])

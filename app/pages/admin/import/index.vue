@@ -348,7 +348,7 @@ definePageMeta({
   layout: 'admin',
 })
 
-const toast = useToast()
+const toast = useAppToast()
 const importService = useImportService()
 const geoService = useGeoService()
 

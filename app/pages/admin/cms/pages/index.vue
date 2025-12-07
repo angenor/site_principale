@@ -264,7 +264,7 @@ definePageMeta({
 
 const cmsService = useCMSService()
 const comptesService = useComptesAdministratifsService()
-const toast = useToast()
+const toast = useAppToast()
 
 // State
 const pages = ref<PageCMS[]>([])

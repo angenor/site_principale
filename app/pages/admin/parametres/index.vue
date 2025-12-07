@@ -518,7 +518,7 @@ definePageMeta({
   layout: 'admin'
 })
 
-const toast = useToast()
+const toast = useAppToast()
 
 // Onglets
 const tabs = [

@@ -520,7 +520,7 @@ definePageMeta({
 })
 
 const newsletterService = useNewsletterService()
-const toast = useToast()
+const toast = useAppToast()
 
 // État
 const isLoading = ref(true)

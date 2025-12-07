@@ -395,7 +395,7 @@ definePageMeta({
 const route = useRoute()
 const projetsService = useProjetsService()
 const geoService = useGeoService()
-const toast = useToast()
+const toast = useAppToast()
 
 // State
 const projet = ref<ProjetMinier | null>(null)

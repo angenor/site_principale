@@ -27,8 +27,8 @@
 
     <!-- Left icon -->
     <font-awesome-icon
-      v-else-if="leftIcon"
-      :icon="leftIcon"
+      v-else-if="icon || leftIcon"
+      :icon="icon || leftIcon"
       :class="[iconSizeClass, hasContent ? 'mr-2' : '']"
     />
 
@@ -54,6 +54,7 @@ interface Props {
   type?: 'button' | 'submit' | 'reset'
   to?: RouteLocationRaw
   href?: string
+  icon?: string[] // Alias for leftIcon
   leftIcon?: string[]
   rightIcon?: string[]
   loading?: boolean

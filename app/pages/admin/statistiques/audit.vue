@@ -395,7 +395,7 @@ definePageMeta({
 })
 
 const statistiquesService = useStatistiquesService()
-const toast = useToast()
+const toast = useAppToast()
 
 // État
 const isLoading = ref(true)

@@ -324,7 +324,7 @@ definePageMeta({
 const route = useRoute()
 const router = useRouter()
 const cmsService = useCMSService()
-const toast = useToast()
+const toast = useAppToast()
 
 // State
 const page = ref<PageCMS | null>(null)

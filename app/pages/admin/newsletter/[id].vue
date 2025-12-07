@@ -341,7 +341,7 @@ definePageMeta({
 const route = useRoute()
 const router = useRouter()
 const newsletterService = useNewsletterService()
-const toast = useToast()
+const toast = useAppToast()
 
 const abonneId = computed(() => route.params.id as string)
 

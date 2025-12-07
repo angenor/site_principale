@@ -139,7 +139,7 @@ definePageMeta({
 
 const router = useRouter()
 const projetsService = useProjetsService()
-const toast = useToast()
+const toast = useAppToast()
 
 // State
 const saving = ref(false)

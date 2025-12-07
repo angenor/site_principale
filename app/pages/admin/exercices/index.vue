@@ -327,7 +327,7 @@ interface Exercice {
   nb_depenses?: number
 }
 
-const toast = useToast()
+const toast = useAppToast()
 
 // State
 const exercices = ref<Exercice[]>([])

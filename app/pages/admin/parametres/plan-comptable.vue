@@ -274,7 +274,7 @@ definePageMeta({
 })
 
 const { user } = useAuth()
-const toast = useToast()
+const toast = useAppToast()
 
 // État
 const isLoading = ref(true)

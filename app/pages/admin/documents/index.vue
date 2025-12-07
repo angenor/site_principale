@@ -282,7 +282,7 @@ definePageMeta({
 
 const documentsService = useDocumentsService()
 const comptesService = useComptesAdministratifsService()
-const toast = useToast()
+const toast = useAppToast()
 
 // State
 const documents = ref<Document[]>([])

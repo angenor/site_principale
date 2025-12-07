@@ -195,7 +195,7 @@ definePageMeta({
 })
 
 const geoService = useGeoService()
-const toast = useToast()
+const toast = useAppToast()
 
 // State
 const communes = ref<CommuneWithStats[]>([])

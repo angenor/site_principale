@@ -138,7 +138,7 @@ definePageMeta({
 
 const router = useRouter()
 const geoService = useGeoService()
-const toast = useToast()
+const toast = useAppToast()
 
 // State
 const provinces = ref<ProvinceWithStats[]>([])
