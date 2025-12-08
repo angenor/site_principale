@@ -445,13 +445,15 @@
 </template>
 
 <script setup lang="ts">
-import type { PlanComptable } from '~/types/comptabilite'
+import type { PlanComptable, PlanComptableCreate, PlanComptableUpdate } from '~/types/comptabilite'
+import { usePlanComptableService } from '~/services/plan-comptable.service'
 
 definePageMeta({
   layout: 'admin',
 })
 
 const toast = useAppToast()
+const planComptableService = usePlanComptableService()
 
 // ============================================================================
 // STATE
@@ -610,39 +612,13 @@ const parentOptions = computed(() => {
 const loadRubriques = async () => {
   isLoading.value = true
   try {
-    // Simuler un appel API - remplacer par le vrai service
-    await new Promise(resolve => setTimeout(resolve, 500))
-    rubriques.value = generateMockPlanComptable()
-  } catch (error) {
+    rubriques.value = await planComptableService.getAllRubriques()
+  } catch (error: any) {
     console.error('Erreur chargement:', error)
-    toast.error('Erreur lors du chargement')
+    toast.error(error.message || 'Erreur lors du chargement')
   } finally {
     isLoading.value = false
   }
-}
-
-const generateMockPlanComptable = (): PlanComptable[] => {
-  return [
-    // Recettes Fonctionnement
-    { id: 1, code: '70', intitule: 'IMPOTS SUR LES REVENUS, BENEFICES ET GAINS', niveau: 1, type_mouvement: 'recette', section: 'fonctionnement', parent_code: null, est_sommable: true, ordre_affichage: 1, actif: true },
-    { id: 2, code: '708', intitule: 'Autres impôts sur les revenus', niveau: 2, type_mouvement: 'recette', section: 'fonctionnement', parent_code: '70', est_sommable: true, ordre_affichage: 1, actif: true },
-    { id: 3, code: '7080', intitule: 'Autres impôts sur les revenus - Impôt synthétique', niveau: 3, type_mouvement: 'recette', section: 'fonctionnement', parent_code: '708', est_sommable: true, ordre_affichage: 1, actif: true },
-    { id: 4, code: '71', intitule: 'IMPOTS SUR LE PATRIMOINE', niveau: 1, type_mouvement: 'recette', section: 'fonctionnement', parent_code: null, est_sommable: true, ordre_affichage: 2, actif: true },
-    { id: 5, code: '714', intitule: 'Impôts fonciers sur les terrains - IFT', niveau: 2, type_mouvement: 'recette', section: 'fonctionnement', parent_code: '71', est_sommable: true, ordre_affichage: 1, actif: true },
-    { id: 6, code: '7140', intitule: 'Impôts fonciers sur les terrains - IFT', niveau: 3, type_mouvement: 'recette', section: 'fonctionnement', parent_code: '714', est_sommable: true, ordre_affichage: 1, actif: true },
-    { id: 7, code: '72', intitule: 'IMPOTS SUR LES BIENS ET SERVICES', niveau: 1, type_mouvement: 'recette', section: 'fonctionnement', parent_code: null, est_sommable: true, ordre_affichage: 3, actif: true },
-    { id: 8, code: '74', intitule: 'RISTOURNES ET REDEVANCES MINIERES', niveau: 1, type_mouvement: 'recette', section: 'fonctionnement', parent_code: null, est_sommable: true, ordre_affichage: 4, actif: true },
-    { id: 9, code: '741', intitule: 'Ristournes minières', niveau: 2, type_mouvement: 'recette', section: 'fonctionnement', parent_code: '74', est_sommable: true, ordre_affichage: 1, actif: true },
-    { id: 10, code: '7411', intitule: 'Quote-part ristournes minières', niveau: 3, type_mouvement: 'recette', section: 'fonctionnement', parent_code: '741', est_sommable: true, ordre_affichage: 1, actif: true },
-    // Dépenses Fonctionnement
-    { id: 20, code: '60', intitule: 'CHARGES DE PERSONNEL', niveau: 1, type_mouvement: 'depense', section: 'fonctionnement', parent_code: null, est_sommable: true, ordre_affichage: 1, actif: true },
-    { id: 21, code: '601', intitule: 'Salaires et accessoires', niveau: 2, type_mouvement: 'depense', section: 'fonctionnement', parent_code: '60', est_sommable: true, ordre_affichage: 1, actif: true },
-    { id: 22, code: '6011', intitule: 'Personnel permanent', niveau: 3, type_mouvement: 'depense', section: 'fonctionnement', parent_code: '601', est_sommable: true, ordre_affichage: 1, actif: true },
-    { id: 23, code: '6012', intitule: 'Personnel non permanent', niveau: 3, type_mouvement: 'depense', section: 'fonctionnement', parent_code: '601', est_sommable: true, ordre_affichage: 2, actif: true },
-    { id: 24, code: '61', intitule: 'ACHATS DE BIENS', niveau: 1, type_mouvement: 'depense', section: 'fonctionnement', parent_code: null, est_sommable: true, ordre_affichage: 2, actif: true },
-    { id: 25, code: '611', intitule: 'Achats de biens de fonctionnement général', niveau: 2, type_mouvement: 'depense', section: 'fonctionnement', parent_code: '61', est_sommable: true, ordre_affichage: 1, actif: true },
-    { id: 26, code: '6111', intitule: 'Fournitures et articles de bureau', niveau: 3, type_mouvement: 'depense', section: 'fonctionnement', parent_code: '611', est_sommable: true, ordre_affichage: 1, actif: true },
-  ] as PlanComptable[]
 }
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
@@ -664,13 +640,15 @@ const clearFilters = () => {
   searchQuery.value = ''
 }
 
-const getNiveauVariant = (niveau: number): string => {
-  const variants: Record<number, string> = {
+type BadgeVariant = 'primary' | 'secondary' | 'success' | 'error' | 'gray' | 'warning' | 'info'
+
+const getNiveauVariant = (niveau: number): BadgeVariant => {
+  const variants: Record<number, BadgeVariant> = {
     1: 'primary',
     2: 'info',
-    3: 'default',
+    3: 'gray',
   }
-  return variants[niveau] || 'default'
+  return variants[niveau] || 'gray'
 }
 
 // Form handling
@@ -744,41 +722,37 @@ const handleSubmit = async () => {
 
   isSubmitting.value = true
   try {
-    // Simuler l'appel API
-    await new Promise(resolve => setTimeout(resolve, 500))
-
     if (editingRubrique.value) {
-      // Mise à jour
-      const index = rubriques.value.findIndex(r => r.code === editingRubrique.value!.code)
-      if (index !== -1) {
-        rubriques.value[index] = {
-          ...rubriques.value[index],
-          intitule: formData.intitule,
-          ordre_affichage: formData.ordre_affichage,
-          est_sommable: formData.est_sommable,
-          actif: formData.actif,
-        }
+      // Mise à jour via API
+      const updateData: PlanComptableUpdate = {
+        intitule: formData.intitule,
+        ordre_affichage: formData.ordre_affichage,
+        est_sommable: formData.est_sommable,
+        actif: formData.actif,
       }
+      await planComptableService.updateRubrique(editingRubrique.value.code, updateData)
       toast.success('Rubrique mise à jour')
     } else {
-      // Création
+      // Création via API
       const niveau = formData.code.length === 2 ? 1 : formData.code.length === 3 ? 2 : 3
-      rubriques.value.push({
-        id: Date.now(),
+      const createData: PlanComptableCreate = {
         code: formData.code,
         intitule: formData.intitule,
-        niveau,
+        niveau: niveau as 1 | 2 | 3,
         type_mouvement: formData.type_mouvement,
         section: formData.section,
         parent_code: formData.parent_code,
         ordre_affichage: formData.ordre_affichage,
         est_sommable: formData.est_sommable,
         actif: formData.actif,
-      } as PlanComptable)
+      }
+      await planComptableService.createRubrique(createData)
       toast.success('Rubrique créée')
     }
 
     showFormModal.value = false
+    // Recharger les données
+    await loadRubriques()
   } catch (error: any) {
     toast.error(error.message || 'Erreur lors de l\'enregistrement')
   } finally {
@@ -797,10 +771,11 @@ const handleDelete = async () => {
 
   isDeleting.value = true
   try {
-    await new Promise(resolve => setTimeout(resolve, 500))
-    rubriques.value = rubriques.value.filter(r => r.code !== deletingRubrique.value!.code)
+    await planComptableService.deleteRubrique(deletingRubrique.value.code)
     toast.success('Rubrique supprimée')
     showDeleteModal.value = false
+    // Recharger les données
+    await loadRubriques()
   } catch (error: any) {
     toast.error(error.message || 'Erreur lors de la suppression')
   } finally {

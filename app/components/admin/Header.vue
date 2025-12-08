@@ -23,6 +23,7 @@
     <div class="flex items-center gap-2">
       <!-- Search button (mobile) -->
       <button
+        @click="showMobileSearch = true"
         class="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--interactive-hover)] transition-colors cursor-pointer"
       >
         <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
@@ -30,21 +31,7 @@
 
       <!-- Search bar (desktop) -->
       <div class="hidden lg:flex items-center">
-        <div class="relative">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--text-muted)]">
-            <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="text-sm" />
-          </div>
-          <input
-            type="text"
-            placeholder="Rechercher..."
-            class="w-64 pl-10 pr-4 py-2 text-sm rounded-lg border border-[var(--border-default)] bg-[var(--bg-input)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all"
-          />
-          <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <kbd class="hidden xl:inline-flex px-2 py-0.5 text-xs font-mono text-[var(--text-muted)] bg-[var(--color-gray-100)] dark:bg-[var(--color-gray-800)] rounded">
-              ⌘K
-            </kbd>
-          </div>
-        </div>
+        <AdminSearchBar />
       </div>
 
       <!-- Divider -->
@@ -76,6 +63,40 @@
       <!-- User menu -->
       <AdminUserMenu />
     </div>
+
+    <!-- Mobile search modal -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="showMobileSearch"
+          class="fixed inset-0 z-[100] bg-black/50 lg:hidden"
+          @click="showMobileSearch = false"
+        >
+          <div
+            class="absolute top-4 left-4 right-4 bg-[var(--bg-card)] rounded-xl shadow-xl p-4"
+            @click.stop
+          >
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-semibold text-[var(--text-primary)]">Recherche</h3>
+              <button
+                @click="showMobileSearch = false"
+                class="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--interactive-hover)]"
+              >
+                <font-awesome-icon :icon="['fas', 'xmark']" />
+              </button>
+            </div>
+            <AdminSearchBar @navigate="showMobileSearch = false" />
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </header>
 </template>
 
@@ -89,6 +110,9 @@ defineEmits<{
 }>()
 
 const { isDark, toggleDarkMode } = useDarkMode()
+
+// Mobile search modal
+const showMobileSearch = ref(false)
 
 // TODO: Replace with real notification count from API
 const notificationCount = ref(3)
