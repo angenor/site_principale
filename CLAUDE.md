@@ -63,6 +63,59 @@ Located in `app/types/`:
 - **FontAwesome** (`fontawesome.ts`): Icons registered globally as `<font-awesome-icon>`
 - **Firebase** (`firebase.client.ts`): Optional Firebase integration
 
+## FontAwesome Icons (CRITICAL)
+
+**Only use icons that are registered in `app/plugins/fontawesome.ts`.** Unregistered icons will not display.
+
+### Before Using an Icon
+
+1. Check if the icon exists in `fontawesome.ts` imports
+2. If not, either:
+   - Use an alternative icon that IS registered
+   - Add the new icon to the plugin (import + library.add)
+
+### Available Icons (commonly used)
+
+```
+Navigation:     home, chart-pie, chart-line, chart-bar
+Actions:        plus, edit, trash, eye, eye-slash, check, xmark
+Users:          user, users, user-plus, user-check, user-slash, cogs
+Files:          file-lines, folder-open, file-import, file-invoice-dollar, upload
+Finance:        coins, money-bill-wave, arrow-trend-up, arrow-trend-down
+Geography:      map, map-location-dot, city, location-dot
+UI:             gear, bell, magnifying-glass, spinner, arrows (left/right/up/down)
+```
+
+### Icon Naming Convention
+
+FontAwesome uses **kebab-case** in Vue templates:
+```html
+<!-- Correct -->
+<font-awesome-icon :icon="['fas', 'chart-line']" />
+<font-awesome-icon :icon="['fas', 'arrow-trend-up']" />
+
+<!-- Wrong (camelCase won't work) -->
+<font-awesome-icon :icon="['fas', 'chartLine']" />
+```
+
+### Adding a New Icon
+
+```typescript
+// In app/plugins/fontawesome.ts
+
+// 1. Add to imports
+import {
+  faNewIcon,  // Add here
+  // ... existing imports
+} from '@fortawesome/free-solid-svg-icons'
+
+// 2. Add to library
+library.add(
+  faNewIcon,  // Add here
+  // ... existing icons
+)
+```
+
 ## Tailwind CSS v4 (CRITICAL)
 
 ### Dark Mode Setup

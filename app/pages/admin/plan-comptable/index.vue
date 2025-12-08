@@ -543,7 +543,8 @@ const filteredRubriques = computed(() => {
     result = result.filter(r => r.section === filters.section)
   }
   if (filters.niveau) {
-    result = result.filter(r => r.niveau === filters.niveau)
+    const niveauFilter = Number(filters.niveau)
+    result = result.filter(r => r.niveau === niveauFilter)
   }
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
@@ -573,8 +574,18 @@ const stats = computed(() => ({
 }))
 
 const treeData = computed(() => {
-  // Construire l'arborescence
   const filtered = filteredRubriques.value
+
+  // Si un filtre niveau est appliqué, afficher les éléments filtrés comme racines
+  if (filters.niveau) {
+    const niveauFilter = Number(filters.niveau)
+    // Pour niveau 2 ou 3, afficher les items directement sans arborescence
+    if (niveauFilter === 2 || niveauFilter === 3) {
+      return filtered.map(r => ({ ...r, children: [] }))
+    }
+  }
+
+  // Construction normale de l'arborescence à partir du niveau 1
   const niveau1 = filtered.filter(r => r.niveau === 1)
 
   return niveau1.map(n1 => ({

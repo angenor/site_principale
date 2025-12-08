@@ -103,20 +103,20 @@ const isMac = computed(() => {
 // All searchable pages
 const searchablePages: SearchablePage[] = [
   // Dashboard
-  { name: 'Tableau de bord', path: '/admin', icon: ['fas', 'gauge-high'], category: 'Navigation', keywords: ['accueil', 'dashboard', 'home'] },
+  { name: 'Tableau de bord', path: '/admin', icon: ['fas', 'chart-pie'], category: 'Navigation', keywords: ['accueil', 'dashboard', 'home'] },
 
   // Gestion des données
   { name: 'Revenus miniers', path: '/admin/revenus', icon: ['fas', 'coins'], category: 'Gestion des données', keywords: ['revenus', 'miniers', 'argent', 'finances'] },
   { name: 'Nouveau revenu', path: '/admin/revenus/create', icon: ['fas', 'plus'], category: 'Gestion des données', keywords: ['ajouter', 'créer', 'revenu'] },
-  { name: 'Recettes', path: '/admin/recettes', icon: ['fas', 'money-bill-trend-up'], category: 'Gestion des données', keywords: ['recettes', 'revenus', 'entrées'] },
-  { name: 'Dépenses', path: '/admin/depenses', icon: ['fas', 'money-bill-transfer'], category: 'Gestion des données', keywords: ['dépenses', 'sorties', 'budget'] },
+  { name: 'Recettes', path: '/admin/recettes', icon: ['fas', 'arrow-trend-up'], category: 'Gestion des données', keywords: ['recettes', 'revenus', 'entrées'] },
+  { name: 'Dépenses', path: '/admin/depenses', icon: ['fas', 'money-bill-wave'], category: 'Gestion des données', keywords: ['dépenses', 'sorties', 'budget'] },
   { name: 'Exercices fiscaux', path: '/admin/exercices', icon: ['fas', 'calendar-days'], category: 'Gestion des données', keywords: ['exercices', 'années', 'fiscal'] },
   { name: 'Comptes administratifs', path: '/admin/comptes-administratifs', icon: ['fas', 'file-invoice-dollar'], category: 'Gestion des données', keywords: ['comptes', 'administratifs', 'budget'] },
   { name: 'Plan comptable', path: '/admin/plan-comptable', icon: ['fas', 'sitemap'], category: 'Gestion des données', keywords: ['plan', 'comptable', 'nomenclature'] },
   { name: 'Colonnes', path: '/admin/colonnes', icon: ['fas', 'table-columns'], category: 'Gestion des données', keywords: ['colonnes', 'configuration'] },
 
   // Projets
-  { name: 'Projets miniers', path: '/admin/projets', icon: ['fas', 'helmet-safety'], category: 'Projets', keywords: ['projets', 'miniers', 'mines'] },
+  { name: 'Projets miniers', path: '/admin/projets', icon: ['fas', 'gem'], category: 'Projets', keywords: ['projets', 'miniers', 'mines'] },
   { name: 'Nouveau projet', path: '/admin/projets/create', icon: ['fas', 'plus'], category: 'Projets', keywords: ['ajouter', 'créer', 'projet'] },
   { name: 'Sociétés minières', path: '/admin/projets/societes', icon: ['fas', 'building'], category: 'Projets', keywords: ['sociétés', 'entreprises', 'minières'] },
   { name: 'Nouvelle société', path: '/admin/projets/societes/create', icon: ['fas', 'plus'], category: 'Projets', keywords: ['ajouter', 'créer', 'société'] },
@@ -136,11 +136,11 @@ const searchablePages: SearchablePage[] = [
   { name: 'Pages CMS', path: '/admin/cms/pages', icon: ['fas', 'file-lines'], category: 'Contenu', keywords: ['pages', 'cms', 'contenu'] },
   { name: 'Nouvelle page', path: '/admin/cms/pages/create', icon: ['fas', 'plus'], category: 'Contenu', keywords: ['ajouter', 'créer', 'page'] },
   { name: 'Documents', path: '/admin/documents', icon: ['fas', 'folder-open'], category: 'Contenu', keywords: ['documents', 'fichiers', 'téléchargements'] },
-  { name: 'Uploader document', path: '/admin/documents/upload', icon: ['fas', 'cloud-arrow-up'], category: 'Contenu', keywords: ['upload', 'télécharger', 'importer'] },
+  { name: 'Uploader document', path: '/admin/documents/upload', icon: ['fas', 'upload'], category: 'Contenu', keywords: ['upload', 'télécharger', 'importer'] },
   { name: 'Newsletter', path: '/admin/newsletter', icon: ['fas', 'envelope'], category: 'Contenu', keywords: ['newsletter', 'email', 'abonnés'] },
 
   // Administration
-  { name: 'Utilisateurs', path: '/admin/utilisateurs', icon: ['fas', 'users-gear'], category: 'Administration', keywords: ['utilisateurs', 'comptes', 'accès'] },
+  { name: 'Utilisateurs', path: '/admin/utilisateurs', icon: ['fas', 'cogs'], category: 'Administration', keywords: ['utilisateurs', 'comptes', 'accès'] },
   { name: 'Nouvel utilisateur', path: '/admin/utilisateurs/create', icon: ['fas', 'user-plus'], category: 'Administration', keywords: ['ajouter', 'créer', 'utilisateur'] },
   { name: 'Paramètres', path: '/admin/parametres', icon: ['fas', 'gear'], category: 'Administration', keywords: ['paramètres', 'configuration', 'réglages'] },
   { name: 'Import de données', path: '/admin/import', icon: ['fas', 'file-import'], category: 'Administration', keywords: ['import', 'csv', 'excel', 'données'] },
