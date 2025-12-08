@@ -11,6 +11,9 @@ importers:
       '@amcharts/amcharts5':
         specifier: ^5.14.3
         version: 5.14.3
+      '@amcharts/amcharts5-geodata':
+        specifier: ^5.1.5
+        version: 5.1.5
       '@editorjs/delimiter':
         specifier: ^1.4.2
         version: 1.4.2
@@ -123,6 +126,9 @@ packages:
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
+
+  '@amcharts/amcharts5-geodata@5.1.5':
+    resolution: {integrity: sha512-LiH726cCNHBSBc5fcT1fjHEq28zwfYD5F6B5KKZflvVTUu5oaRh/c77GDTZgU4MYEo0xspSWhmXFy39BR7mpXw==}
 
   '@amcharts/amcharts5@5.14.3':
     resolution: {integrity: sha512-RtczG2DHz8z2x1dgHjGX+xPc2W4HL46f4CCjR4KEFkDlg0W+QK058pYTipF0DD2BNnAJRNAFA4DVuOaEpUuu7g==}
@@ -5495,6 +5501,10 @@ snapshots:
       zod: 3.25.76
 
   '@alloc/quick-lru@5.2.0': {}
+
+  '@amcharts/amcharts5-geodata@5.1.5':
+    dependencies:
+      '@types/geojson': 7946.0.16
 
   '@amcharts/amcharts5@5.14.3':
     dependencies:

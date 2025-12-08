@@ -43,9 +43,10 @@ export const useGeoService = () => {
   // ============================================================================
 
   const getRegions = async (
-    params?: PaginationParams & { province_id?: number; search?: string }
-  ): Promise<PaginatedResponse<RegionWithStats>> => {
-    return api.get<PaginatedResponse<RegionWithStats>>(`${BASE_PATH}/regions`, params)
+    params?: { province_id?: number; search?: string }
+  ): Promise<RegionWithStats[]> => {
+    // Backend returns list directly (not paginated)
+    return api.get<RegionWithStats[]>(`${BASE_PATH}/regions`, params)
   }
 
   const getRegion = async (id: number): Promise<RegionWithStats> => {

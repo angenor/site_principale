@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DashboardStats } from '~/types'
+import type { RegionWithStats } from '~/types/collectivites'
 
 // Métadonnées de la page
 useHead({
@@ -13,11 +14,16 @@ useHead({
 })
 
 const statistiquesService = useStatistiquesService()
+const geoService = useGeoService()
 
 // États
 const showScrollTop = ref(false)
 const isLoadingStats = ref(true)
+const isLoadingRegions = ref(true)
 const dashboardStats = ref<DashboardStats | null>(null)
+const regions = ref<RegionWithStats[]>([])
+const selectedRegion = ref<RegionWithStats | null>(null)
+const hoveredRegion = ref<RegionWithStats | null>(null)
 
 // Charger les statistiques
 const loadStats = async () => {
@@ -29,6 +35,27 @@ const loadStats = async () => {
   } finally {
     isLoadingStats.value = false
   }
+}
+
+// Charger les régions pour la carte
+const loadRegions = async () => {
+  isLoadingRegions.value = true
+  try {
+    regions.value = await geoService.getRegions()
+  } catch (err: any) {
+    console.error('Erreur lors du chargement des régions:', err)
+  } finally {
+    isLoadingRegions.value = false
+  }
+}
+
+// Handlers pour la carte
+const handleRegionClick = (region: RegionWithStats | null) => {
+  selectedRegion.value = region
+}
+
+const handleRegionHover = (region: RegionWithStats | null) => {
+  hoveredRegion.value = region
 }
 
 // Formatage des montants
@@ -59,6 +86,7 @@ const scrollToTop = () => {
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
   loadStats()
+  loadRegions()
 })
 
 onUnmounted(() => {
@@ -209,6 +237,109 @@ onUnmounted(() => {
                 {{ count }} {{ statut }}
               </span>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section Carte Interactive -->
+      <section class="py-8">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-8 text-center flex items-center justify-center gap-3">
+          <font-awesome-icon :icon="['fas', 'map']" class="text-blue-600 dark:text-blue-400" />
+          <span>Carte des Régions de Madagascar</span>
+        </h2>
+
+        <div class="grid lg:grid-cols-3 gap-6">
+          <!-- Carte -->
+          <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <ClientOnly>
+              <MadagascarMap
+                :regions="regions"
+                :is-loading="isLoadingRegions"
+                @region-click="handleRegionClick"
+                @region-hover="handleRegionHover"
+                class="h-[500px]"
+              />
+              <template #fallback>
+                <div class="h-[500px] flex items-center justify-center">
+                  <font-awesome-icon icon="spinner" class="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
+                </div>
+              </template>
+            </ClientOnly>
+          </div>
+
+          <!-- Panneau d'informations -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+            <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+              <font-awesome-icon :icon="['fas', 'info-circle']" class="text-blue-600 dark:text-blue-400" />
+              <span>Informations</span>
+            </h3>
+
+            <!-- État de survol -->
+            <Transition name="fade" mode="out-in">
+              <div v-if="hoveredRegion" key="hover" class="space-y-4">
+                <div class="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-700">
+                  <p class="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">Région survolée</p>
+                  <p class="text-xl font-bold text-gray-900 dark:text-white">{{ hoveredRegion.nom }}</p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                    <font-awesome-icon :icon="['fas', 'building']" class="mr-1" />
+                    Province: {{ hoveredRegion.province_nom || 'N/A' }}
+                  </p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    <font-awesome-icon :icon="['fas', 'city']" class="mr-1" />
+                    Communes: {{ hoveredRegion.nb_communes || 0 }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- État sélectionné -->
+              <div v-else-if="selectedRegion" key="selected" class="space-y-4">
+                <div class="p-4 bg-purple-50 dark:bg-purple-900/30 rounded-lg border border-purple-200 dark:border-purple-700">
+                  <p class="text-sm text-purple-600 dark:text-purple-400 font-medium mb-1">Région sélectionnée</p>
+                  <p class="text-xl font-bold text-gray-900 dark:text-white">{{ selectedRegion.nom }}</p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                    <font-awesome-icon :icon="['fas', 'building']" class="mr-1" />
+                    Province: {{ selectedRegion.province_nom || 'N/A' }}
+                  </p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    <font-awesome-icon :icon="['fas', 'city']" class="mr-1" />
+                    Communes: {{ selectedRegion.nb_communes || 0 }}
+                  </p>
+                </div>
+
+                <button
+                  @click="selectedRegion = null"
+                  class="w-full py-2 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition text-sm"
+                >
+                  <font-awesome-icon :icon="['fas', 'times']" class="mr-1" />
+                  Désélectionner
+                </button>
+              </div>
+
+              <!-- État par défaut -->
+              <div v-else key="default" class="space-y-4">
+                <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <font-awesome-icon :icon="['fas', 'mouse-pointer']" class="w-12 h-12 mb-4 opacity-50" />
+                  <p class="text-sm">Survolez ou cliquez sur une région pour voir ses informations</p>
+                </div>
+
+                <!-- Statistiques générales -->
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                  <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Résumé</h4>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg text-center">
+                      <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ regions.length }}</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">Régions</p>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg text-center">
+                      <p class="text-2xl font-bold text-green-600 dark:text-green-400">
+                        {{ regions.reduce((sum, r) => sum + (r.nb_communes || 0), 0) }}
+                      </p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">Communes</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Transition>
           </div>
         </div>
       </section>
