@@ -200,6 +200,7 @@ const menuGroups = computed<MenuGroup[]>(() => [
         ]
       },
       { to: '/admin/exercices', label: 'Exercices', icon: ['fas', 'calendar-days'] },
+      { to: '/admin/plan-comptable', label: 'Plan Comptable', icon: ['fas', 'sitemap'] },
       { to: '/admin/import', label: 'Import Données', icon: ['fas', 'file-import'] },
     ]
   },
@@ -256,7 +257,9 @@ const menuGroups = computed<MenuGroup[]>(() => [
           { to: '/admin/statistiques/audit', label: 'Journal d\'audit', icon: ['fas', 'clipboard-list'] },
         ]
       },
+      { to: '/admin/colonnes', label: 'Colonnes', icon: ['fas', 'table-columns'] },
       { to: '/admin/parametres', label: 'Paramètres', icon: ['fas', 'gear'] },
+      { to: '/admin/profil', label: 'Mon Profil', icon: ['fas', 'user-circle'] },
     ]
   },
 ])

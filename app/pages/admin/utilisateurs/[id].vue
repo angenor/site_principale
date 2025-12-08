@@ -69,6 +69,29 @@
       <UiLoadingSpinner size="lg" />
     </div>
 
+    <!-- Error state -->
+    <div v-else-if="loadError" class="text-center py-20">
+      <font-awesome-icon :icon="['fas', 'circle-exclamation']" class="text-6xl text-red-500 mb-4" />
+      <h2 class="text-xl font-semibold text-[var(--text-primary)] mb-2">Erreur de chargement</h2>
+      <p class="text-[var(--text-muted)] mb-6">{{ loadError }}</p>
+      <div class="flex items-center justify-center gap-4">
+        <button
+          @click="loadUser"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--border-default)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+        >
+          <font-awesome-icon :icon="['fas', 'rotate']" />
+          Réessayer
+        </button>
+        <NuxtLink
+          to="/admin/utilisateurs"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-colors"
+        >
+          <font-awesome-icon :icon="['fas', 'arrow-left']" />
+          Retour à la liste
+        </NuxtLink>
+      </div>
+    </div>
+
     <!-- Content -->
     <div v-else-if="user" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Main content -->
@@ -286,28 +309,6 @@
           </div>
         </div>
 
-        <!-- Connection history -->
-        <div class="bg-[var(--bg-card)] rounded-xl border border-[var(--border-default)] p-6">
-          <h3 class="font-semibold text-[var(--text-primary)] mb-4">Historique récent</h3>
-
-          <div class="space-y-3">
-            <div v-for="(log, index) in connectionHistory" :key="index" class="flex items-start gap-3">
-              <div
-                class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-                :class="log.success ? 'bg-emerald-100 text-emerald-500 dark:bg-emerald-900/30' : 'bg-red-100 text-red-500 dark:bg-red-900/30'"
-              >
-                <font-awesome-icon :icon="['fas', log.success ? 'check' : 'times']" class="text-sm" />
-              </div>
-              <div>
-                <p class="text-sm text-[var(--text-primary)]">
-                  {{ log.success ? 'Connexion réussie' : 'Échec de connexion' }}
-                </p>
-                <p class="text-xs text-[var(--text-muted)]">{{ log.date }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <!-- Danger zone -->
         <div class="bg-[var(--bg-card)] rounded-xl border border-red-500/30 p-6">
           <h3 class="font-semibold text-red-500 mb-4">Zone de danger</h3>
@@ -400,10 +401,18 @@ const isSaving = ref(false)
 const showDeleteModal = ref(false)
 const showSetPasswordModal = ref(false)
 const newPassword = ref('')
+const loadError = ref<string | null>(null)
 
 const user = ref<UserWithStats | null>(null)
-const roles = ref<Role[]>([])
 const sessions = ref<Session[]>([])
+
+// Static roles (based on backend enums)
+const roles: Role[] = [
+  { id: 'admin', code: 'admin', nom: 'Administrateur', actif: true },
+  { id: 'editeur', code: 'editeur', nom: 'Éditeur', actif: true },
+  { id: 'lecteur', code: 'lecteur', nom: 'Lecteur', actif: true },
+  { id: 'commune', code: 'commune', nom: 'Commune', actif: true },
+]
 
 const editForm = ref<Partial<UserFormData>>({
   email: '',
@@ -411,14 +420,6 @@ const editForm = ref<Partial<UserFormData>>({
   prenom: '',
   role_id: '',
 })
-
-// Mock connection history
-const connectionHistory = ref([
-  { success: true, date: 'Aujourd\'hui à 09:30' },
-  { success: true, date: 'Hier à 14:15' },
-  { success: false, date: 'Il y a 3 jours' },
-  { success: true, date: 'Il y a 5 jours' },
-])
 
 const getInitials = (user: User) => {
   const first = user.nom?.charAt(0) || ''
@@ -593,6 +594,7 @@ const deleteUser = async () => {
 
 const loadUser = async () => {
   isLoading.value = true
+  loadError.value = null
   try {
     const data = await utilisateursService.getUtilisateur(userId.value)
     user.value = data as UserWithStats
@@ -600,45 +602,14 @@ const loadUser = async () => {
       email: data.email,
       nom: data.nom,
       prenom: data.prenom || '',
-      role_id: data.role.id,
+      role_id: data.role?.code || data.role?.id || '',
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error loading user:', error)
-    // Mock data
-    user.value = {
-      id: userId.value,
-      email: 'admin@ti-madagascar.org',
-      nom: 'Razafindrakoto',
-      prenom: 'Jean',
-      role: { id: '1', code: 'admin', nom: 'Administrateur', actif: true },
-      actif: true,
-      email_verifie: true,
-      derniere_connexion: new Date().toISOString(),
-      created_at: '2024-01-15T10:00:00Z',
-      updated_at: '2024-02-20T14:00:00Z',
-      nombre_connexions: 156,
-    }
-    editForm.value = {
-      email: user.value.email,
-      nom: user.value.nom,
-      prenom: user.value.prenom || '',
-      role_id: user.value.role.id,
-    }
+    loadError.value = error?.message || 'Impossible de charger les informations de l\'utilisateur'
+    user.value = null
   } finally {
     isLoading.value = false
-  }
-}
-
-const loadRoles = async () => {
-  try {
-    roles.value = await utilisateursService.getRoles()
-  } catch (error) {
-    roles.value = [
-      { id: '1', code: 'admin', nom: 'Administrateur', actif: true },
-      { id: '2', code: 'editeur', nom: 'Éditeur', actif: true },
-      { id: '3', code: 'lecteur', nom: 'Lecteur', actif: true },
-      { id: '4', code: 'commune', nom: 'Commune', actif: true },
-    ]
   }
 }
 
@@ -646,28 +617,12 @@ const loadSessions = async () => {
   try {
     sessions.value = await utilisateursService.getSessions(userId.value)
   } catch (error) {
-    // Mock data
-    sessions.value = [
-      {
-        id: '1',
-        ip_address: '192.168.1.100',
-        user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/120.0.0.0',
-        created_at: new Date().toISOString(),
-        is_current: true,
-      },
-      {
-        id: '2',
-        ip_address: '10.0.0.50',
-        user_agent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0) Safari/604.1',
-        created_at: '2024-02-18T09:30:00Z',
-        is_current: false,
-      },
-    ]
+    console.error('Error loading sessions:', error)
+    sessions.value = []
   }
 }
 
 onMounted(() => {
-  loadRoles()
   loadUser()
   loadSessions()
 })

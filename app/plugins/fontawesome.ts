@@ -125,6 +125,21 @@ import {
   faTabletScreenButton,
   faRotate,
   faUsersSlash,
+  // Newsletter icons
+  faFileCsv,
+  faPauseCircle,
+  faUserMinus,
+  faEnvelopeOpen,
+  faPause,
+  faPlay,
+  // Sidebar additional icons
+  faSitemap,
+  faTableColumns,
+  faUserCircle,
+  // Colonnes dynamiques icons
+  faGripVertical,
+  faCalculator,
+  faColumns,
 } from '@fortawesome/free-solid-svg-icons'
 
 // Regular icons
@@ -275,6 +290,21 @@ library.add(
   faTabletScreenButton,
   faRotate,
   faUsersSlash,
+  // Newsletter icons
+  faFileCsv,
+  faPauseCircle,
+  faUserMinus,
+  faEnvelopeOpen,
+  faPause,
+  faPlay,
+  // Sidebar additional icons
+  faSitemap,
+  faTableColumns,
+  faUserCircle,
+  // Colonnes dynamiques icons
+  faGripVertical,
+  faCalculator,
+  faColumns,
   // Regular
   farHeart,
   farStar,
