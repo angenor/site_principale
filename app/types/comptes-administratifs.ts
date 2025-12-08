@@ -73,19 +73,20 @@ export interface RubriqueBudgetaire {
 }
 
 export interface ColonneDynamique {
-  id: string
-  code: string
-  nom: string
+  id: number
+  cle: string
+  label: string
   type_donnee: 'montant' | 'pourcentage' | 'texte' | 'date' | 'nombre'
+  applicable_a: 'recette' | 'depense' | 'tous' | 'equilibre'
+  formule?: string | null
+  largeur: number
   ordre: number
-  est_calculee: boolean
-  formule_calcul?: string | null
-  format_affichage?: string | null
+  est_obligatoire: boolean
+  est_editable: boolean
+  est_visible: boolean
   est_active: boolean
-  applicable_a: 'recette' | 'depense' | 'tous' | 'equilibre' // Ajouté depuis migration 001
+  est_systeme: boolean
   description?: string | null
-  created_at: string
-  updated_at: string
 }
 
 export interface LigneBudgetaire {
@@ -138,15 +139,17 @@ export interface RubriqueBudgetaireFormData {
 }
 
 export interface ColonneDynamiqueFormData {
-  code: string
-  nom: string
+  cle: string
+  label: string
   type_donnee: 'montant' | 'pourcentage' | 'texte' | 'date' | 'nombre'
-  ordre: number
-  est_calculee: boolean
-  formule_calcul?: string | null
-  format_affichage?: string | null
-  est_active: boolean
   applicable_a: 'recette' | 'depense' | 'tous' | 'equilibre'
+  formule?: string | null
+  largeur: number
+  ordre: number
+  est_obligatoire: boolean
+  est_editable: boolean
+  est_visible: boolean
+  est_active: boolean
   description?: string | null
 }
 

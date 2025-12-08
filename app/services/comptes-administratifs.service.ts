@@ -194,7 +194,12 @@ export const useComptesAdministratifsService = () => {
   const getColonnes = async (
     params?: { applicable_a?: 'recette' | 'depense' | 'tous' | 'equilibre'; est_active?: boolean }
   ): Promise<ColonneDynamique[]> => {
-    return api.get<ColonneDynamique[]>(COLONNES_PATH, params)
+    // L'API retourne une réponse paginée, on extrait les items
+    const response = await api.get<PaginatedResponse<ColonneDynamique>>(COLONNES_PATH, {
+      ...params,
+      limit: 200, // Récupérer toutes les colonnes
+    })
+    return response.items
   }
 
   const getColonne = async (id: string): Promise<ColonneDynamique> => {

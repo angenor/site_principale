@@ -156,14 +156,14 @@
                       <thead>
                         <tr class="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
                           <th class="text-left p-3 font-bold border-r border-green-500/50">INTITULÉ</th>
-                          <th class="text-right p-3 font-bold border-r border-green-500/50 whitespace-nowrap">BUDGET<br>PRIMITIF</th>
-                          <th class="text-right p-3 font-bold border-r border-green-500/50 whitespace-nowrap">BUDGET<br>ADDITIONNEL</th>
-                          <th class="text-right p-3 font-bold border-r border-green-500/50 whitespace-nowrap">MODIF.<br>+/-</th>
-                          <th class="text-right p-3 font-bold border-r border-green-500/50 whitespace-nowrap bg-yellow-600/20">PRÉVISIONS<br>DÉFINITIVES</th>
-                          <th class="text-right p-3 font-bold border-r border-green-500/50">OR ADMIS</th>
-                          <th class="text-right p-3 font-bold border-r border-green-500/50">RECOUVREMENT</th>
-                          <th class="text-right p-3 font-bold border-r border-green-500/50 whitespace-nowrap">RESTE À<br>RECOUVRER</th>
-                          <th class="text-right p-3 font-bold whitespace-nowrap">TAUX<br>EXÉC.</th>
+                          <th
+                            v-for="col in colonnesRecettes"
+                            :key="'h-rf-' + col.id"
+                            class="text-right p-3 font-bold border-r border-green-500/50 whitespace-nowrap"
+                            :class="{ 'bg-yellow-600/20': isHighlightedColumn(col.cle) }"
+                          >
+                            {{ col.label.toUpperCase() }}
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -180,32 +180,32 @@
                             <span class="font-mono text-xs text-gray-500 dark:text-gray-400 mr-2">{{ ligne.code }}</span>
                             <span :class="{ 'font-bold': ligne.niveau <= 2 }">{{ ligne.intitule }}</span>
                           </td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.budget_primitif) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.budget_additionnel) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.modifications) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono font-semibold bg-yellow-50 dark:bg-yellow-900/30">{{ formatNumber(ligne.previsions_definitives) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.or_admis) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.recouvrement) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.reste_a_recouvrer) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono font-bold"
+                          <td
+                            v-for="col in colonnesRecettes"
+                            :key="'d-rf-' + ligne.code + '-' + col.id"
+                            class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono"
                             :class="{
-                              'text-green-600 dark:text-green-400': (ligne.taux_execution || 0) >= 0.9,
-                              'text-orange-600 dark:text-orange-400': (ligne.taux_execution || 0) >= 0.7 && (ligne.taux_execution || 0) < 0.9,
-                              'text-red-600 dark:text-red-400': (ligne.taux_execution || 0) < 0.7
+                              'bg-yellow-50 dark:bg-yellow-900/30 font-semibold': isHighlightedColumn(col.cle),
+                              'text-gray-700 dark:text-gray-300': !isTauxColumn(col.cle),
+                              'font-bold': isTauxColumn(col.cle),
+                              'text-green-600 dark:text-green-400': isTauxColumn(col.cle) && (ligne[col.cle] || 0) >= 0.9,
+                              'text-orange-600 dark:text-orange-400': isTauxColumn(col.cle) && (ligne[col.cle] || 0) >= 0.7 && (ligne[col.cle] || 0) < 0.9,
+                              'text-red-600 dark:text-red-400': isTauxColumn(col.cle) && (ligne[col.cle] || 0) < 0.7
                             }"
-                          >{{ formatPercent(ligne.taux_execution) }}</td>
+                          >
+                            {{ getColonneValue(ligne, col.cle, col.type_donnee) }}
+                          </td>
                         </tr>
                         <!-- Total Fonctionnement -->
                         <tr class="bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold">
                           <td class="p-3 border border-green-500/50">TOTAL RECETTES FONCTIONNEMENT</td>
-                          <td class="text-right p-3 border border-green-500/50 font-mono">{{ formatNumber(totauxRecettes.fonctionnement.bp) }}</td>
-                          <td class="text-right p-3 border border-green-500/50 font-mono">{{ formatNumber(totauxRecettes.fonctionnement.ba) }}</td>
-                          <td class="text-right p-3 border border-green-500/50 font-mono">{{ formatNumber(totauxRecettes.fonctionnement.modif) }}</td>
-                          <td class="text-right p-3 border border-green-500/50 font-mono">{{ formatNumber(totauxRecettes.fonctionnement.pd) }}</td>
-                          <td class="text-right p-3 border border-green-500/50 font-mono">{{ formatNumber(totauxRecettes.fonctionnement.or) }}</td>
-                          <td class="text-right p-3 border border-green-500/50 font-mono">{{ formatNumber(totauxRecettes.fonctionnement.recouvrement) }}</td>
-                          <td class="text-right p-3 border border-green-500/50 font-mono">{{ formatNumber(totauxRecettes.fonctionnement.reste) }}</td>
-                          <td class="text-right p-3 border border-green-500/50 font-mono">{{ formatPercent(totauxRecettes.fonctionnement.taux) }}</td>
+                          <td
+                            v-for="col in colonnesRecettes"
+                            :key="'t-rf-' + col.id"
+                            class="text-right p-3 border border-green-500/50 font-mono"
+                          >
+                            {{ getColonneValue(totauxRecettes.fonctionnement, col.cle, col.type_donnee) }}
+                          </td>
                         </tr>
                       </tbody>
                     </table>
@@ -229,14 +229,14 @@
                       <thead>
                         <tr class="bg-gradient-to-r from-teal-600 to-cyan-600 text-white">
                           <th class="text-left p-3 font-bold border-r border-teal-500/50">INTITULÉ</th>
-                          <th class="text-right p-3 font-bold border-r border-teal-500/50 whitespace-nowrap">BUDGET<br>PRIMITIF</th>
-                          <th class="text-right p-3 font-bold border-r border-teal-500/50 whitespace-nowrap">BUDGET<br>ADDITIONNEL</th>
-                          <th class="text-right p-3 font-bold border-r border-teal-500/50 whitespace-nowrap">MODIF.<br>+/-</th>
-                          <th class="text-right p-3 font-bold border-r border-teal-500/50 whitespace-nowrap bg-yellow-600/20">PRÉVISIONS<br>DÉFINITIVES</th>
-                          <th class="text-right p-3 font-bold border-r border-teal-500/50">OR ADMIS</th>
-                          <th class="text-right p-3 font-bold border-r border-teal-500/50">RECOUVREMENT</th>
-                          <th class="text-right p-3 font-bold border-r border-teal-500/50 whitespace-nowrap">RESTE À<br>RECOUVRER</th>
-                          <th class="text-right p-3 font-bold whitespace-nowrap">TAUX<br>EXÉC.</th>
+                          <th
+                            v-for="col in colonnesRecettes"
+                            :key="'h-ri-' + col.id"
+                            class="text-right p-3 font-bold border-r border-teal-500/50 whitespace-nowrap"
+                            :class="{ 'bg-yellow-600/20': isHighlightedColumn(col.cle) }"
+                          >
+                            {{ col.label.toUpperCase() }}
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -253,32 +253,32 @@
                             <span class="font-mono text-xs text-gray-500 dark:text-gray-400 mr-2">{{ ligne.code }}</span>
                             <span :class="{ 'font-bold': ligne.niveau <= 2 }">{{ ligne.intitule }}</span>
                           </td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.budget_primitif) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.budget_additionnel) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.modifications) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono font-semibold bg-yellow-50 dark:bg-yellow-900/30">{{ formatNumber(ligne.previsions_definitives) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.or_admis) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.recouvrement) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.reste_a_recouvrer) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono font-bold"
+                          <td
+                            v-for="col in colonnesRecettes"
+                            :key="'d-ri-' + ligne.code + '-' + col.id"
+                            class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono"
                             :class="{
-                              'text-green-600 dark:text-green-400': (ligne.taux_execution || 0) >= 0.9,
-                              'text-orange-600 dark:text-orange-400': (ligne.taux_execution || 0) >= 0.7 && (ligne.taux_execution || 0) < 0.9,
-                              'text-red-600 dark:text-red-400': (ligne.taux_execution || 0) < 0.7
+                              'bg-yellow-50 dark:bg-yellow-900/30 font-semibold': isHighlightedColumn(col.cle),
+                              'text-gray-700 dark:text-gray-300': !isTauxColumn(col.cle),
+                              'font-bold': isTauxColumn(col.cle),
+                              'text-green-600 dark:text-green-400': isTauxColumn(col.cle) && (ligne[col.cle] || 0) >= 0.9,
+                              'text-orange-600 dark:text-orange-400': isTauxColumn(col.cle) && (ligne[col.cle] || 0) >= 0.7 && (ligne[col.cle] || 0) < 0.9,
+                              'text-red-600 dark:text-red-400': isTauxColumn(col.cle) && (ligne[col.cle] || 0) < 0.7
                             }"
-                          >{{ formatPercent(ligne.taux_execution) }}</td>
+                          >
+                            {{ getColonneValue(ligne, col.cle, col.type_donnee) }}
+                          </td>
                         </tr>
                         <!-- Total Investissement -->
                         <tr class="bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-bold">
                           <td class="p-3 border border-teal-500/50">TOTAL RECETTES INVESTISSEMENT</td>
-                          <td class="text-right p-3 border border-teal-500/50 font-mono">{{ formatNumber(totauxRecettes.investissement.bp) }}</td>
-                          <td class="text-right p-3 border border-teal-500/50 font-mono">{{ formatNumber(totauxRecettes.investissement.ba) }}</td>
-                          <td class="text-right p-3 border border-teal-500/50 font-mono">{{ formatNumber(totauxRecettes.investissement.modif) }}</td>
-                          <td class="text-right p-3 border border-teal-500/50 font-mono">{{ formatNumber(totauxRecettes.investissement.pd) }}</td>
-                          <td class="text-right p-3 border border-teal-500/50 font-mono">{{ formatNumber(totauxRecettes.investissement.or) }}</td>
-                          <td class="text-right p-3 border border-teal-500/50 font-mono">{{ formatNumber(totauxRecettes.investissement.recouvrement) }}</td>
-                          <td class="text-right p-3 border border-teal-500/50 font-mono">{{ formatNumber(totauxRecettes.investissement.reste) }}</td>
-                          <td class="text-right p-3 border border-teal-500/50 font-mono">{{ formatPercent(totauxRecettes.investissement.taux) }}</td>
+                          <td
+                            v-for="col in colonnesRecettes"
+                            :key="'t-ri-' + col.id"
+                            class="text-right p-3 border border-teal-500/50 font-mono"
+                          >
+                            {{ getColonneValue(totauxRecettes.investissement, col.cle, col.type_donnee) }}
+                          </td>
                         </tr>
                       </tbody>
                     </table>
@@ -294,19 +294,19 @@
                   <div class="grid grid-cols-4 gap-4 mt-3 text-sm">
                     <div>
                       <span class="opacity-75">Budget Primitif</span>
-                      <p class="font-mono font-semibold">{{ formatNumber(totauxRecettes.general.bp) }}</p>
+                      <p class="font-mono font-semibold">{{ formatNumber(totauxRecettes.general.budget_primitif) }}</p>
                     </div>
                     <div>
                       <span class="opacity-75">Prévisions Définitives</span>
-                      <p class="font-mono font-semibold">{{ formatNumber(totauxRecettes.general.pd) }}</p>
+                      <p class="font-mono font-semibold">{{ formatNumber(totauxRecettes.general.previsions_definitives) }}</p>
                     </div>
                     <div>
                       <span class="opacity-75">Reste à Recouvrer</span>
-                      <p class="font-mono font-semibold">{{ formatNumber(totauxRecettes.general.reste) }}</p>
+                      <p class="font-mono font-semibold">{{ formatNumber(totauxRecettes.general.reste_a_recouvrer) }}</p>
                     </div>
                     <div>
                       <span class="opacity-75">Taux d'Exécution</span>
-                      <p class="font-mono font-semibold">{{ formatPercent(totauxRecettes.general.taux) }}</p>
+                      <p class="font-mono font-semibold">{{ formatPercent(totauxRecettes.general.taux_execution_recette) }}</p>
                     </div>
                   </div>
                 </div>
@@ -331,15 +331,14 @@
                       <thead>
                         <tr class="bg-gradient-to-r from-red-600 to-rose-600 text-white">
                           <th class="text-left p-3 font-bold border-r border-red-500/50">INTITULÉ</th>
-                          <th class="text-right p-3 font-bold border-r border-red-500/50 whitespace-nowrap">BUDGET<br>PRIMITIF</th>
-                          <th class="text-right p-3 font-bold border-r border-red-500/50 whitespace-nowrap">BUDGET<br>ADDITIONNEL</th>
-                          <th class="text-right p-3 font-bold border-r border-red-500/50 whitespace-nowrap">MODIF.<br>+/-</th>
-                          <th class="text-right p-3 font-bold border-r border-red-500/50 whitespace-nowrap bg-yellow-600/20">PRÉVISIONS<br>DÉFINITIVES</th>
-                          <th class="text-right p-3 font-bold border-r border-red-500/50">ENGAGEMENT</th>
-                          <th class="text-right p-3 font-bold border-r border-red-500/50 whitespace-nowrap">MANDAT<br>ADMIS</th>
-                          <th class="text-right p-3 font-bold border-r border-red-500/50">PAIEMENT</th>
-                          <th class="text-right p-3 font-bold border-r border-red-500/50 whitespace-nowrap">RESTE À<br>PAYER</th>
-                          <th class="text-right p-3 font-bold whitespace-nowrap">TAUX<br>EXÉC.</th>
+                          <th
+                            v-for="col in colonnesDepenses"
+                            :key="'h-df-' + col.id"
+                            class="text-right p-3 font-bold border-r border-red-500/50 whitespace-nowrap"
+                            :class="{ 'bg-yellow-600/20': isHighlightedColumn(col.cle) }"
+                          >
+                            {{ col.label.toUpperCase() }}
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -356,34 +355,32 @@
                             <span class="font-mono text-xs text-gray-500 dark:text-gray-400 mr-2">{{ ligne.code }}</span>
                             <span :class="{ 'font-bold': ligne.niveau <= 2 }">{{ ligne.intitule }}</span>
                           </td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.budget_primitif) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.budget_additionnel) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.modifications) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono font-semibold bg-yellow-50 dark:bg-yellow-900/30">{{ formatNumber(ligne.previsions_definitives) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.engagement) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.mandat_admis) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.paiement) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.reste_a_payer) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono font-bold"
+                          <td
+                            v-for="col in colonnesDepenses"
+                            :key="'d-df-' + ligne.code + '-' + col.id"
+                            class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono"
                             :class="{
-                              'text-green-600 dark:text-green-400': (ligne.taux_execution || 0) >= 0.9,
-                              'text-orange-600 dark:text-orange-400': (ligne.taux_execution || 0) >= 0.7 && (ligne.taux_execution || 0) < 0.9,
-                              'text-red-600 dark:text-red-400': (ligne.taux_execution || 0) < 0.7
+                              'bg-yellow-50 dark:bg-yellow-900/30 font-semibold': isHighlightedColumn(col.cle),
+                              'text-gray-700 dark:text-gray-300': !isTauxColumn(col.cle),
+                              'font-bold': isTauxColumn(col.cle),
+                              'text-green-600 dark:text-green-400': isTauxColumn(col.cle) && (ligne[col.cle] || 0) >= 0.9,
+                              'text-orange-600 dark:text-orange-400': isTauxColumn(col.cle) && (ligne[col.cle] || 0) >= 0.7 && (ligne[col.cle] || 0) < 0.9,
+                              'text-red-600 dark:text-red-400': isTauxColumn(col.cle) && (ligne[col.cle] || 0) < 0.7
                             }"
-                          >{{ formatPercent(ligne.taux_execution) }}</td>
+                          >
+                            {{ getColonneValue(ligne, col.cle, col.type_donnee) }}
+                          </td>
                         </tr>
                         <!-- Total Fonctionnement -->
                         <tr class="bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold">
                           <td class="p-3 border border-red-500/50">TOTAL DÉPENSES FONCTIONNEMENT</td>
-                          <td class="text-right p-3 border border-red-500/50 font-mono">{{ formatNumber(totauxDepenses.fonctionnement.bp) }}</td>
-                          <td class="text-right p-3 border border-red-500/50 font-mono">{{ formatNumber(totauxDepenses.fonctionnement.ba) }}</td>
-                          <td class="text-right p-3 border border-red-500/50 font-mono">{{ formatNumber(totauxDepenses.fonctionnement.modif) }}</td>
-                          <td class="text-right p-3 border border-red-500/50 font-mono">{{ formatNumber(totauxDepenses.fonctionnement.pd) }}</td>
-                          <td class="text-right p-3 border border-red-500/50 font-mono">{{ formatNumber(totauxDepenses.fonctionnement.engagement) }}</td>
-                          <td class="text-right p-3 border border-red-500/50 font-mono">{{ formatNumber(totauxDepenses.fonctionnement.mandat) }}</td>
-                          <td class="text-right p-3 border border-red-500/50 font-mono">{{ formatNumber(totauxDepenses.fonctionnement.paiement) }}</td>
-                          <td class="text-right p-3 border border-red-500/50 font-mono">{{ formatNumber(totauxDepenses.fonctionnement.reste) }}</td>
-                          <td class="text-right p-3 border border-red-500/50 font-mono">{{ formatPercent(totauxDepenses.fonctionnement.taux) }}</td>
+                          <td
+                            v-for="col in colonnesDepenses"
+                            :key="'t-df-' + col.id"
+                            class="text-right p-3 border border-red-500/50 font-mono"
+                          >
+                            {{ getColonneValue(totauxDepenses.fonctionnement, col.cle, col.type_donnee) }}
+                          </td>
                         </tr>
                       </tbody>
                     </table>
@@ -407,15 +404,14 @@
                       <thead>
                         <tr class="bg-gradient-to-r from-orange-600 to-amber-600 text-white">
                           <th class="text-left p-3 font-bold border-r border-orange-500/50">INTITULÉ</th>
-                          <th class="text-right p-3 font-bold border-r border-orange-500/50 whitespace-nowrap">BUDGET<br>PRIMITIF</th>
-                          <th class="text-right p-3 font-bold border-r border-orange-500/50 whitespace-nowrap">BUDGET<br>ADDITIONNEL</th>
-                          <th class="text-right p-3 font-bold border-r border-orange-500/50 whitespace-nowrap">MODIF.<br>+/-</th>
-                          <th class="text-right p-3 font-bold border-r border-orange-500/50 whitespace-nowrap bg-yellow-600/20">PRÉVISIONS<br>DÉFINITIVES</th>
-                          <th class="text-right p-3 font-bold border-r border-orange-500/50">ENGAGEMENT</th>
-                          <th class="text-right p-3 font-bold border-r border-orange-500/50 whitespace-nowrap">MANDAT<br>ADMIS</th>
-                          <th class="text-right p-3 font-bold border-r border-orange-500/50">PAIEMENT</th>
-                          <th class="text-right p-3 font-bold border-r border-orange-500/50 whitespace-nowrap">RESTE À<br>PAYER</th>
-                          <th class="text-right p-3 font-bold whitespace-nowrap">TAUX<br>EXÉC.</th>
+                          <th
+                            v-for="col in colonnesDepenses"
+                            :key="'h-di-' + col.id"
+                            class="text-right p-3 font-bold border-r border-orange-500/50 whitespace-nowrap"
+                            :class="{ 'bg-yellow-600/20': isHighlightedColumn(col.cle) }"
+                          >
+                            {{ col.label.toUpperCase() }}
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -432,34 +428,32 @@
                             <span class="font-mono text-xs text-gray-500 dark:text-gray-400 mr-2">{{ ligne.code }}</span>
                             <span :class="{ 'font-bold': ligne.niveau <= 2 }">{{ ligne.intitule }}</span>
                           </td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.budget_primitif) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.budget_additionnel) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.modifications) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono font-semibold bg-yellow-50 dark:bg-yellow-900/30">{{ formatNumber(ligne.previsions_definitives) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.engagement) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.mandat_admis) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.paiement) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono text-gray-700 dark:text-gray-300">{{ formatNumber(ligne.reste_a_payer) }}</td>
-                          <td class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono font-bold"
+                          <td
+                            v-for="col in colonnesDepenses"
+                            :key="'d-di-' + ligne.code + '-' + col.id"
+                            class="text-right p-3 border border-gray-200 dark:border-gray-600 font-mono"
                             :class="{
-                              'text-green-600 dark:text-green-400': (ligne.taux_execution || 0) >= 0.9,
-                              'text-orange-600 dark:text-orange-400': (ligne.taux_execution || 0) >= 0.7 && (ligne.taux_execution || 0) < 0.9,
-                              'text-red-600 dark:text-red-400': (ligne.taux_execution || 0) < 0.7
+                              'bg-yellow-50 dark:bg-yellow-900/30 font-semibold': isHighlightedColumn(col.cle),
+                              'text-gray-700 dark:text-gray-300': !isTauxColumn(col.cle),
+                              'font-bold': isTauxColumn(col.cle),
+                              'text-green-600 dark:text-green-400': isTauxColumn(col.cle) && (ligne[col.cle] || 0) >= 0.9,
+                              'text-orange-600 dark:text-orange-400': isTauxColumn(col.cle) && (ligne[col.cle] || 0) >= 0.7 && (ligne[col.cle] || 0) < 0.9,
+                              'text-red-600 dark:text-red-400': isTauxColumn(col.cle) && (ligne[col.cle] || 0) < 0.7
                             }"
-                          >{{ formatPercent(ligne.taux_execution) }}</td>
+                          >
+                            {{ getColonneValue(ligne, col.cle, col.type_donnee) }}
+                          </td>
                         </tr>
                         <!-- Total Investissement -->
                         <tr class="bg-gradient-to-r from-orange-600 to-amber-600 text-white font-bold">
                           <td class="p-3 border border-orange-500/50">TOTAL DÉPENSES INVESTISSEMENT</td>
-                          <td class="text-right p-3 border border-orange-500/50 font-mono">{{ formatNumber(totauxDepenses.investissement.bp) }}</td>
-                          <td class="text-right p-3 border border-orange-500/50 font-mono">{{ formatNumber(totauxDepenses.investissement.ba) }}</td>
-                          <td class="text-right p-3 border border-orange-500/50 font-mono">{{ formatNumber(totauxDepenses.investissement.modif) }}</td>
-                          <td class="text-right p-3 border border-orange-500/50 font-mono">{{ formatNumber(totauxDepenses.investissement.pd) }}</td>
-                          <td class="text-right p-3 border border-orange-500/50 font-mono">{{ formatNumber(totauxDepenses.investissement.engagement) }}</td>
-                          <td class="text-right p-3 border border-orange-500/50 font-mono">{{ formatNumber(totauxDepenses.investissement.mandat) }}</td>
-                          <td class="text-right p-3 border border-orange-500/50 font-mono">{{ formatNumber(totauxDepenses.investissement.paiement) }}</td>
-                          <td class="text-right p-3 border border-orange-500/50 font-mono">{{ formatNumber(totauxDepenses.investissement.reste) }}</td>
-                          <td class="text-right p-3 border border-orange-500/50 font-mono">{{ formatPercent(totauxDepenses.investissement.taux) }}</td>
+                          <td
+                            v-for="col in colonnesDepenses"
+                            :key="'t-di-' + col.id"
+                            class="text-right p-3 border border-orange-500/50 font-mono"
+                          >
+                            {{ getColonneValue(totauxDepenses.investissement, col.cle, col.type_donnee) }}
+                          </td>
                         </tr>
                       </tbody>
                     </table>
@@ -475,19 +469,19 @@
                   <div class="grid grid-cols-4 gap-4 mt-3 text-sm">
                     <div>
                       <span class="opacity-75">Budget Primitif</span>
-                      <p class="font-mono font-semibold">{{ formatNumber(totauxDepenses.general.bp) }}</p>
+                      <p class="font-mono font-semibold">{{ formatNumber(totauxDepenses.general.budget_primitif) }}</p>
                     </div>
                     <div>
                       <span class="opacity-75">Prévisions Définitives</span>
-                      <p class="font-mono font-semibold">{{ formatNumber(totauxDepenses.general.pd) }}</p>
+                      <p class="font-mono font-semibold">{{ formatNumber(totauxDepenses.general.previsions_definitives) }}</p>
                     </div>
                     <div>
                       <span class="opacity-75">Reste à Payer</span>
-                      <p class="font-mono font-semibold">{{ formatNumber(totauxDepenses.general.reste) }}</p>
+                      <p class="font-mono font-semibold">{{ formatNumber(totauxDepenses.general.reste_a_payer) }}</p>
                     </div>
                     <div>
                       <span class="opacity-75">Taux d'Exécution</span>
-                      <p class="font-mono font-semibold">{{ formatPercent(totauxDepenses.general.taux) }}</p>
+                      <p class="font-mono font-semibold">{{ formatPercent(totauxDepenses.general.taux_execution_depense) }}</p>
                     </div>
                   </div>
                 </div>
@@ -518,14 +512,14 @@
                         <tr class="bg-blue-500 text-white text-xs">
                           <th class="p-2 text-left border-r border-blue-400 w-16">COMPTE</th>
                           <th class="p-2 text-left border-r border-blue-400">INTITULÉS</th>
-                          <th class="p-2 text-right border-r border-blue-400 w-24">MANDAT ADMIS</th>
-                          <th class="p-2 text-right border-r border-blue-400 w-24">PAIEMENT</th>
-                          <th class="p-2 text-right border-r border-blue-400 w-24">RESTE À PAYER</th>
+                          <th class="p-2 text-right border-r border-blue-400 w-24">{{ getColonneLabel('mandat_admis').toUpperCase() }}</th>
+                          <th class="p-2 text-right border-r border-blue-400 w-24">{{ getColonneLabel('paiement').toUpperCase() }}</th>
+                          <th class="p-2 text-right border-r border-blue-400 w-24">{{ getColonneLabel('reste_a_payer').toUpperCase() }}</th>
                           <th class="p-2 text-left border-r border-blue-400 w-16">COMPTE</th>
                           <th class="p-2 text-left border-r border-blue-400">INTITULÉS</th>
-                          <th class="p-2 text-right border-r border-blue-400 w-24">OR ADMIS</th>
-                          <th class="p-2 text-right border-r border-blue-400 w-24">RECOUVREMENT</th>
-                          <th class="p-2 text-right w-28">RESTE À RECOUVRER</th>
+                          <th class="p-2 text-right border-r border-blue-400 w-24">{{ getColonneLabel('or_admis').toUpperCase() }}</th>
+                          <th class="p-2 text-right border-r border-blue-400 w-24">{{ getColonneLabel('recouvrement').toUpperCase() }}</th>
+                          <th class="p-2 text-right w-28">{{ getColonneLabel('reste_a_recouvrer').toUpperCase() }}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -628,14 +622,14 @@
                         <tr class="bg-purple-500 text-white text-xs">
                           <th class="p-2 text-left border-r border-purple-400 w-16">COMPTE</th>
                           <th class="p-2 text-left border-r border-purple-400">INTITULÉ</th>
-                          <th class="p-2 text-right border-r border-purple-400 w-24">MANDAT ADMIS</th>
-                          <th class="p-2 text-right border-r border-purple-400 w-24">PAIEMENT</th>
-                          <th class="p-2 text-right border-r border-purple-400 w-24">RESTE À PAYER</th>
+                          <th class="p-2 text-right border-r border-purple-400 w-24">{{ getColonneLabel('mandat_admis').toUpperCase() }}</th>
+                          <th class="p-2 text-right border-r border-purple-400 w-24">{{ getColonneLabel('paiement').toUpperCase() }}</th>
+                          <th class="p-2 text-right border-r border-purple-400 w-24">{{ getColonneLabel('reste_a_payer').toUpperCase() }}</th>
                           <th class="p-2 text-left border-r border-purple-400 w-16">COMPTE</th>
                           <th class="p-2 text-left border-r border-purple-400">INTITULÉ</th>
-                          <th class="p-2 text-right border-r border-purple-400 w-24">OR ADMIS</th>
-                          <th class="p-2 text-right border-r border-purple-400 w-24">RECOUVREMENT</th>
-                          <th class="p-2 text-right w-28">RESTE À RECOUVRER</th>
+                          <th class="p-2 text-right border-r border-purple-400 w-24">{{ getColonneLabel('or_admis').toUpperCase() }}</th>
+                          <th class="p-2 text-right border-r border-purple-400 w-24">{{ getColonneLabel('recouvrement').toUpperCase() }}</th>
+                          <th class="p-2 text-right w-28">{{ getColonneLabel('reste_a_recouvrer').toUpperCase() }}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1011,6 +1005,69 @@ const isEditable = computed(() => {
   return compte.value?.statut === 'brouillon' || compte.value?.statut === 'valide'
 })
 
+// Labels par défaut si les colonnes ne sont pas encore chargées
+const defaultLabels: Record<string, string> = {
+  budget_primitif: 'Budget Primitif',
+  budget_additionnel: 'Budget Additionnel',
+  modifications: 'Modifications +/-',
+  previsions_definitives: 'Prévisions Définitives',
+  or_admis: 'OR Admis',
+  recouvrement: 'Recouvrement',
+  reste_a_recouvrer: 'Reste à Recouvrer',
+  taux_execution_recette: 'Taux Exéc.',
+  engagement: 'Engagement',
+  mandat_admis: 'Mandat Admis',
+  paiement: 'Paiement',
+  reste_a_payer: 'Reste à Payer',
+  taux_execution_depense: 'Taux Exéc.',
+}
+
+// Récupère le label d'une colonne par sa clé
+const getColonneLabel = (cle: string): string => {
+  const colonne = colonnes.value.find((c: ColonneDynamique) => c.cle === cle)
+  return colonne?.label || defaultLabels[cle] || cle
+}
+
+// Colonnes filtrées par type, triées par ordre
+const colonnesRecettes = computed(() => {
+  return colonnes.value
+    .filter((c: ColonneDynamique) =>
+      c.est_active && c.est_visible &&
+      (c.applicable_a === 'recette' || c.applicable_a === 'tous')
+    )
+    .sort((a: ColonneDynamique, b: ColonneDynamique) => a.ordre - b.ordre)
+})
+
+const colonnesDepenses = computed(() => {
+  return colonnes.value
+    .filter((c: ColonneDynamique) =>
+      c.est_active && c.est_visible &&
+      (c.applicable_a === 'depense' || c.applicable_a === 'tous')
+    )
+    .sort((a: ColonneDynamique, b: ColonneDynamique) => a.ordre - b.ordre)
+})
+
+// Récupère la valeur d'une colonne pour une ligne donnée
+const getColonneValue = (ligne: Record<string, any>, cle: string, typeDonnee: string): string => {
+  const value = ligne[cle]
+  if (value === undefined || value === null) return '-'
+
+  if (typeDonnee === 'pourcentage') {
+    return formatPercent(value)
+  }
+  return formatNumber(value)
+}
+
+// Détermine si une colonne a un style spécial (surlignée, etc.)
+const isHighlightedColumn = (cle: string): boolean => {
+  return cle === 'previsions_definitives'
+}
+
+// Détermine si une colonne est un taux d'exécution
+const isTauxColumn = (cle: string): boolean => {
+  return cle.startsWith('taux_')
+}
+
 const totaux = computed(() => {
   // Utilisation des totaux généraux de l'API
   const recettes = Number(tableauComplet.value?.recettes?.total_general_or_admis) || 0
@@ -1023,11 +1080,70 @@ const totaux = computed(() => {
   }
 })
 
+/**
+ * Agrège les valeurs des enfants vers les parents dans une hiérarchie
+ * @param lignes - Tableau de lignes avec code et niveau
+ * @param numericKeys - Clés numériques à agréger
+ * @returns Tableau avec les parents contenant les sommes des enfants
+ */
+const aggregateHierarchicalData = (
+  lignes: Record<string, any>[],
+  numericKeys: string[]
+): Record<string, any>[] => {
+  if (!lignes.length) return lignes
+
+  // Créer une map code -> ligne pour un accès rapide
+  const codeMap = new Map<string, Record<string, any>>()
+  lignes.forEach(l => codeMap.set(l.code, { ...l }))
+
+  // Fonction pour dériver le code parent
+  // "2010D" -> "201D", "201D" -> "20D", "701R" -> "70R"
+  const getParentCode = (code: string): string | null => {
+    // Extraire le suffixe (R ou D) et la partie numérique
+    const match = code.match(/^(\d+)([RD])$/)
+    if (!match) return null
+    const [, numPart, suffix] = match
+    if (numPart.length <= 2) return null // Pas de parent au-dessus du niveau 1
+    return numPart.slice(0, -1) + suffix
+  }
+
+  // Agréger du niveau le plus bas vers le plus haut
+  // D'abord niveau 3 -> 2, puis niveau 2 -> 1
+  const sortedLignes = [...lignes].sort((a, b) => b.niveau - a.niveau)
+
+  for (const ligne of sortedLignes) {
+    const parentCode = getParentCode(ligne.code)
+    if (parentCode && codeMap.has(parentCode)) {
+      // Important: utiliser la valeur mise à jour depuis codeMap, pas la valeur originale
+      const currentLigne = codeMap.get(ligne.code)!
+      const parent = codeMap.get(parentCode)!
+      for (const key of numericKeys) {
+        parent[key] = (parent[key] || 0) + (currentLigne[key] || 0)
+      }
+    }
+  }
+
+  // Retourner dans l'ordre original
+  return lignes.map(l => codeMap.get(l.code)!)
+}
+
+// Clés numériques pour les recettes
+const recettesNumericKeys = [
+  'budget_primitif', 'budget_additionnel', 'modifications', 'previsions_definitives',
+  'or_admis', 'recouvrement', 'reste_a_recouvrer'
+]
+
+// Clés numériques pour les dépenses
+const depensesNumericKeys = [
+  'budget_primitif', 'budget_additionnel', 'modifications', 'previsions_definitives',
+  'engagement', 'mandat_admis', 'paiement', 'reste_a_payer'
+]
+
 // Preview data for Excel visualization - RECETTES DE FONCTIONNEMENT
 const previewRecettesFonctionnement = computed(() => {
   const apiSection = tableauComplet.value?.recettes?.sections?.find(s => s.section === 'fonctionnement')
   if (apiSection?.lignes?.length) {
-    return apiSection.lignes.map(l => ({
+    const mapped = apiSection.lignes.map(l => ({
       code: l.code,
       intitule: l.intitule,
       niveau: l.niveau,
@@ -1038,8 +1154,10 @@ const previewRecettesFonctionnement = computed(() => {
       or_admis: Number(l.or_admis) || 0,
       recouvrement: Number(l.recouvrement) || 0,
       reste_a_recouvrer: Number(l.reste_a_recouvrer) || 0,
-      taux_execution: l.taux_execution ? Number(l.taux_execution) / 100 : 0,
+      taux_execution_recette: l.taux_execution ? Number(l.taux_execution) / 100 : 0,
     }))
+    // Agréger les valeurs des enfants vers les parents
+    return aggregateHierarchicalData(mapped, recettesNumericKeys)
   }
   return []
 })
@@ -1050,7 +1168,7 @@ const previewRecettesInvestissement = computed(() => {
     (s: SectionTableauRecettesAPI) => s.section === 'investissement'
   )
   if (apiSection?.lignes?.length) {
-    return apiSection.lignes.map((l: LigneRecettesAPI) => ({
+    const mapped = apiSection.lignes.map((l: LigneRecettesAPI) => ({
       code: l.code,
       intitule: l.intitule,
       niveau: l.niveau,
@@ -1061,8 +1179,10 @@ const previewRecettesInvestissement = computed(() => {
       or_admis: Number(l.or_admis) || 0,
       recouvrement: Number(l.recouvrement) || 0,
       reste_a_recouvrer: Number(l.reste_a_recouvrer) || 0,
-      taux_execution: l.taux_execution ? Number(l.taux_execution) / 100 : 0,
+      taux_execution_recette: l.taux_execution ? Number(l.taux_execution) / 100 : 0,
     }))
+    // Agréger les valeurs des enfants vers les parents
+    return aggregateHierarchicalData(mapped, recettesNumericKeys)
   }
   return []
 })
@@ -1072,34 +1192,40 @@ const totauxRecettes = computed(() => {
   const fonctData = previewRecettesFonctionnement.value.filter(l => l.niveau === 1)
   const investData = previewRecettesInvestissement.value.filter(l => l.niveau === 1)
 
-  const calcTotaux = (data: typeof fonctData) => ({
-    bp: data.reduce((s, l) => s + (l.budget_primitif || 0), 0),
-    ba: data.reduce((s, l) => s + (l.budget_additionnel || 0), 0),
-    modif: data.reduce((s, l) => s + (l.modifications || 0), 0),
-    pd: data.reduce((s, l) => s + (l.previsions_definitives || 0), 0),
-    or: data.reduce((s, l) => s + (l.or_admis || 0), 0),
-    recouvrement: data.reduce((s, l) => s + (l.recouvrement || 0), 0),
-    reste: data.reduce((s, l) => s + (l.reste_a_recouvrer || 0), 0),
-    taux: 0, // Calculé après
-  })
+  const calcTotaux = (data: typeof fonctData): Record<string, number> => {
+    const result: Record<string, number> = {
+      budget_primitif: data.reduce((s, l) => s + (l.budget_primitif || 0), 0),
+      budget_additionnel: data.reduce((s, l) => s + (l.budget_additionnel || 0), 0),
+      modifications: data.reduce((s, l) => s + (l.modifications || 0), 0),
+      previsions_definitives: data.reduce((s, l) => s + (l.previsions_definitives || 0), 0),
+      or_admis: data.reduce((s, l) => s + (l.or_admis || 0), 0),
+      recouvrement: data.reduce((s, l) => s + (l.recouvrement || 0), 0),
+      reste_a_recouvrer: data.reduce((s, l) => s + (l.reste_a_recouvrer || 0), 0),
+      taux_execution_recette: 0,
+    }
+    // Calcul du taux d'exécution
+    result.taux_execution_recette = result.previsions_definitives > 0
+      ? result.recouvrement / result.previsions_definitives
+      : 0
+    return result
+  }
 
   const fonctionnement = calcTotaux(fonctData)
-  fonctionnement.taux = fonctionnement.pd > 0 ? fonctionnement.recouvrement / fonctionnement.pd : 0
-
   const investissement = calcTotaux(investData)
-  investissement.taux = investissement.pd > 0 ? investissement.recouvrement / investissement.pd : 0
 
-  const general = {
-    bp: fonctionnement.bp + investissement.bp,
-    ba: fonctionnement.ba + investissement.ba,
-    modif: fonctionnement.modif + investissement.modif,
-    pd: fonctionnement.pd + investissement.pd,
-    or: fonctionnement.or + investissement.or,
+  const general: Record<string, number> = {
+    budget_primitif: fonctionnement.budget_primitif + investissement.budget_primitif,
+    budget_additionnel: fonctionnement.budget_additionnel + investissement.budget_additionnel,
+    modifications: fonctionnement.modifications + investissement.modifications,
+    previsions_definitives: fonctionnement.previsions_definitives + investissement.previsions_definitives,
+    or_admis: fonctionnement.or_admis + investissement.or_admis,
     recouvrement: fonctionnement.recouvrement + investissement.recouvrement,
-    reste: fonctionnement.reste + investissement.reste,
-    taux: 0,
+    reste_a_recouvrer: fonctionnement.reste_a_recouvrer + investissement.reste_a_recouvrer,
+    taux_execution_recette: 0,
   }
-  general.taux = general.pd > 0 ? general.recouvrement / general.pd : 0
+  general.taux_execution_recette = general.previsions_definitives > 0
+    ? general.recouvrement / general.previsions_definitives
+    : 0
 
   return { fonctionnement, investissement, general }
 })
@@ -1110,7 +1236,7 @@ const previewDepensesFonctionnement = computed(() => {
     (s: SectionTableauDepensesAPI) => s.section === 'fonctionnement'
   )
   if (apiSection?.lignes?.length) {
-    return apiSection.lignes.map((l: LigneDepensesAPI) => ({
+    const mapped = apiSection.lignes.map((l: LigneDepensesAPI) => ({
       code: l.code,
       intitule: l.intitule,
       niveau: l.niveau,
@@ -1122,8 +1248,10 @@ const previewDepensesFonctionnement = computed(() => {
       mandat_admis: Number(l.mandat_admis) || 0,
       paiement: Number(l.paiement) || 0,
       reste_a_payer: Number(l.reste_a_payer) || 0,
-      taux_execution: l.taux_execution ? Number(l.taux_execution) / 100 : 0,
+      taux_execution_depense: l.taux_execution ? Number(l.taux_execution) / 100 : 0,
     }))
+    // Agréger les valeurs des enfants vers les parents
+    return aggregateHierarchicalData(mapped, depensesNumericKeys)
   }
   return []
 })
@@ -1134,7 +1262,7 @@ const previewDepensesInvestissement = computed(() => {
     (s: SectionTableauDepensesAPI) => s.section === 'investissement'
   )
   if (apiSection?.lignes?.length) {
-    return apiSection.lignes.map((l: LigneDepensesAPI) => ({
+    const mapped = apiSection.lignes.map((l: LigneDepensesAPI) => ({
       code: l.code,
       intitule: l.intitule,
       niveau: l.niveau,
@@ -1146,8 +1274,10 @@ const previewDepensesInvestissement = computed(() => {
       mandat_admis: Number(l.mandat_admis) || 0,
       paiement: Number(l.paiement) || 0,
       reste_a_payer: Number(l.reste_a_payer) || 0,
-      taux_execution: l.taux_execution ? Number(l.taux_execution) / 100 : 0,
+      taux_execution_depense: l.taux_execution ? Number(l.taux_execution) / 100 : 0,
     }))
+    // Agréger les valeurs des enfants vers les parents
+    return aggregateHierarchicalData(mapped, depensesNumericKeys)
   }
   return []
 })
@@ -1157,36 +1287,42 @@ const totauxDepenses = computed(() => {
   const fonctData = previewDepensesFonctionnement.value.filter(l => l.niveau === 1)
   const investData = previewDepensesInvestissement.value.filter(l => l.niveau === 1)
 
-  const calcTotaux = (data: typeof fonctData) => ({
-    bp: data.reduce((s, l) => s + (l.budget_primitif || 0), 0),
-    ba: data.reduce((s, l) => s + (l.budget_additionnel || 0), 0),
-    modif: data.reduce((s, l) => s + (l.modifications || 0), 0),
-    pd: data.reduce((s, l) => s + (l.previsions_definitives || 0), 0),
-    engagement: data.reduce((s, l) => s + (l.engagement || 0), 0),
-    mandat: data.reduce((s, l) => s + (l.mandat_admis || 0), 0),
-    paiement: data.reduce((s, l) => s + (l.paiement || 0), 0),
-    reste: data.reduce((s, l) => s + (l.reste_a_payer || 0), 0),
-    taux: 0,
-  })
+  const calcTotaux = (data: typeof fonctData): Record<string, number> => {
+    const result: Record<string, number> = {
+      budget_primitif: data.reduce((s, l) => s + (l.budget_primitif || 0), 0),
+      budget_additionnel: data.reduce((s, l) => s + (l.budget_additionnel || 0), 0),
+      modifications: data.reduce((s, l) => s + (l.modifications || 0), 0),
+      previsions_definitives: data.reduce((s, l) => s + (l.previsions_definitives || 0), 0),
+      engagement: data.reduce((s, l) => s + (l.engagement || 0), 0),
+      mandat_admis: data.reduce((s, l) => s + (l.mandat_admis || 0), 0),
+      paiement: data.reduce((s, l) => s + (l.paiement || 0), 0),
+      reste_a_payer: data.reduce((s, l) => s + (l.reste_a_payer || 0), 0),
+      taux_execution_depense: 0,
+    }
+    // Calcul du taux d'exécution
+    result.taux_execution_depense = result.previsions_definitives > 0
+      ? result.paiement / result.previsions_definitives
+      : 0
+    return result
+  }
 
   const fonctionnement = calcTotaux(fonctData)
-  fonctionnement.taux = fonctionnement.pd > 0 ? fonctionnement.paiement / fonctionnement.pd : 0
-
   const investissement = calcTotaux(investData)
-  investissement.taux = investissement.pd > 0 ? investissement.paiement / investissement.pd : 0
 
-  const general = {
-    bp: fonctionnement.bp + investissement.bp,
-    ba: fonctionnement.ba + investissement.ba,
-    modif: fonctionnement.modif + investissement.modif,
-    pd: fonctionnement.pd + investissement.pd,
+  const general: Record<string, number> = {
+    budget_primitif: fonctionnement.budget_primitif + investissement.budget_primitif,
+    budget_additionnel: fonctionnement.budget_additionnel + investissement.budget_additionnel,
+    modifications: fonctionnement.modifications + investissement.modifications,
+    previsions_definitives: fonctionnement.previsions_definitives + investissement.previsions_definitives,
     engagement: fonctionnement.engagement + investissement.engagement,
-    mandat: fonctionnement.mandat + investissement.mandat,
+    mandat_admis: fonctionnement.mandat_admis + investissement.mandat_admis,
     paiement: fonctionnement.paiement + investissement.paiement,
-    reste: fonctionnement.reste + investissement.reste,
-    taux: 0,
+    reste_a_payer: fonctionnement.reste_a_payer + investissement.reste_a_payer,
+    taux_execution_depense: 0,
   }
-  general.taux = general.pd > 0 ? general.paiement / general.pd : 0
+  general.taux_execution_depense = general.previsions_definitives > 0
+    ? general.paiement / general.previsions_definitives
+    : 0
 
   return { fonctionnement, investissement, general }
 })
