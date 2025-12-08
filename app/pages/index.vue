@@ -1,34 +1,69 @@
 <script setup lang="ts">
-  // Métadonnées de la page
-  useHead({
-    title: 'Plateforme de Suivi des Revenus Miniers - Accueil',
-    meta: [
-      {
-        name: 'description',
-        content: 'Plateforme de suivi de l\'utilisation des revenus miniers des collectivités territoriales à Madagascar'
-      }
-    ]
-  })
+import type { DashboardStats } from '~/types'
 
-  const showScrollTop = ref(false)
+// Métadonnées de la page
+useHead({
+  title: 'Plateforme de Suivi des Revenus Miniers - Accueil',
+  meta: [
+    {
+      name: 'description',
+      content: 'Plateforme de suivi de l\'utilisation des revenus miniers des collectivités territoriales à Madagascar'
+    }
+  ]
+})
 
-  // Gestion du scroll to top
-  const handleScroll = () => {
-    showScrollTop.value = window.scrollY > 300
+const statistiquesService = useStatistiquesService()
+
+// États
+const showScrollTop = ref(false)
+const isLoadingStats = ref(true)
+const dashboardStats = ref<DashboardStats | null>(null)
+
+// Charger les statistiques
+const loadStats = async () => {
+  isLoadingStats.value = true
+  try {
+    dashboardStats.value = await statistiquesService.getDashboardStats()
+  } catch (err: any) {
+    console.error('Erreur lors du chargement des statistiques:', err)
+  } finally {
+    isLoadingStats.value = false
   }
+}
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+// Formatage des montants
+const formatMontant = (value: number | undefined): string => {
+  if (!value) return '0'
+  if (value >= 1_000_000_000) {
+    return (value / 1_000_000_000).toFixed(1) + ' Mrd'
   }
+  if (value >= 1_000_000) {
+    return (value / 1_000_000).toFixed(1) + ' M'
+  }
+  if (value >= 1_000) {
+    return (value / 1_000).toFixed(1) + ' K'
+  }
+  return value.toLocaleString('fr-FR')
+}
 
-  // Lifecycle
-  onMounted(() => {
-    window.addEventListener('scroll', handleScroll)
-  })
+// Gestion du scroll to top
+const handleScroll = () => {
+  showScrollTop.value = window.scrollY > 300
+}
 
-  onUnmounted(() => {
-    window.removeEventListener('scroll', handleScroll)
-  })
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+// Lifecycle
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll)
+  loadStats()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <template>
@@ -37,7 +72,147 @@
     <HeroSection />
 
     <!-- Contenu principal -->
-    <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+    <main class="max-w-7xl mx-auto px-4 py-8 space-y-12">
+      <!-- Section Statistiques -->
+      <section v-if="dashboardStats || isLoadingStats" class="py-8">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-8 text-center flex items-center justify-center gap-3">
+          <font-awesome-icon :icon="['fas', 'chart-bar']" class="text-blue-600 dark:text-blue-400" />
+          <span>Statistiques de la plateforme</span>
+        </h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Communes avec données -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Communes avec données</p>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">
+                  <template v-if="isLoadingStats">
+                    <span class="inline-block w-16 h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></span>
+                  </template>
+                  <template v-else>
+                    {{ dashboardStats?.communes_avec_donnees || 0 }}
+                    <span class="text-sm font-normal text-gray-500">/ {{ dashboardStats?.communes_total || 0 }}</span>
+                  </template>
+                </p>
+              </div>
+              <div class="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-full">
+                <font-awesome-icon :icon="['fas', 'city']" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+            <div v-if="!isLoadingStats && dashboardStats?.communes_total" class="mt-4">
+              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div
+                  class="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                  :style="{ width: `${(dashboardStats.communes_avec_donnees / dashboardStats.communes_total) * 100}%` }"
+                ></div>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {{ Math.round((dashboardStats.communes_avec_donnees / dashboardStats.communes_total) * 100) }}% de couverture
+              </p>
+            </div>
+          </div>
+
+          <!-- Total Recettes -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Recettes</p>
+                <p class="text-3xl font-bold text-green-600 dark:text-green-400 mt-2">
+                  <template v-if="isLoadingStats">
+                    <span class="inline-block w-20 h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></span>
+                  </template>
+                  <template v-else>
+                    {{ formatMontant(dashboardStats?.total_recettes) }}
+                    <span class="text-sm font-normal">Ar</span>
+                  </template>
+                </p>
+              </div>
+              <div class="bg-green-100 dark:bg-green-900/30 p-3 rounded-full">
+                <font-awesome-icon :icon="['fas', 'arrow-trend-up']" class="w-6 h-6 text-green-600 dark:text-green-400" />
+              </div>
+            </div>
+            <div v-if="!isLoadingStats && dashboardStats?.evolution_recettes" class="mt-4 flex items-center gap-1">
+              <font-awesome-icon
+                :icon="['fas', dashboardStats.evolution_recettes >= 0 ? 'arrow-up' : 'arrow-down']"
+                :class="dashboardStats.evolution_recettes >= 0 ? 'text-green-500' : 'text-red-500'"
+                class="w-3 h-3"
+              />
+              <span :class="dashboardStats.evolution_recettes >= 0 ? 'text-green-500' : 'text-red-500'" class="text-sm font-medium">
+                {{ Math.abs(dashboardStats.evolution_recettes).toFixed(1) }}%
+              </span>
+              <span class="text-xs text-gray-500 dark:text-gray-400">vs année précédente</span>
+            </div>
+          </div>
+
+          <!-- Total Dépenses -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Dépenses</p>
+                <p class="text-3xl font-bold text-orange-600 dark:text-orange-400 mt-2">
+                  <template v-if="isLoadingStats">
+                    <span class="inline-block w-20 h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></span>
+                  </template>
+                  <template v-else>
+                    {{ formatMontant(dashboardStats?.total_depenses) }}
+                    <span class="text-sm font-normal">Ar</span>
+                  </template>
+                </p>
+              </div>
+              <div class="bg-orange-100 dark:bg-orange-900/30 p-3 rounded-full">
+                <font-awesome-icon :icon="['fas', 'arrow-trend-down']" class="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              </div>
+            </div>
+            <div v-if="!isLoadingStats && dashboardStats?.evolution_depenses" class="mt-4 flex items-center gap-1">
+              <font-awesome-icon
+                :icon="['fas', dashboardStats.evolution_depenses >= 0 ? 'arrow-up' : 'arrow-down']"
+                :class="dashboardStats.evolution_depenses <= 0 ? 'text-green-500' : 'text-red-500'"
+                class="w-3 h-3"
+              />
+              <span :class="dashboardStats.evolution_depenses <= 0 ? 'text-green-500' : 'text-red-500'" class="text-sm font-medium">
+                {{ Math.abs(dashboardStats.evolution_depenses).toFixed(1) }}%
+              </span>
+              <span class="text-xs text-gray-500 dark:text-gray-400">vs année précédente</span>
+            </div>
+          </div>
+
+          <!-- Comptes administratifs -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Comptes Administratifs</p>
+                <p class="text-3xl font-bold text-purple-600 dark:text-purple-400 mt-2">
+                  <template v-if="isLoadingStats">
+                    <span class="inline-block w-12 h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></span>
+                  </template>
+                  <template v-else>
+                    {{ dashboardStats?.total_comptes_administratifs || 0 }}
+                  </template>
+                </p>
+              </div>
+              <div class="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-full">
+                <font-awesome-icon :icon="['fas', 'file-invoice-dollar']" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              </div>
+            </div>
+            <div v-if="!isLoadingStats && dashboardStats?.comptes_par_statut" class="mt-4 flex flex-wrap gap-2">
+              <span
+                v-for="(count, statut) in dashboardStats.comptes_par_statut"
+                :key="statut"
+                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                :class="{
+                  'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300': statut === 'brouillon',
+                  'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400': statut === 'valide',
+                  'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400': statut === 'publie',
+                }"
+              >
+                {{ count }} {{ statut }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Section informations complémentaires -->
       <section class="grid md:grid-cols-3 gap-6">
         <!-- Card 1 -->

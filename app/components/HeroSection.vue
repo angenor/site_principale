@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import type { ProvinceWithStats, RegionWithStats, CommuneWithStats } from '~/types/collectivites'
+
 const emit = defineEmits<{
   search: [communeId: string, annee: number]
 }>()
 
-const { provinces, getRegionsByProvince, getCommunesByRegion } = useMockData()
+const geoService = useGeoService()
 const { isDark } = useDarkMode()
 
 // Logo dynamique basé sur le thème
@@ -13,22 +15,22 @@ const logoSrc = computed(() => {
     : '/images/logos/logo_fond_noire_texte_bleu.jpeg'
 })
 
-// États
-const selectedProvince = ref<string>('')
-const selectedRegion = ref<string>('')
-const selectedCommune = ref<string>('')
-const selectedAnnee = ref<number>(2024)
+// États de chargement
+const isLoadingProvinces = ref(true)
+const isLoadingRegions = ref(false)
+const isLoadingCommunes = ref(false)
+const error = ref<string | null>(null)
 
-// Listes filtrées
-const regions = computed(() => {
-  if (!selectedProvince.value) return []
-  return getRegionsByProvince(selectedProvince.value)
-})
+// Données
+const provinces = ref<ProvinceWithStats[]>([])
+const regions = ref<RegionWithStats[]>([])
+const communes = ref<CommuneWithStats[]>([])
 
-const communes = computed(() => {
-  if (!selectedRegion.value) return []
-  return getCommunesByRegion(selectedRegion.value)
-})
+// Sélections
+const selectedProvince = ref<number | ''>('')
+const selectedRegion = ref<number | ''>('')
+const selectedCommune = ref<number | ''>('')
+const selectedAnnee = ref<number>(new Date().getFullYear())
 
 // Années disponibles
 const annees = computed(() => {
@@ -36,35 +38,89 @@ const annees = computed(() => {
   return Array.from({ length: 5 }, (_, i) => currentYear - i)
 })
 
-// Compteurs pour les labels
-const totalProvinces = computed(() => provinces.length)
+// Statistiques totales
+const totalProvinces = computed(() => provinces.value.length)
+const totalRegions = computed(() => provinces.value.reduce((sum, p) => sum + (p.nb_regions || 0), 0))
+const totalCommunes = computed(() => provinces.value.reduce((sum, p) => sum + (p.nb_communes || 0), 0))
 
+// Compteurs pour les labels
 const totalRegionsForProvince = computed(() => {
   if (!selectedProvince.value) return 0
-  return regions.value.length
+  const province = provinces.value.find(p => p.id === selectedProvince.value)
+  return province?.nb_regions || regions.value.length
 })
 
 const totalCommunesForProvince = computed(() => {
   if (!selectedProvince.value) return 0
-  // Calculer le total de communes pour toutes les régions de la province sélectionnée
-  return regions.value.reduce((total, region) => {
-    return total + getCommunesByRegion(region.id).length
-  }, 0)
+  const province = provinces.value.find(p => p.id === selectedProvince.value)
+  return province?.nb_communes || 0
 })
 
 const totalCommunesForRegion = computed(() => {
   if (!selectedRegion.value) return 0
-  return communes.value.length
+  const region = regions.value.find(r => r.id === selectedRegion.value)
+  return region?.nb_communes || communes.value.length
 })
+
+// Charger les provinces au démarrage
+const loadProvinces = async () => {
+  isLoadingProvinces.value = true
+  error.value = null
+  try {
+    provinces.value = await geoService.getProvinces()
+  } catch (err: any) {
+    console.error('Erreur lors du chargement des provinces:', err)
+    error.value = 'Impossible de charger les provinces'
+  } finally {
+    isLoadingProvinces.value = false
+  }
+}
+
+// Charger les régions d'une province
+const loadRegions = async (provinceId: number) => {
+  isLoadingRegions.value = true
+  try {
+    regions.value = await geoService.getProvinceRegions(provinceId)
+  } catch (err: any) {
+    console.error('Erreur lors du chargement des régions:', err)
+    regions.value = []
+  } finally {
+    isLoadingRegions.value = false
+  }
+}
+
+// Charger les communes d'une région
+const loadCommunes = async (regionId: number) => {
+  isLoadingCommunes.value = true
+  try {
+    communes.value = await geoService.getRegionCommunes(regionId)
+  } catch (err: any) {
+    console.error('Erreur lors du chargement des communes:', err)
+    communes.value = []
+  } finally {
+    isLoadingCommunes.value = false
+  }
+}
 
 // Réinitialiser les sélections en cascade
-watch(selectedProvince, () => {
+watch(selectedProvince, async (newVal) => {
   selectedRegion.value = ''
   selectedCommune.value = ''
+  regions.value = []
+  communes.value = []
+
+  if (newVal) {
+    await loadRegions(newVal)
+  }
 })
 
-watch(selectedRegion, () => {
+watch(selectedRegion, async (newVal) => {
   selectedCommune.value = ''
+  communes.value = []
+
+  if (newVal) {
+    await loadCommunes(newVal)
+  }
 })
 
 // Fonction de recherche avec redirection
@@ -83,6 +139,11 @@ const handleSearch = async () => {
     }
   })
 }
+
+// Charger les données au montage
+onMounted(() => {
+  loadProvinces()
+})
 </script>
 
 <template>
@@ -164,6 +225,14 @@ const handleSearch = async () => {
               <span>Rechercher un Compte Administratif</span>
             </h3>
 
+            <!-- Message d'erreur -->
+            <div v-if="error" class="mb-6 p-4 bg-red-50 dark:bg-red-900/30 rounded-xl border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 text-sm">
+              <div class="flex items-center gap-2">
+                <font-awesome-icon icon="exclamation-circle" />
+                <span>{{ error }}</span>
+              </div>
+            </div>
+
             <!-- Grille de sélection -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <!-- Province avec compteur -->
@@ -177,13 +246,15 @@ const handleSearch = async () => {
                 </label>
                 <div class="relative">
                   <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <font-awesome-icon icon="globe" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                    <font-awesome-icon v-if="isLoadingProvinces" icon="spinner" class="w-4 h-4 text-gray-400 animate-spin" />
+                    <font-awesome-icon v-else icon="globe" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
                   </div>
                   <select
                     v-model="selectedProvince"
-                    class="w-full pl-10 pr-10 py-3.5 bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/50 transition-all appearance-none text-gray-800 dark:text-gray-100 font-medium hover:border-gray-300 dark:hover:border-gray-500"
+                    :disabled="isLoadingProvinces"
+                    class="w-full pl-10 pr-10 py-3.5 bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/50 transition-all appearance-none text-gray-800 dark:text-gray-100 font-medium hover:border-gray-300 dark:hover:border-gray-500 disabled:opacity-60"
                   >
-                    <option value="">Sélectionner...</option>
+                    <option value="">{{ isLoadingProvinces ? 'Chargement...' : 'Sélectionner...' }}</option>
                     <option v-for="province in provinces" :key="province.id" :value="province.id">
                       {{ province.nom }}
                     </option>
@@ -214,14 +285,15 @@ const handleSearch = async () => {
                 </label>
                 <div class="relative">
                   <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <font-awesome-icon icon="landmark" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                    <font-awesome-icon v-if="isLoadingRegions" icon="spinner" class="w-4 h-4 text-gray-400 animate-spin" />
+                    <font-awesome-icon v-else icon="landmark" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
                   </div>
                   <select
                     v-model="selectedRegion"
-                    :disabled="!selectedProvince"
+                    :disabled="!selectedProvince || isLoadingRegions"
                     class="w-full pl-10 pr-10 py-3.5 bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/50 transition-all appearance-none text-gray-800 dark:text-gray-100 font-medium hover:border-gray-300 dark:hover:border-gray-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    <option value="">Sélectionner...</option>
+                    <option value="">{{ isLoadingRegions ? 'Chargement...' : 'Sélectionner...' }}</option>
                     <option v-for="region in regions" :key="region.id" :value="region.id">
                       {{ region.nom }}
                     </option>
@@ -252,14 +324,15 @@ const handleSearch = async () => {
                 </label>
                 <div class="relative">
                   <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <font-awesome-icon icon="home" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                    <font-awesome-icon v-if="isLoadingCommunes" icon="spinner" class="w-4 h-4 text-gray-400 animate-spin" />
+                    <font-awesome-icon v-else icon="home" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
                   </div>
                   <select
                     v-model="selectedCommune"
-                    :disabled="!selectedRegion"
+                    :disabled="!selectedRegion || isLoadingCommunes"
                     class="w-full pl-10 pr-10 py-3.5 bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/50 transition-all appearance-none text-gray-800 dark:text-gray-100 font-medium hover:border-gray-300 dark:hover:border-gray-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    <option value="">Sélectionner...</option>
+                    <option value="">{{ isLoadingCommunes ? 'Chargement...' : 'Sélectionner...' }}</option>
                     <option v-for="commune in communes" :key="commune.id" :value="commune.id">
                       {{ commune.nom }}
                     </option>
@@ -345,7 +418,7 @@ const handleSearch = async () => {
           </div>
         </div>
 
-        <!-- Indicateurs clés en bas -->
+        <!-- Indicateurs clés en bas (données réelles) -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-12 animate-slide-up-delayed">
           <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300">
             <div class="flex items-center gap-4">
@@ -355,7 +428,12 @@ const handleSearch = async () => {
                 </svg>
               </div>
               <div>
-                <p class="text-3xl font-bold text-white">6</p>
+                <p class="text-3xl font-bold text-white">
+                  <template v-if="isLoadingProvinces">
+                    <font-awesome-icon icon="spinner" class="animate-spin w-6 h-6" />
+                  </template>
+                  <template v-else>{{ totalProvinces }}</template>
+                </p>
                 <p class="text-sm text-blue-100">Provinces</p>
               </div>
             </div>
@@ -369,7 +447,12 @@ const handleSearch = async () => {
                 </svg>
               </div>
               <div>
-                <p class="text-3xl font-bold text-white">22</p>
+                <p class="text-3xl font-bold text-white">
+                  <template v-if="isLoadingProvinces">
+                    <font-awesome-icon icon="spinner" class="animate-spin w-6 h-6" />
+                  </template>
+                  <template v-else>{{ totalRegions }}</template>
+                </p>
                 <p class="text-sm text-blue-100">Régions</p>
               </div>
             </div>
@@ -379,12 +462,17 @@ const handleSearch = async () => {
             <div class="flex items-center gap-4">
               <div class="bg-yellow-500/20 p-3 rounded-lg">
                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
               <div>
-                <p class="text-3xl font-bold text-white">2024</p>
-                <p class="text-sm text-blue-100">Année active</p>
+                <p class="text-3xl font-bold text-white">
+                  <template v-if="isLoadingProvinces">
+                    <font-awesome-icon icon="spinner" class="animate-spin w-6 h-6" />
+                  </template>
+                  <template v-else>{{ totalCommunes }}</template>
+                </p>
+                <p class="text-sm text-blue-100">Communes</p>
               </div>
             </div>
           </div>

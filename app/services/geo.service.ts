@@ -16,7 +16,7 @@ import type {
   CommuneFormData,
 } from '~/types/collectivites'
 
-const BASE_PATH = '/api/v1/admin/geo'
+const BASE_PATH = '/api/v1/geo'
 
 export const useGeoService = () => {
   const api = useApi()
@@ -34,7 +34,8 @@ export const useGeoService = () => {
   }
 
   const getProvinceRegions = async (provinceId: number): Promise<RegionWithStats[]> => {
-    return api.get<RegionWithStats[]>(`${BASE_PATH}/provinces/${provinceId}/regions`)
+    // Backend uses /regions?province_id=X instead of /provinces/{id}/regions
+    return api.get<RegionWithStats[]>(`${BASE_PATH}/regions`, { province_id: provinceId })
   }
 
   // ============================================================================
@@ -68,7 +69,8 @@ export const useGeoService = () => {
   }
 
   const getRegionCommunes = async (regionId: number): Promise<CommuneWithStats[]> => {
-    return api.get<CommuneWithStats[]>(`${BASE_PATH}/regions/${regionId}/communes`)
+    // Backend uses /communes?region_id=X instead of /regions/{id}/communes
+    return api.get<CommuneWithStats[]>(`${BASE_PATH}/communes`, { region_id: regionId })
   }
 
   // ============================================================================
