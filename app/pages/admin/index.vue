@@ -184,7 +184,7 @@ const loadRecentActivities = async () => {
         table_name: 'comptes_administratifs',
         description: 'Nouvelle recette ajoutée pour Antananarivo-Renivohitra',
         user_id: '1',
-        user_nom: 'Jean Rakoto',
+        user_name: 'Jean Rakoto',
         created_at: new Date().toISOString(),
       },
       {
@@ -193,7 +193,7 @@ const loadRecentActivities = async () => {
         table_name: 'comptes_administratifs',
         description: 'Compte administratif 2024 publié pour Toamasina I',
         user_id: '2',
-        user_nom: 'Marie Rabe',
+        user_name: 'Marie Rabe',
         created_at: new Date(Date.now() - 3600000).toISOString(),
       },
       {
@@ -202,7 +202,7 @@ const loadRecentActivities = async () => {
         table_name: 'communes',
         description: 'Import de données Excel - 25 communes',
         user_id: '3',
-        user_nom: 'Admin',
+        user_name: 'Admin',
         created_at: new Date(Date.now() - 7200000).toISOString(),
       },
     ]

@@ -238,7 +238,8 @@ export interface ActivityLog extends BaseEntity {
   record_id?: string
   description?: string
   user_id?: string
-  user_nom?: string
+  user_name?: string
+  user_nom?: string  // @deprecated - use user_name
   user_email?: string
   ip_address?: string
   user_agent?: string
