@@ -43,7 +43,7 @@
             </UiBadge>
 
             <!-- Save Mode Toggle -->
-            <AdminComptesSaveModeToggle v-model="editableBudget.isAutoSave.value" />
+            <AdminComptesSaveModeToggle v-model="editableBudget.isAutoSave" />
 
             <div class="flex items-center gap-2">
               <UiButton
@@ -313,8 +313,9 @@ const isPublishing = ref(false)
 const isExporting = ref(false)
 
 // Editable table state
-const commune_id = computed(() => compte.value?.commune_id || compte.value?.commune?.id)
-const exercice_id = computed(() => compte.value?.exercice_id)
+// commune_id et exercice_id viennent du tableauComplet pour avoir les bons types (number)
+const commune_id = computed(() => tableauComplet.value?.commune_id)
+const exercice_id = computed(() => tableauComplet.value?.exercice_id)
 
 const editableBudget = useEditableBudgetTable({
   commune_id,
@@ -413,12 +414,15 @@ const loadTableauComplet = async () => {
       params: {
         commune_id: compte.value.commune_id,
         exercice_annee: compte.value.annee,
+        _t: Date.now(), // Cache buster pour forcer le rechargement
       },
     })
     tableauComplet.value = response
 
-    // Initialiser le mapping des IDs pour l'édition
-    await editableBudget.initialize()
+    // Initialiser le mapping des IDs pour l'édition (seulement au premier chargement)
+    if (!editableBudget.isLoading) {
+      await editableBudget.initialize()
+    }
   } catch (err: any) {
     console.error('Erreur lors du chargement du tableau:', err.message)
     toast.error('Erreur lors du chargement des données financières')

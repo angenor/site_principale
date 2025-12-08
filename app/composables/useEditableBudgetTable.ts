@@ -16,6 +16,25 @@ import { useDonneesService } from '~/services/donnees.service'
 
 const STORAGE_KEY = 'budget-table-save-mode'
 
+// Colonnes éditables acceptées par l'API backend
+// Les autres colonnes (previsions_definitives, reste_a_recouvrer, taux_*, etc.) sont calculées
+const EDITABLE_RECETTE_COLUMNS = new Set([
+  'budget_primitif',
+  'budget_additionnel',
+  'modifications',
+  'or_admis',
+  'recouvrement',
+])
+
+const EDITABLE_DEPENSE_COLUMNS = new Set([
+  'budget_primitif',
+  'budget_additionnel',
+  'modifications',
+  'engagement',
+  'mandat_admis',
+  'paiement',
+])
+
 export interface UseEditableBudgetTableOptions {
   commune_id: Ref<number | undefined>
   exercice_id: Ref<number | undefined>
@@ -158,6 +177,16 @@ export const useEditableBudgetTable = (options: UseEditableBudgetTableOptions) =
   // ============================================================================
 
   /**
+   * Vérifie si une colonne est éditable pour un type de données
+   */
+  const isColumnEditable = (columnKey: string, dataType: DataType): boolean => {
+    const allowedColumns = dataType === 'recette'
+      ? EDITABLE_RECETTE_COLUMNS
+      : EDITABLE_DEPENSE_COLUMNS
+    return allowedColumns.has(columnKey)
+  }
+
+  /**
    * Gère la modification d'une cellule
    * En mode auto: sauvegarde immédiatement
    * En mode manuel: ajoute aux modifications en attente
@@ -171,6 +200,12 @@ export const useEditableBudgetTable = (options: UseEditableBudgetTableOptions) =
   ) => {
     // Ignorer si pas de changement
     if (newValue === originalValue) return
+
+    // Vérifier que la colonne est éditable (pas un champ calculé)
+    if (!isColumnEditable(columnKey, dataType)) {
+      onError?.(`La colonne "${columnKey}" est calculée automatiquement et ne peut pas être modifiée directement`)
+      return
+    }
 
     if (isAutoSave.value) {
       await saveCell(compteCode, columnKey, newValue, dataType)
@@ -486,9 +521,15 @@ export const useEditableBudgetTable = (options: UseEditableBudgetTableOptions) =
     }
   })
 
+  // Computed writable pour isAutoSave (permet v-model)
+  const isAutoSaveModel = computed({
+    get: () => isAutoSave.value,
+    set: (value: boolean) => setSaveMode(value),
+  })
+
   return {
     // State
-    isAutoSave: readonly(isAutoSave),
+    isAutoSave: isAutoSaveModel,
     pendingChanges: readonly(pendingChanges),
     cellStates: readonly(cellStates),
     isSaving: readonly(isSaving),
@@ -510,5 +551,6 @@ export const useEditableBudgetTable = (options: UseEditableBudgetTableOptions) =
     addRow,
     deleteRow,
     rowExists,
+    isColumnEditable,
   }
 }

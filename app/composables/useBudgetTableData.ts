@@ -72,6 +72,7 @@ export interface TableauCompletAPI {
   commune_code: string
   region_nom: string
   province_nom: string
+  exercice_id: number
   exercice_annee: number
   exercice_cloture: boolean
   recettes: {
@@ -131,6 +132,7 @@ const depensesNumericKeys = [
 
 /**
  * Agrège les valeurs des enfants vers les parents dans une hiérarchie
+ * Détecte automatiquement le niveau feuille (niveau max) et agrège vers les parents
  */
 const aggregateHierarchicalData = (
   lignes: Record<string, any>[],
@@ -138,8 +140,11 @@ const aggregateHierarchicalData = (
 ): Record<string, any>[] => {
   if (!lignes.length) return lignes
 
-  const codeMap = new Map<string, Record<string, any>>()
-  lignes.forEach(l => codeMap.set(l.code, { ...l }))
+  // Trouver le niveau maximum (feuilles)
+  const maxNiveau = Math.max(...lignes.map(l => l.niveau))
+
+  // Créer un set des codes qui ont des enfants
+  const codesWithChildren = new Set<string>()
 
   const getParentCode = (code: string): string | null => {
     const match = code.match(/^(\d+)([RD])$/)
@@ -149,8 +154,32 @@ const aggregateHierarchicalData = (
     return numPart.slice(0, -1) + suffix
   }
 
+  // Identifier tous les codes qui ont des enfants
+  lignes.forEach((l) => {
+    const parentCode = getParentCode(l.code)
+    if (parentCode) {
+      codesWithChildren.add(parentCode)
+    }
+  })
+
+  const codeMap = new Map<string, Record<string, any>>()
+
+  // Créer des copies et reset les valeurs des parents (ceux qui ont des enfants)
+  lignes.forEach((l) => {
+    const copy = { ...l }
+    // Reset les valeurs numériques si cette ligne a des enfants
+    if (codesWithChildren.has(l.code)) {
+      for (const key of numericKeys) {
+        copy[key] = 0
+      }
+    }
+    codeMap.set(l.code, copy)
+  })
+
+  // Trier par niveau décroissant (enfants d'abord)
   const sortedLignes = [...lignes].sort((a, b) => b.niveau - a.niveau)
 
+  // Agréger les valeurs des enfants vers les parents
   for (const ligne of sortedLignes) {
     const parentCode = getParentCode(ligne.code)
     if (parentCode && codeMap.has(parentCode)) {
