@@ -119,6 +119,20 @@
         <UiLoadingSpinner size="lg" />
       </div>
 
+      <!-- Error state -->
+      <div v-else-if="loadError" class="p-8 text-center">
+        <font-awesome-icon :icon="['fas', 'exclamation-triangle']" class="text-5xl text-[var(--color-error)] mb-4" />
+        <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-2">Erreur de chargement</h3>
+        <p class="text-[var(--text-muted)] mb-4">{{ loadError }}</p>
+        <button
+          @click="loadUsers"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-colors"
+        >
+          <font-awesome-icon :icon="['fas', 'refresh']" />
+          Réessayer
+        </button>
+      </div>
+
       <!-- Table -->
       <div v-else-if="users.length > 0" class="overflow-x-auto">
         <table class="w-full">
@@ -302,6 +316,7 @@ definePageMeta({
 const utilisateursService = useUtilisateursService()
 
 const isLoading = ref(true)
+const loadError = ref<string | null>(null)
 const users = ref<UserWithStats[]>([])
 const roles = ref<Role[]>([])
 const showDeleteModal = ref(false)
@@ -419,6 +434,7 @@ const deleteUser = async () => {
 
 const loadUsers = async () => {
   isLoading.value = true
+  loadError.value = null
   try {
     const params: any = {
       page: pagination.value.page,
@@ -430,83 +446,26 @@ const loadUsers = async () => {
     if (filters.value.actif !== '') params.actif = filters.value.actif === 'true'
 
     const response = await utilisateursService.getUtilisateurs(params)
-    users.value = response.data
+    users.value = response.items
     pagination.value.total = response.total
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error loading users:', error)
-    // Mock data for development
-    users.value = [
-      {
-        id: '1',
-        email: 'admin@ti-madagascar.org',
-        nom: 'Razafindrakoto',
-        prenom: 'Jean',
-        role: { id: '1', code: 'admin', nom: 'Administrateur', actif: true },
-        actif: true,
-        email_verifie: true,
-        derniere_connexion: new Date().toISOString(),
-        created_at: '2024-01-15T10:00:00Z',
-        updated_at: '2024-02-20T14:00:00Z',
-        nombre_connexions: 156,
-      },
-      {
-        id: '2',
-        email: 'editeur@ti-madagascar.org',
-        nom: 'Rasoanaivo',
-        prenom: 'Marie',
-        role: { id: '2', code: 'editeur', nom: 'Éditeur', actif: true },
-        actif: true,
-        email_verifie: true,
-        derniere_connexion: '2024-02-18T09:30:00Z',
-        created_at: '2024-01-20T08:00:00Z',
-        updated_at: '2024-02-18T09:30:00Z',
-        nombre_connexions: 89,
-      },
-      {
-        id: '3',
-        email: 'lecteur@commune-antsirabe.mg',
-        nom: 'Andrianarisoa',
-        prenom: 'Paul',
-        role: { id: '3', code: 'commune', nom: 'Commune', actif: true },
-        commune_id: 'commune-1',
-        actif: true,
-        email_verifie: true,
-        derniere_connexion: '2024-02-15T16:45:00Z',
-        created_at: '2024-02-01T10:00:00Z',
-        updated_at: '2024-02-15T16:45:00Z',
-        nombre_connexions: 23,
-      },
-      {
-        id: '4',
-        email: 'inactif@example.com',
-        nom: 'Rakotomalala',
-        prenom: 'Faly',
-        role: { id: '4', code: 'lecteur', nom: 'Lecteur', actif: true },
-        actif: false,
-        email_verifie: false,
-        created_at: '2024-01-25T14:00:00Z',
-        updated_at: '2024-01-25T14:00:00Z',
-        nombre_connexions: 0,
-      },
-    ]
-    pagination.value.total = 4
+    loadError.value = error?.message || 'Impossible de charger les utilisateurs'
+    users.value = []
+    pagination.value.total = 0
   } finally {
     isLoading.value = false
   }
 }
 
-const loadRoles = async () => {
-  try {
-    roles.value = await utilisateursService.getRoles()
-  } catch (error) {
-    // Mock data
-    roles.value = [
-      { id: '1', code: 'admin', nom: 'Administrateur', actif: true },
-      { id: '2', code: 'editeur', nom: 'Éditeur', actif: true },
-      { id: '3', code: 'lecteur', nom: 'Lecteur', actif: true },
-      { id: '4', code: 'commune', nom: 'Commune', actif: true },
-    ]
-  }
+const loadRoles = () => {
+  // Roles are defined as an enum in the backend, not a dynamic table
+  roles.value = [
+    { id: '1', code: 'admin', nom: 'Administrateur', actif: true },
+    { id: '2', code: 'editeur', nom: 'Éditeur', actif: true },
+    { id: '3', code: 'lecteur', nom: 'Lecteur', actif: true },
+    { id: '4', code: 'commune', nom: 'Commune', actif: true },
+  ]
 }
 
 // Watch filters
