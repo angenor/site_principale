@@ -371,27 +371,21 @@
 </template>
 
 <script setup lang="ts">
-interface ColonneDynamique {
-  id: number
-  cle: string
-  label: string
-  applicable_a: 'recette' | 'depense' | 'tous' | 'equilibre'
-  type_donnee: 'montant' | 'pourcentage' | 'texte' | 'date' | 'nombre'
-  formule?: string
-  largeur?: number
-  ordre: number
-  est_obligatoire: boolean
-  est_editable: boolean
-  est_visible: boolean
-  est_active: boolean
-  est_systeme: boolean
-}
+import type {
+  ColonneDynamique,
+  ColonneCreate,
+  ColonneUpdate,
+  ApplicableA,
+  TypeDonnee,
+} from '~/services/colonnes.service'
+import { useColonnesService } from '~/services/colonnes.service'
 
 definePageMeta({
   layout: 'admin',
 })
 
 const toast = useAppToast()
+const colonnesService = useColonnesService()
 
 // ============================================================================
 // STATE
@@ -408,8 +402,8 @@ const isSubmitting = ref(false)
 const formData = reactive({
   cle: '',
   label: '',
-  applicable_a: 'tous' as ColonneDynamique['applicable_a'],
-  type_donnee: 'montant' as ColonneDynamique['type_donnee'],
+  applicable_a: 'tous' as ApplicableA,
+  type_donnee: 'montant' as TypeDonnee,
   formule: '',
   largeur: 120,
   ordre: 1,
@@ -497,45 +491,25 @@ const colonnesDepenses = computed(() =>
 const loadColonnes = async () => {
   isLoading.value = true
   try {
-    await new Promise(resolve => setTimeout(resolve, 500))
-    colonnes.value = generateMockColonnes()
-  } catch (error) {
+    colonnes.value = await colonnesService.getAllColonnes()
+  } catch (error: any) {
     console.error('Erreur chargement:', error)
-    toast.error('Erreur lors du chargement')
+    toast.error(error.message || 'Erreur lors du chargement')
   } finally {
     isLoading.value = false
   }
 }
 
-const generateMockColonnes = (): ColonneDynamique[] => [
-  // Colonnes communes
-  { id: 1, cle: 'budget_primitif', label: 'Budget Primitif', applicable_a: 'tous', type_donnee: 'montant', ordre: 1, est_obligatoire: false, est_editable: true, est_visible: true, est_active: true, est_systeme: true },
-  { id: 2, cle: 'budget_additionnel', label: 'Budget Additionnel', applicable_a: 'tous', type_donnee: 'montant', ordre: 2, est_obligatoire: false, est_editable: true, est_visible: true, est_active: true, est_systeme: true },
-  { id: 3, cle: 'modifications', label: 'Modifications +/-', applicable_a: 'tous', type_donnee: 'montant', ordre: 3, est_obligatoire: false, est_editable: true, est_visible: true, est_active: true, est_systeme: true },
-  { id: 4, cle: 'previsions_definitives', label: 'Prévisions Définitives', applicable_a: 'tous', type_donnee: 'montant', formule: '{budget_primitif} + {budget_additionnel} + {modifications}', ordre: 4, est_obligatoire: false, est_editable: false, est_visible: true, est_active: true, est_systeme: true },
+type BadgeVariant = 'primary' | 'secondary' | 'success' | 'error' | 'gray' | 'warning' | 'info'
 
-  // Colonnes recettes
-  { id: 10, cle: 'or_admis', label: 'OR Admis', applicable_a: 'recette', type_donnee: 'montant', ordre: 5, est_obligatoire: false, est_editable: true, est_visible: true, est_active: true, est_systeme: true },
-  { id: 11, cle: 'recouvrement', label: 'Recouvrement', applicable_a: 'recette', type_donnee: 'montant', ordre: 6, est_obligatoire: false, est_editable: true, est_visible: true, est_active: true, est_systeme: true },
-  { id: 12, cle: 'reste_a_recouvrer', label: 'Reste à Recouvrer', applicable_a: 'recette', type_donnee: 'montant', formule: '{or_admis} - {recouvrement}', ordre: 7, est_obligatoire: false, est_editable: false, est_visible: true, est_active: true, est_systeme: true },
-  { id: 13, cle: 'taux_execution_recette', label: "Taux d'Exécution", applicable_a: 'recette', type_donnee: 'pourcentage', formule: '{or_admis} / {previsions_definitives}', ordre: 8, est_obligatoire: false, est_editable: false, est_visible: true, est_active: true, est_systeme: true },
-
-  // Colonnes dépenses
-  { id: 20, cle: 'engagement', label: 'Engagement', applicable_a: 'depense', type_donnee: 'montant', ordre: 5, est_obligatoire: false, est_editable: true, est_visible: true, est_active: true, est_systeme: true },
-  { id: 21, cle: 'mandat_admis', label: 'Mandat Admis', applicable_a: 'depense', type_donnee: 'montant', ordre: 6, est_obligatoire: false, est_editable: true, est_visible: true, est_active: true, est_systeme: true },
-  { id: 22, cle: 'paiement', label: 'Paiement', applicable_a: 'depense', type_donnee: 'montant', ordre: 7, est_obligatoire: false, est_editable: true, est_visible: true, est_active: true, est_systeme: true },
-  { id: 23, cle: 'reste_a_payer', label: 'Reste à Payer', applicable_a: 'depense', type_donnee: 'montant', formule: '{mandat_admis} - {paiement}', ordre: 8, est_obligatoire: false, est_editable: false, est_visible: true, est_active: true, est_systeme: true },
-  { id: 24, cle: 'taux_execution_depense', label: "Taux d'Exécution", applicable_a: 'depense', type_donnee: 'pourcentage', formule: '{mandat_admis} / {previsions_definitives}', ordre: 9, est_obligatoire: false, est_editable: false, est_visible: true, est_active: true, est_systeme: true },
-]
-
-const getApplicableVariant = (type: string): string => {
-  const variants: Record<string, string> = {
+const getApplicableVariant = (type: string): BadgeVariant => {
+  const variants: Record<string, BadgeVariant> = {
     recette: 'success',
     depense: 'error',
     tous: 'primary',
     equilibre: 'warning',
   }
-  return variants[type] || 'default'
+  return variants[type] || 'gray'
 }
 
 const getApplicableLabel = (type: string): string => {
@@ -616,46 +590,44 @@ const handleSubmit = async () => {
 
   isSubmitting.value = true
   try {
-    await new Promise(resolve => setTimeout(resolve, 500))
-
     if (editingColonne.value) {
-      const index = colonnes.value.findIndex(c => c.id === editingColonne.value!.id)
-      if (index !== -1) {
-        colonnes.value[index] = {
-          ...colonnes.value[index],
-          label: formData.label,
-          applicable_a: formData.applicable_a,
-          type_donnee: formData.type_donnee,
-          formule: formData.formule || undefined,
-          largeur: formData.largeur,
-          ordre: formData.ordre,
-          est_obligatoire: formData.est_obligatoire,
-          est_editable: formData.est_editable,
-          est_visible: formData.est_visible,
-          est_active: formData.est_active,
-        }
-      }
-      toast.success('Colonne mise à jour')
-    } else {
-      colonnes.value.push({
-        id: Date.now(),
-        cle: formData.cle,
+      // Mise à jour via API
+      const updateData: ColonneUpdate = {
         label: formData.label,
         applicable_a: formData.applicable_a,
         type_donnee: formData.type_donnee,
-        formule: formData.formule || undefined,
+        formule: formData.formule || null,
         largeur: formData.largeur,
         ordre: formData.ordre,
         est_obligatoire: formData.est_obligatoire,
         est_editable: formData.est_editable,
         est_visible: formData.est_visible,
         est_active: formData.est_active,
-        est_systeme: false,
-      })
+      }
+      await colonnesService.updateColonne(editingColonne.value.id, updateData)
+      toast.success('Colonne mise à jour')
+    } else {
+      // Création via API
+      const createData: ColonneCreate = {
+        cle: formData.cle,
+        label: formData.label,
+        applicable_a: formData.applicable_a,
+        type_donnee: formData.type_donnee,
+        formule: formData.formule || null,
+        largeur: formData.largeur,
+        ordre: formData.ordre,
+        est_obligatoire: formData.est_obligatoire,
+        est_editable: formData.est_editable,
+        est_visible: formData.est_visible,
+        est_active: formData.est_active,
+      }
+      await colonnesService.createColonne(createData)
       toast.success('Colonne créée')
     }
 
     showFormModal.value = false
+    // Recharger les données
+    await loadColonnes()
   } catch (error: any) {
     toast.error(error.message || 'Erreur lors de l\'enregistrement')
   } finally {
@@ -678,10 +650,11 @@ const handleDelete = async () => {
 
   isDeleting.value = true
   try {
-    await new Promise(resolve => setTimeout(resolve, 500))
-    colonnes.value = colonnes.value.filter(c => c.id !== deletingColonne.value!.id)
+    await colonnesService.deleteColonne(deletingColonne.value.id)
     toast.success('Colonne supprimée')
     showDeleteModal.value = false
+    // Recharger les données
+    await loadColonnes()
   } catch (error: any) {
     toast.error(error.message || 'Erreur lors de la suppression')
   } finally {
@@ -705,16 +678,30 @@ const handleDrop = async (event: DragEvent, targetColonne: ColonneDynamique) => 
 
   if (draggedIndex === -1 || targetIndex === -1) return
 
-  // Réorganiser
+  // Réorganiser localement
   const [removed] = colonnes.value.splice(draggedIndex, 1)
   colonnes.value.splice(targetIndex, 0, removed)
 
-  // Mettre à jour les ordres
+  // Mettre à jour les ordres localement
   colonnes.value.forEach((c, i) => {
     c.ordre = i + 1
   })
 
-  toast.success('Ordre mis à jour')
+  // Persister via API
+  try {
+    const reorderData = colonnes.value.map((c, i) => ({
+      id: c.id,
+      ordre: i + 1,
+    }))
+    await colonnesService.reorderColonnes(reorderData)
+    toast.success('Ordre mis à jour')
+  } catch (error: any) {
+    console.error('Erreur réordonnancement:', error)
+    toast.error('Erreur lors de la mise à jour de l\'ordre')
+    // Recharger en cas d'erreur
+    await loadColonnes()
+  }
+
   draggedColonne = null
 }
 

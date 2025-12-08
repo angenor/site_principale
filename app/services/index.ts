@@ -18,6 +18,7 @@ export { useImportService } from './import.service'
 export { useExportService } from './export.service'
 export { useTableauxService } from './tableaux.service'
 export { usePlanComptableService } from './plan-comptable.service'
+export { useColonnesService } from './colonnes.service'
 
 // Types réexportés
 export type { Societe, SocieteFormData } from './projets.service'
