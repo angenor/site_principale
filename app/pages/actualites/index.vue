@@ -126,7 +126,8 @@ function changePage(page: number) {
           <article
             v-for="item in news"
             :key="item.id"
-            class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 group"
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 group cursor-pointer"
+            @click="item.externalUrl ? window.open(item.externalUrl, '_blank') : navigateTo(`/actualites/${item.slug}`)"
           >
             <!-- Image -->
             <div class="relative h-48 overflow-hidden">
@@ -159,16 +160,10 @@ function changePage(page: number) {
                 {{ item.summary }}
               </p>
 
-              <component
-                :is="item.externalUrl ? 'a' : NuxtLink"
-                :href="item.externalUrl || undefined"
-                :to="item.externalUrl ? undefined : `/actualites/${item.slug}`"
-                :target="item.externalUrl ? '_blank' : undefined"
-                class="inline-flex items-center gap-1 mt-4 text-ti-blue dark:text-ti-blue-400 font-medium text-sm hover:underline"
-              >
+              <span class="inline-flex items-center gap-1 mt-4 text-ti-blue dark:text-ti-blue-400 font-medium text-sm group-hover:underline">
                 Lire la suite
                 <font-awesome-icon :icon="item.externalUrl ? 'external-link-alt' : 'arrow-right'" class="w-3 h-3" />
-              </component>
+              </span>
             </div>
           </article>
         </div>
