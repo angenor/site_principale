@@ -26,7 +26,7 @@ COPY prisma ./prisma/
 # Install all dependencies (including devDependencies for build)
 RUN pnpm install --frozen-lockfile
 
-# Generate Prisma client
+# Generate Prisma client (output par defaut dans node_modules/.prisma/client)
 RUN pnpm prisma generate
 
 # ============================================
@@ -36,7 +36,6 @@ FROM base AS builder
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/app/generated ./app/generated
 
 # Copy source code
 COPY . .
@@ -68,11 +67,6 @@ WORKDIR /app
 # Copy built application from builder
 COPY --from=builder --chown=nuxtjs:nodejs /app/.output ./.output
 COPY --from=builder --chown=nuxtjs:nodejs /app/package.json ./package.json
-
-# Copy Prisma (externalise, non bundle par Nitro)
-COPY --from=deps --chown=nuxtjs:nodejs /app/app/generated ./app/generated
-COPY --from=deps --chown=nuxtjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=deps --chown=nuxtjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
 
 # Copy prisma schema for potential migrations
 COPY --from=builder --chown=nuxtjs:nodejs /app/prisma ./prisma

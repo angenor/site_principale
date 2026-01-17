@@ -117,11 +117,6 @@ export default defineNuxtConfig({
     prerender: {
       crawlLinks: false,
       routes: []
-    },
-    // Externaliser Prisma pour eviter les erreurs ESM __dirname
-    externals: {
-      inline: [],
-      external: ['@prisma/client', '.prisma/client', /\.prisma\/client/]
     }
   },
 
