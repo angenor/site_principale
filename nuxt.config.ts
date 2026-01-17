@@ -58,7 +58,7 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxt/image',
-    '@nuxt/content',
+    // '@nuxt/content',
     '@nuxt/test-utils',
     '@nuxt/ui',
     '@nuxtjs/sitemap',
