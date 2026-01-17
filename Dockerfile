@@ -59,9 +59,6 @@ RUN pnpm build
 # ============================================
 FROM node:22-alpine AS production
 
-# Install pnpm for potential runtime needs
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nuxtjs
@@ -72,10 +69,13 @@ WORKDIR /app
 COPY --from=builder --chown=nuxtjs:nodejs /app/.output ./.output
 COPY --from=builder --chown=nuxtjs:nodejs /app/package.json ./package.json
 
-# Copy Prisma files for migrations (if needed)
-COPY --from=builder --chown=nuxtjs:nodejs /app/prisma ./prisma
-COPY --from=deps --chown=nuxtjs:nodejs /app/node_modules/.pnpm/@prisma+client*/node_modules/.prisma ./node_modules/.prisma
+# Copy Prisma client complet (necessaire car externalise de Nitro)
+COPY --from=deps --chown=nuxtjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=deps --chown=nuxtjs:nodejs /app/node_modules/.pnpm/@prisma* ./node_modules/.pnpm/
 COPY --from=deps --chown=nuxtjs:nodejs /app/app/generated ./app/generated
+
+# Copy prisma schema for potential migrations
+COPY --from=builder --chown=nuxtjs:nodejs /app/prisma ./prisma
 
 # Set environment variables
 ENV NODE_ENV=production
