@@ -3,8 +3,10 @@
 // Technologies: Prisma ORM + PostgreSQL
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../app/generated/prisma"
+  provider      = "prisma-client-js"
+  output        = "../app/generated/prisma"
+  // Inclure les binaires pour macOS (dev) et Linux Alpine (Docker production)
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
