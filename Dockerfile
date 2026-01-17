@@ -69,10 +69,10 @@ WORKDIR /app
 COPY --from=builder --chown=nuxtjs:nodejs /app/.output ./.output
 COPY --from=builder --chown=nuxtjs:nodejs /app/package.json ./package.json
 
-# Copy Prisma client complet (necessaire car externalise de Nitro)
-COPY --from=deps --chown=nuxtjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=deps --chown=nuxtjs:nodejs /app/node_modules/.pnpm/@prisma* ./node_modules/.pnpm/
+# Copy Prisma (externalise, non bundle par Nitro)
 COPY --from=deps --chown=nuxtjs:nodejs /app/app/generated ./app/generated
+COPY --from=deps --chown=nuxtjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=deps --chown=nuxtjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
 
 # Copy prisma schema for potential migrations
 COPY --from=builder --chown=nuxtjs:nodejs /app/prisma ./prisma

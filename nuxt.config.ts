@@ -118,9 +118,10 @@ export default defineNuxtConfig({
       crawlLinks: false,
       routes: []
     },
-    // NE PAS bundler Prisma - le garder externe
+    // Externaliser Prisma pour eviter les erreurs ESM __dirname
     externals: {
-      external: ['@prisma/client', '.prisma/client']
+      inline: [],
+      external: ['@prisma/client', '.prisma/client', /\.prisma\/client/]
     }
   },
 
