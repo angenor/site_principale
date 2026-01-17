@@ -1,0 +1,80 @@
+# ============================================
+# Docker Compose - Development Configuration
+# ============================================
+# Usage: docker compose -f docker-compose.dev.yml up -d
+# ============================================
+
+services:
+  # ==========================================
+  # Application Nuxt 4 (Development avec hot reload)
+  # ==========================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: mom-app-dev
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+      - "24678:24678"  # HMR WebSocket port
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=${DATABASE_URL:-postgresql://mom_user:mom_password@db:5432/mom_db}
+      - NUXT_PUBLIC_API_BASE_URL=${NUXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+      - NUXT_PUBLIC_SITE_URL=${NUXT_PUBLIC_SITE_URL:-http://localhost:3000}
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.nuxt
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - mom-network
+
+  # ==========================================
+  # Base de données PostgreSQL
+  # ==========================================
+  db:
+    image: postgres:16-alpine
+    container_name: mom-db-dev
+    restart: unless-stopped
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-mom_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-mom_password}
+      - POSTGRES_DB=${POSTGRES_DB:-mom_db}
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    networks:
+      - mom-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mom_user} -d ${POSTGRES_DB:-mom_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================
+  # Adminer - Interface web pour PostgreSQL
+  # ==========================================
+  adminer:
+    image: adminer:latest
+    container_name: mom-adminer-dev
+    restart: unless-stopped
+    ports:
+      - "${ADMINER_PORT:-8080}:8080"
+    environment:
+      - ADMINER_DEFAULT_SERVER=db
+    depends_on:
+      - db
+    networks:
+      - mom-network
+
+volumes:
+  postgres_data_dev:
+    driver: local
+
+networks:
+  mom-network:
+    driver: bridge

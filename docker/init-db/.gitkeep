@@ -1,0 +1,3 @@
+# Place SQL initialization scripts here
+# They will be executed automatically when the PostgreSQL container starts for the first time
+# Example: 01-extensions.sql, 02-seed-data.sql

@@ -1,0 +1,74 @@
+# ============================================
+# Docker Ignore - Observatoire des Mines de Madagascar
+# ============================================
+
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+.output
+.nuxt
+dist
+
+# Development files
+.git
+.gitignore
+.github
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Environment files (handled separately)
+.env
+.env.*
+!.env.example
+
+# Documentation
+*.md
+!README.md
+bank/
+docs/
+
+# Testing
+coverage
+.nyc_output
+*.test.ts
+*.spec.ts
+__tests__
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files (avoid recursion)
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Firebase (not needed in container)
+.firebase
+firebase.json
+.firebaserc
+
+# Prisma migrations history (optional - include if needed)
+# prisma/migrations
+
+# Temporary files
+*.tmp
+*.temp
+.cache
+
+# TypeScript build info
+*.tsbuildinfo
