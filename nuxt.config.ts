@@ -112,9 +112,11 @@ export default defineNuxtConfig({
   // Configuration Nitro pour la performance
   nitro: {
     compressPublicAssets: true,
+    // Prerendering desactive car les routes API necessitent la DB
+    // qui n'est pas disponible pendant le build Docker
     prerender: {
-      crawlLinks: true,
-      routes: ['/']
+      crawlLinks: false,
+      routes: []
     }
   },
 
