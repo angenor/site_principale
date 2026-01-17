@@ -60,9 +60,11 @@ export default defineEventHandler(async (event) => {
   })
 
   // Définir le cookie
+  // secure: true uniquement si HTTPS (vérifie l'URL du site)
+  const isHttps = process.env.NUXT_PUBLIC_SITE_URL?.startsWith('https://') ?? false
   setCookie(event, 'auth_token', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isHttps,
     sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 7 // 7 jours
   })
