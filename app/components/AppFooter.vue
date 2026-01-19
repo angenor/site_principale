@@ -137,5 +137,22 @@ const socialLinks = [
         </div>
       </div>
     </div>
+
+    <!-- Signature développeur -->
+    <div class="border-t border-gray-800/50 bg-gray-950">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <p class="text-center text-gray-600 text-xs">
+          Développé par
+          <a
+            href="https://www.linkedin.com/company/herhero-forchange/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-ti-blue-400 hover:text-ti-blue-300 transition-colors duration-200 font-medium cursor-pointer"
+          >
+            HerHero
+          </a>
+        </p>
+      </div>
+    </div>
   </footer>
 </template>
