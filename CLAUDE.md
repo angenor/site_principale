@@ -248,6 +248,40 @@ pnpm prisma generate           # Generate Prisma Client
 
 **Rationale**: Claude doesn't have root/admin access for certain operations. Providing commands allows the user to execute them with proper permissions.
 
+## Deployment & Migration
+
+**Documentation detaillee** : Voir `bank/GUIDE-MIGRATION.md`
+
+### Deploiement rapide sur le VPS
+
+```bash
+ssh root@164.68.112.108
+cd /opt/mom
+git pull origin main
+docker compose -f docker-compose.yml -f docker-compose.prod.yml down
+docker compose -f docker-compose.yml -f docker-compose.prod.yml build --no-cache
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+```
+
+### Migration de la base de donnees
+
+Apres modification de `prisma/schema.prisma`, executer sur le VPS :
+
+```bash
+source .env
+docker run --rm --network mom_mom-network \
+  -e DATABASE_URL="$DATABASE_URL" \
+  -v $(pwd)/prisma:/app/prisma \
+  -w /app \
+  node:22-alpine sh -c "npm install prisma@6 @prisma/client@6 && npx prisma db push --schema=/app/prisma/schema.prisma"
+```
+
+### Documentation complete
+
+- `bank/GUIDE-MIGRATION.md` : Guide de migration et deploiement
+- `bank/nom-de-domaine-regle.md` : Configuration du domaine et SSL
+- `DEPLOYMENT.md` : Procedure de deploiement initiale
+
 ## Project Context
 
 **Project Name**: Observatoire des Mines de Madagascar (MOM)
