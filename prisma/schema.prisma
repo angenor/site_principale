@@ -356,3 +356,21 @@ model AboutContent {
 
   @@map("about_content")
 }
+
+// ============================================================================
+// ÉVÉNEMENTS HISTORIQUES (Timeline "À propos")
+// ============================================================================
+
+model TimelineEvent {
+  id          String   @id @default(cuid())
+  year        String   // Ex: "2000", "2006"
+  title       String
+  description String   @db.Text
+  image       String?  // Image optionnelle pour l'événement
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("timeline_events")
+}

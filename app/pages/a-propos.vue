@@ -10,47 +10,93 @@ useHead({
   ]
 })
 
-// Équipe (à terme, chargée depuis la base de données)
-const team = ref([
-  {
-    id: 1,
-    name: 'Volatiana Ramaherison',
-    role: 'Directrice Exécutive',
-    organization: 'TI Madagascar',
-    image: '/images/team/volatiana.jpg'
-  },
-  {
-    id: 2,
-    name: 'Coordinateur PCQVP',
-    role: 'Coordinateur National',
-    organization: 'PCQVP Madagascar',
-    image: '/images/team/pcqvp-coordinator.jpg'
-  }
-])
+// Types
+interface AboutSection {
+  title: string
+  content: string
+  image?: string
+}
 
-// Timeline / Historique
-const timeline = ref([
+interface TimelineEvent {
+  id: string
+  year: string
+  title: string
+  description: string
+  image?: string | null
+}
+
+// Fetch données dynamiques
+const { data: aboutContent } = await useFetch<Record<string, AboutSection>>('/api/about')
+const { data: timelineData } = await useFetch<TimelineEvent[]>('/api/timeline')
+const { data: siteConfig } = await useFetch<Record<string, string>>('/api/config')
+
+// Timeline par défaut (fallback)
+const defaultTimeline = [
   {
+    id: '1',
     year: '2000',
     title: 'Création de TI Madagascar',
     description: 'Transparency International - Initiative Madagascar est fondée pour lutter contre la corruption.'
   },
   {
+    id: '2',
     year: '2006',
     title: 'Adhésion à EITI',
     description: 'Madagascar adhère à l\'Initiative pour la Transparence dans les Industries Extractives.'
   },
   {
+    id: '3',
     year: '2015',
     title: 'Coalition PCQVP',
     description: 'Renforcement de la coalition Publiez Ce Que Vous Payez à Madagascar.'
   },
   {
+    id: '4',
     year: '2025',
     title: 'Lancement du MOM',
     description: 'L\'Observatoire des Mines de Madagascar est lancé pour centraliser le suivi du secteur minier.'
   }
-])
+]
+
+// Timeline finale (dynamique ou fallback)
+const timeline = computed(() =>
+  timelineData.value?.length ? timelineData.value : defaultTimeline
+)
+
+// Contact par défaut
+const defaultContact = {
+  address: 'Lot IVG 167 Ter, Ambatoroka\nAntananarivo 101\nMadagascar',
+  email: 'vramaherison@transparency.mg',
+  phone: '+261 20 22 309 71'
+}
+
+// Contact (dynamique ou fallback)
+const contact = computed(() => ({
+  address: siteConfig.value?.contact_address || defaultContact.address,
+  email: siteConfig.value?.contact_email || defaultContact.email,
+  phone: siteConfig.value?.contact_phone || defaultContact.phone
+}))
+
+// Contenu par défaut pour les sections
+const defaultMission = `<p class="mb-4">L'Observatoire des Mines de Madagascar (MOM) a pour mission de promouvoir la transparence, la redevabilité et la bonne gouvernance dans le secteur minier malgache.</p>
+<p>Nous documentons les activités minières, analysons leurs impacts sur les communautés et l'environnement, et œuvrons pour une gestion plus équitable des ressources naturelles du pays.</p>`
+
+const defaultVision = `<p class="mb-4">Nous aspirons à un Madagascar où les ressources minières sont gérées de manière transparente, durable et inclusive, au bénéfice de toutes les communautés.</p>
+<p>Un secteur minier où les citoyens ont accès à l'information, où les revenus sont équitablement redistribués, et où les impacts environnementaux et sociaux sont minimisés.</p>`
+
+const defaultContext = `<p>Madagascar possède d'importantes ressources minières : saphirs, or, nickel, cobalt, ilménite, graphite, terres rares... Ces richesses représentent un potentiel économique considérable, mais leur exploitation soulève de nombreux défis.</p>
+<p><strong>Les enjeux sont multiples :</strong></p>
+<ul>
+<li><strong>Transparence des revenus :</strong> Les flux financiers générés par l'exploitation minière restent souvent opaques, privant l'État et les communautés locales de ressources essentielles.</li>
+<li><strong>Impacts environnementaux :</strong> L'extraction minière cause des dégradations significatives des écosystèmes, de la biodiversité et des ressources en eau.</li>
+<li><strong>Impacts sociaux :</strong> Les communautés locales subissent souvent les conséquences négatives sans bénéficier équitablement des retombées économiques.</li>
+<li><strong>Gouvernance :</strong> Le cadre réglementaire et son application restent des défis majeurs pour encadrer le secteur de manière efficace.</li>
+</ul>
+<p>Face à ces enjeux, l'Observatoire des Mines de Madagascar se positionne comme un outil de veille citoyenne, de documentation et de plaidoyer pour une gouvernance minière plus responsable.</p>`
+
+const defaultTimg = `TI Madagascar est le chapitre national de Transparency International, le mouvement mondial de lutte contre la corruption. Depuis 2000, l'organisation œuvre pour promouvoir la transparence, l'intégrité et la redevabilité dans la gouvernance publique et privée à Madagascar.`
+
+const defaultPcqvp = `PCQVP Madagascar fait partie de la coalition mondiale "Publish What You Pay" qui milite pour la transparence des revenus issus des industries extractives. La coalition rassemble des organisations de la société civile engagées pour une gestion responsable des ressources naturelles.`
 </script>
 
 <template>
@@ -84,18 +130,13 @@ const timeline = ref([
                 <font-awesome-icon icon="bullseye" class="w-6 h-6 text-ti-blue" />
               </div>
               <h2 class="text-2xl lg:text-3xl font-heading font-bold uppercase text-gray-900 dark:text-white">
-                Notre Mission
+                {{ aboutContent?.mission?.title || 'Notre Mission' }}
               </h2>
             </div>
-            <p class="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
-              L'Observatoire des Mines de Madagascar (MOM) a pour mission de promouvoir la transparence,
-              la redevabilité et la bonne gouvernance dans le secteur minier malgache.
-            </p>
-            <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
-              Nous documentons les activités minières, analysons leurs impacts sur les communautés
-              et l'environnement, et œuvrons pour une gestion plus équitable des ressources
-              naturelles du pays.
-            </p>
+            <div
+              class="text-gray-600 dark:text-gray-400 leading-relaxed prose dark:prose-invert max-w-none"
+              v-html="aboutContent?.mission?.content || defaultMission"
+            />
           </div>
 
           <!-- Vision -->
@@ -105,18 +146,13 @@ const timeline = ref([
                 <font-awesome-icon icon="eye" class="w-6 h-6 text-ti-lime-dark" />
               </div>
               <h2 class="text-2xl lg:text-3xl font-heading font-bold uppercase text-gray-900 dark:text-white">
-                Notre Vision
+                {{ aboutContent?.vision?.title || 'Notre Vision' }}
               </h2>
             </div>
-            <p class="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
-              Nous aspirons à un Madagascar où les ressources minières sont gérées de manière
-              transparente, durable et inclusive, au bénéfice de toutes les communautés.
-            </p>
-            <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
-              Un secteur minier où les citoyens ont accès à l'information, où les revenus
-              sont équitablement redistribués, et où les impacts environnementaux et sociaux
-              sont minimisés.
-            </p>
+            <div
+              class="text-gray-600 dark:text-gray-400 leading-relaxed prose dark:prose-invert max-w-none"
+              v-html="aboutContent?.vision?.content || defaultVision"
+            />
           </div>
         </div>
       </div>
@@ -127,49 +163,17 @@ const timeline = ref([
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
           <h2 class="text-2xl lg:text-3xl font-heading font-bold uppercase text-gray-900 dark:text-white mb-4">
-            Contexte
+            {{ aboutContent?.context?.title || 'Contexte' }}
           </h2>
           <p class="text-gray-600 dark:text-gray-400">
             Pourquoi un observatoire des mines à Madagascar ?
           </p>
         </div>
 
-        <div class="prose prose-lg dark:prose-invert max-w-none">
-          <p>
-            Madagascar possède d'importantes ressources minières : saphirs, or, nickel, cobalt,
-            ilménite, graphite, terres rares... Ces richesses représentent un potentiel
-            économique considérable, mais leur exploitation soulève de nombreux défis.
-          </p>
-
-          <p>
-            <strong>Les enjeux sont multiples :</strong>
-          </p>
-
-          <ul>
-            <li>
-              <strong>Transparence des revenus :</strong> Les flux financiers générés par l'exploitation
-              minière restent souvent opaques, privant l'État et les communautés locales de ressources essentielles.
-            </li>
-            <li>
-              <strong>Impacts environnementaux :</strong> L'extraction minière cause des dégradations
-              significatives des écosystèmes, de la biodiversité et des ressources en eau.
-            </li>
-            <li>
-              <strong>Impacts sociaux :</strong> Les communautés locales subissent souvent les
-              conséquences négatives sans bénéficier équitablement des retombées économiques.
-            </li>
-            <li>
-              <strong>Gouvernance :</strong> Le cadre réglementaire et son application restent
-              des défis majeurs pour encadrer le secteur de manière efficace.
-            </li>
-          </ul>
-
-          <p>
-            Face à ces enjeux, l'Observatoire des Mines de Madagascar se positionne comme un
-            outil de veille citoyenne, de documentation et de plaidoyer pour une gouvernance
-            minière plus responsable.
-          </p>
-        </div>
+        <div
+          class="prose prose-lg dark:prose-invert max-w-none"
+          v-html="aboutContent?.context?.content || defaultContext"
+        />
       </div>
     </section>
 
@@ -190,7 +194,7 @@ const timeline = ref([
           <div class="space-y-12">
             <div
               v-for="(event, index) in timeline"
-              :key="event.year"
+              :key="event.id"
               :class="[
                 'relative flex items-start gap-8',
                 index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
@@ -207,9 +211,16 @@ const timeline = ref([
                 <h3 class="text-xl font-heading font-bold text-gray-900 dark:text-white mb-2">
                   {{ event.title }}
                 </h3>
-                <p class="text-gray-600 dark:text-gray-400">
+                <p class="text-gray-600 dark:text-gray-400 mb-3">
                   {{ event.description }}
                 </p>
+                <img
+                  v-if="event.image"
+                  :src="event.image"
+                  :alt="event.title"
+                  class="w-full max-w-xs rounded-lg shadow-md mt-3"
+                  :class="index % 2 === 0 ? 'md:ml-auto' : ''"
+                />
               </div>
             </div>
           </div>
@@ -235,7 +246,7 @@ const timeline = ref([
           <div class="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-lg">
             <div class="flex items-center mb-6">
               <img
-                src="/images/logos/logo_fond_bleu_texte_blanc.jpeg"
+                :src="aboutContent?.timg?.image || '/images/logos/logo_fond_bleu_texte_blanc.jpeg'"
                 alt="Transparency International Madagascar"
                 class="h-16 w-auto rounded-lg mr-4"
               />
@@ -246,14 +257,12 @@ const timeline = ref([
                 <p class="text-ti-blue font-medium">Initiative Madagascar</p>
               </div>
             </div>
-            <p class="text-gray-600 dark:text-gray-400 mb-6">
-              TI Madagascar est le chapitre national de Transparency International, le mouvement
-              mondial de lutte contre la corruption. Depuis 2000, l'organisation œuvre pour
-              promouvoir la transparence, l'intégrité et la redevabilité dans la gouvernance
-              publique et privée à Madagascar.
-            </p>
+            <div
+              class="text-gray-600 dark:text-gray-400 mb-6 prose dark:prose-invert max-w-none"
+              v-html="aboutContent?.timg?.content || defaultTimg"
+            />
             <a
-              href="https://www.transparency.mg"
+              :href="siteConfig?.org_timg_website || 'https://www.transparency.mg'"
               target="_blank"
               rel="noopener noreferrer"
               class="inline-flex items-center text-ti-blue hover:text-ti-blue-700 font-medium"
@@ -276,14 +285,12 @@ const timeline = ref([
                 <p class="text-ti-orange font-medium">Publiez Ce Que Vous Payez</p>
               </div>
             </div>
-            <p class="text-gray-600 dark:text-gray-400 mb-6">
-              PCQVP Madagascar fait partie de la coalition mondiale "Publish What You Pay"
-              qui milite pour la transparence des revenus issus des industries extractives.
-              La coalition rassemble des organisations de la société civile engagées pour
-              une gestion responsable des ressources naturelles.
-            </p>
+            <div
+              class="text-gray-600 dark:text-gray-400 mb-6 prose dark:prose-invert max-w-none"
+              v-html="aboutContent?.pcqvp?.content || defaultPcqvp"
+            />
             <a
-              href="https://www.pwyp.org"
+              :href="siteConfig?.org_pcqvp_website || 'https://www.pwyp.org'"
               target="_blank"
               rel="noopener noreferrer"
               class="inline-flex items-center text-ti-orange hover:text-ti-orange-dark font-medium"
@@ -315,10 +322,8 @@ const timeline = ref([
               <font-awesome-icon icon="location-dot" class="w-6 h-6 text-ti-blue" />
             </div>
             <h3 class="font-heading font-bold text-gray-900 dark:text-white mb-2">Adresse</h3>
-            <p class="text-gray-600 dark:text-gray-400 text-sm">
-              Lot IVG 167 Ter, Ambatoroka<br>
-              Antananarivo 101<br>
-              Madagascar
+            <p class="text-gray-600 dark:text-gray-400 text-sm whitespace-pre-line">
+              {{ contact.address }}
             </p>
           </div>
 
@@ -329,10 +334,10 @@ const timeline = ref([
             </div>
             <h3 class="font-heading font-bold text-gray-900 dark:text-white mb-2">Email</h3>
             <a
-              href="mailto:vramaherison@transparency.mg"
+              :href="`mailto:${contact.email}`"
               class="text-ti-blue hover:text-ti-blue-700 dark:text-ti-blue-400"
             >
-              vramaherison@transparency.mg
+              {{ contact.email }}
             </a>
           </div>
 
@@ -343,10 +348,10 @@ const timeline = ref([
             </div>
             <h3 class="font-heading font-bold text-gray-900 dark:text-white mb-2">Téléphone</h3>
             <a
-              href="tel:+261202230971"
+              :href="`tel:${contact.phone.replace(/\s/g, '')}`"
               class="text-ti-blue hover:text-ti-blue-700 dark:text-ti-blue-400"
             >
-              +261 20 22 309 71
+              {{ contact.phone }}
             </a>
           </div>
         </div>
