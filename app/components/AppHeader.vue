@@ -53,16 +53,9 @@ const closeMenu = () => {
         <!-- Logo -->
         <NuxtLink to="/" class="flex-shrink-0">
           <img
-            v-if="!isDark"
-            src="/images/logos/logo_fond_bleu_texte_blanc.jpeg"
+            src="/images/logos/logo.jpeg"
             alt="Observatoire des Mines de Madagascar"
-            class="h-10 lg:h-12 w-auto rounded"
-          />
-          <img
-            v-else
-            src="/images/logos/logo_fond_noire_texte_blanc.jpeg"
-            alt="Observatoire des Mines de Madagascar"
-            class="h-10 lg:h-12 w-auto rounded"
+            class="h-12 lg:h-14 max-w-[180px] lg:max-w-[220px] object-contain dark:invert dark:hue-rotate-180 transition-[filter] duration-200"
           />
         </NuxtLink>
 

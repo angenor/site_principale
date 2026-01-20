@@ -43,9 +43,9 @@ async function handleSubmit() {
       <div class="text-center mb-8">
         <NuxtLink to="/" class="inline-block">
           <img
-            src="/images/logos/logo_fond_bleu_texte_blanc.jpeg"
+            src="/images/logos/logo.jpeg"
             alt="MOM Logo"
-            class="h-20 w-auto mx-auto rounded-lg shadow-lg"
+            class="h-24 max-w-[280px] mx-auto object-contain rounded-lg shadow-lg"
           />
         </NuxtLink>
         <h1 class="mt-6 text-3xl font-heading font-bold text-white uppercase">

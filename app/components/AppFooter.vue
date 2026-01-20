@@ -26,9 +26,9 @@ const socialLinks = [
         <div class="lg:col-span-1">
           <div class="flex items-center mb-4">
             <img
-              src="/images/logos/logo_fond_noire_texte_blanc.jpeg"
+              src="/images/logos/logo.jpeg"
               alt="Observatoire des Mines de Madagascar"
-              class="h-12 w-auto rounded"
+              class="h-44 max-w-[600px] object-contain invert hue-rotate-180"
             />
           </div>
           <p class="text-gray-400 text-sm leading-relaxed">
