@@ -1,10 +1,32 @@
 <script setup lang="ts">
 const { user, isAuthenticated, logout, fullName, isAdmin } = useAuth()
 
-// Navigation admin
-const navigation = [
+interface NavChild {
+  name: string
+  href: string
+  icon: string
+}
+
+interface NavItem {
+  name: string
+  href?: string
+  icon: string
+  adminOnly?: boolean
+  children?: NavChild[]
+}
+
+// Navigation admin avec sous-menus
+const navigation: NavItem[] = [
   { name: 'Tableau de bord', href: '/admin', icon: 'chart-pie' },
-  { name: 'Études de cas', href: '/admin/cases', icon: 'folder-open' },
+  {
+    name: 'Études de cas',
+    icon: 'folder-open',
+    children: [
+      { name: 'Liste des cas', href: '/admin/cases', icon: 'list' },
+      { name: 'Catégories', href: '/admin/categories', icon: 'tags' },
+      { name: 'Régions', href: '/admin/regions', icon: 'map-marker-alt' }
+    ]
+  },
   { name: 'Actualités', href: '/admin/news', icon: 'newspaper' },
   { name: 'Médias', href: '/admin/media', icon: 'image' },
   { name: 'Signalements', href: '/admin/contacts', icon: 'envelope' },
@@ -22,6 +44,9 @@ const filteredNavigation = computed(() => {
 const isSidebarOpen = ref(true)
 const isMobileMenuOpen = ref(false)
 
+// État d'expansion des sous-menus
+const expandedMenus = ref<Record<string, boolean>>({})
+
 const route = useRoute()
 
 function isActive(href: string) {
@@ -29,6 +54,23 @@ function isActive(href: string) {
     return route.path === '/admin'
   }
   return route.path.startsWith(href)
+}
+
+function isParentActive(item: NavItem): boolean {
+  if (item.children) {
+    return item.children.some(child => isActive(child.href))
+  }
+  return false
+}
+
+function toggleSubmenu(name: string) {
+  expandedMenus.value[name] = !expandedMenus.value[name]
+}
+
+function isExpanded(item: NavItem): boolean {
+  // Auto-expand if child is active
+  if (isParentActive(item)) return true
+  return expandedMenus.value[item.name] || false
 }
 
 function toggleSidebar() {
@@ -75,21 +117,62 @@ async function handleLogout() {
           </button>
         </div>
         <nav class="flex-1 px-3 py-4 space-y-1">
-          <NuxtLink
-            v-for="item in filteredNavigation"
-            :key="item.name"
-            :to="item.href"
-            @click="isMobileMenuOpen = false"
-            :class="[
-              isActive(item.href)
-                ? 'bg-ti-blue text-white'
-                : 'text-gray-300 hover:bg-gray-800 hover:text-white',
-              'group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors'
-            ]"
-          >
-            <font-awesome-icon :icon="item.icon" class="w-5 h-5" />
-            {{ item.name }}
-          </NuxtLink>
+          <template v-for="item in filteredNavigation" :key="item.name">
+            <!-- Item avec sous-menu -->
+            <div v-if="item.children">
+              <button
+                @click="toggleSubmenu(item.name)"
+                :class="[
+                  isParentActive(item)
+                    ? 'bg-gray-800 text-white'
+                    : 'text-gray-300 hover:bg-gray-800 hover:text-white',
+                  'w-full group flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer'
+                ]"
+              >
+                <span class="flex items-center gap-3">
+                  <font-awesome-icon :icon="item.icon" class="w-5 h-5" />
+                  {{ item.name }}
+                </span>
+                <font-awesome-icon
+                  :icon="isExpanded(item) ? 'chevron-down' : 'chevron-right'"
+                  class="w-3 h-3 text-gray-400"
+                />
+              </button>
+              <!-- Sous-items -->
+              <div v-show="isExpanded(item)" class="mt-1 ml-4 space-y-1">
+                <NuxtLink
+                  v-for="child in item.children"
+                  :key="child.name"
+                  :to="child.href"
+                  @click="isMobileMenuOpen = false"
+                  :class="[
+                    isActive(child.href)
+                      ? 'bg-ti-blue text-white'
+                      : 'text-gray-400 hover:bg-gray-800 hover:text-white',
+                    'group flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors'
+                  ]"
+                >
+                  <font-awesome-icon :icon="child.icon" class="w-4 h-4" />
+                  {{ child.name }}
+                </NuxtLink>
+              </div>
+            </div>
+            <!-- Item simple -->
+            <NuxtLink
+              v-else
+              :to="item.href!"
+              @click="isMobileMenuOpen = false"
+              :class="[
+                isActive(item.href!)
+                  ? 'bg-ti-blue text-white'
+                  : 'text-gray-300 hover:bg-gray-800 hover:text-white',
+                'group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors'
+              ]"
+            >
+              <font-awesome-icon :icon="item.icon" class="w-5 h-5" />
+              {{ item.name }}
+            </NuxtLink>
+          </template>
         </nav>
       </aside>
     </Transition>
@@ -122,22 +205,65 @@ async function handleLogout() {
 
       <!-- Navigation -->
       <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        <NuxtLink
-          v-for="item in filteredNavigation"
-          :key="item.name"
-          :to="item.href"
-          :class="[
-            isActive(item.href)
-              ? 'bg-ti-blue text-white'
-              : 'text-gray-300 hover:bg-gray-800 hover:text-white',
-            'group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-            !isSidebarOpen && 'justify-center'
-          ]"
-          :title="!isSidebarOpen ? item.name : undefined"
-        >
-          <font-awesome-icon :icon="item.icon" class="w-5 h-5 shrink-0" />
-          <span v-if="isSidebarOpen">{{ item.name }}</span>
-        </NuxtLink>
+        <template v-for="item in filteredNavigation" :key="item.name">
+          <!-- Item avec sous-menu -->
+          <div v-if="item.children">
+            <button
+              @click="toggleSubmenu(item.name)"
+              :class="[
+                isParentActive(item)
+                  ? 'bg-gray-800 text-white'
+                  : 'text-gray-300 hover:bg-gray-800 hover:text-white',
+                'w-full group flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer',
+                isSidebarOpen ? 'justify-between' : 'justify-center'
+              ]"
+              :title="!isSidebarOpen ? item.name : undefined"
+            >
+              <span class="flex items-center gap-3">
+                <font-awesome-icon :icon="item.icon" class="w-5 h-5 shrink-0" />
+                <span v-if="isSidebarOpen">{{ item.name }}</span>
+              </span>
+              <font-awesome-icon
+                v-if="isSidebarOpen"
+                :icon="isExpanded(item) ? 'chevron-down' : 'chevron-right'"
+                class="w-3 h-3 text-gray-400"
+              />
+            </button>
+            <!-- Sous-items (visibles seulement si sidebar ouverte) -->
+            <div v-if="isSidebarOpen" v-show="isExpanded(item)" class="mt-1 ml-4 space-y-1">
+              <NuxtLink
+                v-for="child in item.children"
+                :key="child.name"
+                :to="child.href"
+                :class="[
+                  isActive(child.href)
+                    ? 'bg-ti-blue text-white'
+                    : 'text-gray-400 hover:bg-gray-800 hover:text-white',
+                  'group flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors'
+                ]"
+              >
+                <font-awesome-icon :icon="child.icon" class="w-4 h-4" />
+                {{ child.name }}
+              </NuxtLink>
+            </div>
+          </div>
+          <!-- Item simple -->
+          <NuxtLink
+            v-else
+            :to="item.href!"
+            :class="[
+              isActive(item.href!)
+                ? 'bg-ti-blue text-white'
+                : 'text-gray-300 hover:bg-gray-800 hover:text-white',
+              'group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+              !isSidebarOpen && 'justify-center'
+            ]"
+            :title="!isSidebarOpen ? item.name : undefined"
+          >
+            <font-awesome-icon :icon="item.icon" class="w-5 h-5 shrink-0" />
+            <span v-if="isSidebarOpen">{{ item.name }}</span>
+          </NuxtLink>
+        </template>
       </nav>
 
       <!-- Lien vers le site public -->

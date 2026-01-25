@@ -426,7 +426,16 @@ async function togglePublish() {
 
           <!-- Location & Date -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Localisation et date</h3>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Localisation et date</h3>
+              <NuxtLink
+                to="/admin/regions"
+                class="text-xs text-ti-blue hover:underline"
+              >
+                <font-awesome-icon icon="cog" class="mr-1" />
+                Gérer les régions
+              </NuxtLink>
+            </div>
 
             <div class="space-y-4">
               <div>
@@ -436,13 +445,18 @@ async function togglePublish() {
                 <select
                   id="region"
                   v-model="form.regionId"
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-ti-blue focus:border-ti-blue"
+                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-ti-blue focus:border-ti-blue cursor-pointer"
                 >
                   <option value="">Sélectionner une région</option>
                   <option v-for="region in regions" :key="region.id" :value="region.id">
                     {{ region.name }}
                   </option>
                 </select>
+                <p v-if="!regions?.length" class="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                  <font-awesome-icon icon="exclamation-triangle" class="mr-1" />
+                  Aucune région disponible.
+                  <NuxtLink to="/admin/regions" class="underline">Créer une région</NuxtLink>
+                </p>
               </div>
 
               <div>
@@ -474,7 +488,16 @@ async function togglePublish() {
 
           <!-- Categories -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Catégories</h3>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Catégories</h3>
+              <NuxtLink
+                to="/admin/categories"
+                class="text-xs text-ti-blue hover:underline"
+              >
+                <font-awesome-icon icon="cog" class="mr-1" />
+                Gérer
+              </NuxtLink>
+            </div>
 
             <div class="space-y-2">
               <label
@@ -497,9 +520,19 @@ async function togglePublish() {
                 </span>
                 <span class="text-gray-700 dark:text-gray-300">{{ category.name }}</span>
               </label>
-              <p v-if="!categories?.length" class="text-gray-500 dark:text-gray-400 text-sm">
-                Aucune catégorie disponible
-              </p>
+              <div v-if="!categories?.length" class="text-center py-3">
+                <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">
+                  <font-awesome-icon icon="exclamation-triangle" class="mr-1 text-amber-500" />
+                  Aucune catégorie disponible
+                </p>
+                <NuxtLink
+                  to="/admin/categories"
+                  class="inline-flex items-center gap-1 text-sm text-ti-blue hover:underline"
+                >
+                  <font-awesome-icon icon="plus" />
+                  Créer une catégorie
+                </NuxtLink>
+              </div>
             </div>
           </div>
         </div>

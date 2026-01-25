@@ -112,6 +112,9 @@ import {
   // Icônes pour la gestion des médias
   faDatabase,
   faSync,
+  // Icônes pour la navigation admin (sous-menus)
+  faList,
+  faTags,
 } from '@fortawesome/free-solid-svg-icons'
 
 // Regular icons
@@ -250,6 +253,9 @@ library.add(
   // Icônes pour la gestion des médias
   faDatabase,
   faSync,
+  // Icônes pour la navigation admin (sous-menus)
+  faList,
+  faTags,
   // Regular
   farHeart,
   farStar,
