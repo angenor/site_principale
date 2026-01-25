@@ -184,7 +184,7 @@ model StrategicAxis {
   id              String    @id @default(cuid())
   title           String
   description     String    // Court texte explicatif
-  icon            String?   // Nom de l'icône FontAwesome (ex: "eye", "leaf")
+  icon            String?   // Nom FontAwesome (ex: "eye") ou URL d'image (ex: "/uploads/icon.png")
   color           String?   // Couleur en hexadécimal (ex: "#3695d8")
   backgroundImage String?   // Image de fond
   linkUrl         String?   // Lien vers page "À propos" ou autre

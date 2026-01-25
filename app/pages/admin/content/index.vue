@@ -385,8 +385,16 @@ async function deleteImage(id: string) {
           <!-- List -->
           <div class="space-y-3">
             <div v-for="axis in axes" :key="axis.id" class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 flex items-start gap-4">
-              <div v-if="axis.icon" class="w-10 h-10 rounded-lg flex items-center justify-center text-white" :style="{ backgroundColor: axis.color || '#3695d8' }">
-                <font-awesome-icon :icon="axis.icon" />
+              <div v-if="axis.icon" class="w-10 h-10 rounded-lg flex items-center justify-center text-white overflow-hidden" :style="{ backgroundColor: axis.color || '#3695d8' }">
+                <!-- Image personnalisée -->
+                <img
+                  v-if="axis.icon.startsWith('/') || axis.icon.startsWith('http')"
+                  :src="axis.icon"
+                  alt=""
+                  class="w-6 h-6 object-contain"
+                />
+                <!-- Icône FontAwesome -->
+                <font-awesome-icon v-else :icon="axis.icon" />
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2">
