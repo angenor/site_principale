@@ -277,6 +277,42 @@ onMounted(async () => {
   })
 })
 
+// Watch for external changes to modelValue and update editor
+watch(() => props.modelValue, async (newValue) => {
+  if (!editor || !newValue) return
+
+  // Check if editor is ready
+  try {
+    await editor.isReady
+  } catch {
+    return
+  }
+
+  // Parse the new value
+  let newData: OutputData | undefined
+  if (typeof newValue === 'string') {
+    try {
+      const parsed = JSON.parse(newValue)
+      if (parsed.blocks) newData = parsed
+    } catch {
+      if (newValue.trim()) {
+        newData = htmlToEditorJs(newValue)
+      }
+    }
+  } else if (typeof newValue === 'object' && newValue.blocks) {
+    newData = newValue
+  }
+
+  if (newData && newData.blocks && newData.blocks.length > 0) {
+    // Get current data to compare
+    const currentData = await editor.save()
+    // Only update if content is actually different (avoid infinite loops)
+    if (JSON.stringify(currentData.blocks) !== JSON.stringify(newData.blocks)) {
+      await editor.render(newData)
+    }
+  }
+}, { deep: false })
+
 onBeforeUnmount(() => {
   if (editor) {
     editor.destroy()

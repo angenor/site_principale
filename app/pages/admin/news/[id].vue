@@ -50,15 +50,31 @@ const isSaving = ref(false)
 const error = ref('')
 const success = ref('')
 
+// Track if data is loaded for the editor
+const dataLoaded = ref(false)
+
 if (!isNew) {
   isLoading.value = true
   try {
-    const { data: newsData } = await useFetch<NewsItem>(`/api/admin/news/${id}`)
+    const { data: newsData, status } = await useFetch<NewsItem>(`/api/admin/news/${id}`)
+
+    // Wait for data to be ready
+    if (status.value === 'pending') {
+      await new Promise<void>(resolve => {
+        const unwatch = watch(status, (newStatus) => {
+          if (newStatus !== 'pending') {
+            unwatch()
+            resolve()
+          }
+        })
+      })
+    }
+
     if (newsData.value) {
       form.value = {
         title: newsData.value.title,
-        summary: newsData.value.summary,
-        content: newsData.value.content,
+        summary: newsData.value.summary || '',
+        content: newsData.value.content || '',
         coverImage: newsData.value.coverImage || '',
         externalUrl: newsData.value.externalUrl || '',
         isPublished: newsData.value.isPublished
@@ -67,12 +83,15 @@ if (!isNew) {
       if (newsData.value.attachments) {
         attachments.value = newsData.value.attachments
       }
+      dataLoaded.value = true
     }
   } catch (e) {
     error.value = 'Erreur lors du chargement de l\'actualité'
   } finally {
     isLoading.value = false
   }
+} else {
+  dataLoaded.value = true
 }
 
 // Check if content has blocks
@@ -131,6 +150,7 @@ async function handleSubmit() {
       if (result.success) {
         // Associer les fichiers temporaires à l'actualité créée
         const tempAttachments = attachments.value.filter(a => a.id.startsWith('temp-'))
+        let attachmentErrors = 0
         for (const attachment of tempAttachments) {
           try {
             await $fetch(`/api/admin/news/${result.data.id}/attachments`, {
@@ -144,12 +164,19 @@ async function handleSubmit() {
             })
           } catch (err) {
             console.error('Erreur lors de l\'association du fichier:', err)
+            attachmentErrors++
           }
         }
-        success.value = 'Actualité créée avec succès'
+        if (attachmentErrors > 0) {
+          success.value = `Actualité créée, mais ${attachmentErrors} fichier(s) n'ont pas pu être associés`
+        } else if (tempAttachments.length > 0) {
+          success.value = `Actualité créée avec ${tempAttachments.length} fichier(s) annexe(s)`
+        } else {
+          success.value = 'Actualité créée avec succès'
+        }
         setTimeout(() => {
           router.push(`/admin/news/${result.data.id}`)
-        }, 1000)
+        }, 1500)
       }
     } else {
       await $fetch(`/api/admin/news/${id}`, {
@@ -304,10 +331,15 @@ async function togglePublish() {
               </p>
               <ClientOnly>
                 <ContentEditor
+                  v-if="dataLoaded"
+                  :key="`editor-${id}-${dataLoaded}`"
                   v-model="form.content"
                   :min-height="400"
                   placeholder="Commencez à écrire le contenu de l'actualité..."
                 />
+                <div v-else class="border border-gray-300 dark:border-gray-600 rounded-lg p-4 min-h-[400px] bg-gray-50 dark:bg-gray-700 flex items-center justify-center">
+                  <font-awesome-icon icon="spinner" class="animate-spin text-gray-400 text-2xl" />
+                </div>
                 <template #fallback>
                   <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4 min-h-[400px] bg-gray-50 dark:bg-gray-700 flex items-center justify-center">
                     <font-awesome-icon icon="spinner" class="animate-spin text-gray-400 text-2xl" />

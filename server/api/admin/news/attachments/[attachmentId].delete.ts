@@ -1,10 +1,8 @@
-import { PrismaClient } from '~/generated/prisma'
+import prisma from '../../../../utils/prisma'
 import { requireAuth } from '../../../../utils/auth'
 import { unlink } from 'fs/promises'
 import { existsSync } from 'fs'
 import { join } from 'path'
-
-const prisma = new PrismaClient()
 
 export default defineEventHandler(async (event) => {
   await requireAuth(event)
