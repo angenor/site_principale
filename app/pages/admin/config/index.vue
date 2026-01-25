@@ -60,13 +60,11 @@ const configGroups: ConfigGroup[] = [
     ]
   },
   {
-    label: 'Organisations',
+    label: 'Organisation',
     icon: 'building',
     items: [
       { key: 'org_timg_name', label: 'Nom TIMG', type: 'text', placeholder: 'Transparency International - Initiative Madagascar' },
-      { key: 'org_timg_website', label: 'Site TIMG', type: 'url', placeholder: 'https://...' },
-      { key: 'org_pcqvp_name', label: 'Nom PCQVP', type: 'text', placeholder: 'Publiez Ce Que Vous Payez Madagascar' },
-      { key: 'org_pcqvp_website', label: 'Site PCQVP', type: 'url', placeholder: 'https://...' }
+      { key: 'org_timg_website', label: 'Site TIMG', type: 'url', placeholder: 'https://...' }
     ]
   },
   {
