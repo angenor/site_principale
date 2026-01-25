@@ -44,7 +44,7 @@ export function editorJsToHtml(data: OutputData | string | null | undefined): st
       case 'embed':
         return renderEmbed(block.data)
       case 'image':
-        return renderImage(block.data)
+        return renderImage(block.data, block.tunes)
       case 'checklist':
         return renderChecklist(block.data)
       default:
@@ -137,7 +137,10 @@ function renderEmbed(data: { service: string; embed: string; caption?: string })
   return html
 }
 
-function renderImage(data: { file?: { url: string }; url?: string; caption?: string; withBorder?: boolean; withBackground?: boolean; stretched?: boolean }): string {
+function renderImage(
+  data: { file?: { url: string }; url?: string; caption?: string; withBorder?: boolean; withBackground?: boolean; stretched?: boolean },
+  tunes?: { imagePosition?: { position?: 'center' | 'left' | 'right' } }
+): string {
   const url = data.file?.url || data.url || ''
   if (!url) return ''
 
@@ -145,6 +148,11 @@ function renderImage(data: { file?: { url: string }; url?: string; caption?: str
   if (data.withBorder) classes.push('with-border')
   if (data.withBackground) classes.push('with-background')
   if (data.stretched) classes.push('stretched')
+
+  // Handle image position tune
+  const position = tunes?.imagePosition?.position
+  if (position === 'left') classes.push('float-left')
+  else if (position === 'right') classes.push('float-right')
 
   let html = `<figure class="${classes.join(' ')}">`
   html += `<img src="${url}" alt="${data.caption || ''}" />`

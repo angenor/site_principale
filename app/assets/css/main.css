@@ -581,6 +581,49 @@ figure.content-image figcaption {
   color: #9ca3af;
 }
 
+/* Float images (left/right positioning) */
+.prose .content-image.float-left,
+figure.content-image.float-left {
+  float: left;
+  width: 45%;
+  max-width: 400px;
+  margin: 0.5rem 1.5rem 1rem 0;
+}
+
+.prose .content-image.float-right,
+figure.content-image.float-right {
+  float: right;
+  width: 45%;
+  max-width: 400px;
+  margin: 0.5rem 0 1rem 1.5rem;
+}
+
+/* Clear float for following elements */
+.prose .content-image.float-left + *,
+.prose .content-image.float-right + * {
+  overflow: hidden;
+}
+
+/* Clearfix for prose container */
+.prose::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Responsive: stack floated images on mobile */
+@media (max-width: 640px) {
+  .prose .content-image.float-left,
+  figure.content-image.float-left,
+  .prose .content-image.float-right,
+  figure.content-image.float-right {
+    float: none;
+    width: 100%;
+    max-width: none;
+    margin: 1.5rem 0;
+  }
+}
+
 /* Embed responsive */
 .prose .embed-responsive,
 .embed-responsive {

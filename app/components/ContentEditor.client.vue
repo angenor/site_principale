@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import EditorJS, { type OutputData } from '@editorjs/editorjs'
+import EditorJS, { type OutputData, type BlockTune, type API } from '@editorjs/editorjs'
 import Header from '@editorjs/header'
 import List from '@editorjs/list'
 import Quote from '@editorjs/quote'
@@ -11,6 +11,88 @@ import InlineCode from '@editorjs/inline-code'
 import Paragraph from '@editorjs/paragraph'
 import ImageTool from '@editorjs/image'
 import Checklist from '@editorjs/checklist'
+
+// Custom Block Tune for image positioning (float left/right)
+class ImagePositionTune implements BlockTune {
+  private api: API
+  private data: { position: 'center' | 'left' | 'right' }
+  private blockHolder: HTMLElement | null = null
+
+  static get isTune() {
+    return true
+  }
+
+  constructor({ api, data }: { api: API; block: { id: string }; data?: { position?: string } }) {
+    this.api = api
+    this.data = {
+      position: (data?.position as 'center' | 'left' | 'right') || 'center'
+    }
+  }
+
+  render() {
+    const wrapper = document.createElement('div')
+    wrapper.classList.add('ce-popover-item-container')
+
+    const positions = [
+      { value: 'center', label: 'Centré', icon: '⬜' },
+      { value: 'left', label: 'Flottant gauche', icon: '◧' },
+      { value: 'right', label: 'Flottant droite', icon: '◨' }
+    ]
+
+    positions.forEach(pos => {
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.classList.add('ce-popover-item')
+      if (this.data.position === pos.value) {
+        button.classList.add('ce-popover-item--active')
+      }
+      button.innerHTML = `
+        <span class="ce-popover-item__icon">${pos.icon}</span>
+        <span class="ce-popover-item__title">${pos.label}</span>
+      `
+      button.addEventListener('click', () => {
+        this.data.position = pos.value as 'center' | 'left' | 'right'
+        this.applyClass()
+        // Update active state
+        wrapper.querySelectorAll('.ce-popover-item').forEach(btn => {
+          btn.classList.remove('ce-popover-item--active')
+        })
+        button.classList.add('ce-popover-item--active')
+        // Trigger editor change event
+        this.api.saver.save()
+      })
+      wrapper.appendChild(button)
+    })
+
+    return wrapper
+  }
+
+  private applyClass() {
+    if (!this.blockHolder) return
+
+    this.blockHolder.classList.remove('image-float-left', 'image-float-right', 'image-center')
+    if (this.data.position === 'left') {
+      this.blockHolder.classList.add('image-float-left')
+    } else if (this.data.position === 'right') {
+      this.blockHolder.classList.add('image-float-right')
+    } else {
+      this.blockHolder.classList.add('image-center')
+    }
+  }
+
+  wrap(blockContent: HTMLElement) {
+    // Find the block holder (parent .ce-block element)
+    setTimeout(() => {
+      this.blockHolder = blockContent.closest('.ce-block') as HTMLElement
+      this.applyClass()
+    }, 0)
+    return blockContent
+  }
+
+  save() {
+    return this.data
+  }
+}
 
 interface Props {
   modelValue?: string | OutputData | null
@@ -291,6 +373,7 @@ onMounted(async () => {
       },
       image: {
         class: ImageTool,
+        tunes: ['imagePosition'],
         config: {
           uploader: {
             async uploadByFile(file: File) {
@@ -328,6 +411,9 @@ onMounted(async () => {
           captionPlaceholder: 'Légende de l\'image',
           buttonContent: 'Sélectionner une image'
         }
+      },
+      imagePosition: {
+        class: ImagePositionTune
       }
     },
     // Configuration des tunes pour tous les blocs (déplacer, supprimer)
@@ -1003,6 +1089,50 @@ defineExpose({ save })
 
 .dark :deep(.image-tool--withBackground .image-tool__image) {
   background-color: #374151;
+}
+
+/* Image position tunes (float left/right) */
+:deep(.ce-block.image-float-left) {
+  float: left;
+  width: 45%;
+  margin-right: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+:deep(.ce-block.image-float-right) {
+  float: right;
+  width: 45%;
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+:deep(.ce-block.image-center) {
+  float: none;
+  width: 100%;
+  clear: both;
+}
+
+/* Clear float after image blocks */
+:deep(.ce-block.image-float-left + .ce-block:not(.image-float-left):not(.image-float-right)),
+:deep(.ce-block.image-float-right + .ce-block:not(.image-float-left):not(.image-float-right)) {
+  overflow: hidden;
+}
+
+/* Custom tune buttons styling */
+:deep(.ce-popover-item-container) {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+:deep(.ce-popover-item--active) {
+  background-color: #dcfce7 !important;
+  color: #16a34a !important;
+}
+
+.dark :deep(.ce-popover-item--active) {
+  background-color: rgba(22, 163, 74, 0.2) !important;
+  color: #4ade80 !important;
 }
 
 :deep(.image-tool--stretched .image-tool__image-picture) {
