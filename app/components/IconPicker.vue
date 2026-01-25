@@ -157,6 +157,10 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const isUploading = ref(false)
 const uploadError = ref('')
 
+// Image Editor state
+const showEditor = ref(false)
+const selectedFile = ref<File | null>(null)
+
 // Détecter si la valeur actuelle est une URL (image custom) ou un nom FontAwesome
 const isCustomImage = computed(() => {
   if (!props.modelValue) return false
@@ -212,7 +216,7 @@ function openFilePicker() {
   fileInput.value?.click()
 }
 
-async function handleFileSelect(event: Event) {
+function handleFileSelect(event: Event) {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (!file) return
@@ -223,12 +227,33 @@ async function handleFileSelect(event: Event) {
     return
   }
 
-  // Vérifier la taille (max 2MB pour les icônes)
-  if (file.size > 2 * 1024 * 1024) {
-    uploadError.value = 'L\'image ne doit pas dépasser 2MB'
-    return
-  }
+  uploadError.value = ''
 
+  // Ouvrir l'éditeur d'image
+  selectedFile.value = file
+  showEditor.value = true
+
+  // Réinitialiser l'input
+  if (target) target.value = ''
+}
+
+// Gestion de l'éditeur d'image
+async function handleEditorSave(blob: Blob) {
+  showEditor.value = false
+  selectedFile.value = null
+
+  // Créer un File à partir du Blob
+  const file = new File([blob], 'icon.jpg', { type: blob.type })
+  await uploadFile(file)
+}
+
+function handleEditorCancel() {
+  showEditor.value = false
+  selectedFile.value = null
+}
+
+// Téléverser le fichier
+async function uploadFile(file: File | Blob) {
   uploadError.value = ''
   isUploading.value = true
 
@@ -250,7 +275,6 @@ async function handleFileSelect(event: Event) {
     uploadError.value = e.data?.statusMessage || e.message || 'Erreur lors du téléversement'
   } finally {
     isUploading.value = false
-    if (target) target.value = ''
   }
 }
 
@@ -444,10 +468,31 @@ onUnmounted(() => {
 
           <!-- Info -->
           <p class="mt-3 text-xs text-gray-500 dark:text-gray-400 text-center">
-            Recommandé : image carrée, fond transparent (PNG/SVG)
+            <font-awesome-icon icon="crop" class="mr-1" />
+            Recadrage et compression disponibles
           </p>
         </div>
       </div>
     </Transition>
+
+    <!-- Image Editor Modal -->
+    <Teleport to="body">
+      <div
+        v-if="showEditor && selectedFile"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
+      >
+        <div class="w-full max-w-4xl max-h-[90vh] overflow-auto">
+          <ClientOnly>
+            <ImageEditor
+              :image-file="selectedFile"
+              :aspect-ratio="1"
+              :max-file-size="512 * 1024"
+              @save="handleEditorSave"
+              @cancel="handleEditorCancel"
+            />
+          </ClientOnly>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>

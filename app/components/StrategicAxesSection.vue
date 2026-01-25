@@ -21,9 +21,15 @@ const defaultAxesConfig: Record<string, { icon: string; color: string }> = {
   'Inclusion': { icon: 'users', color: '#ffb81c' }
 }
 
-// Helper pour obtenir l'icône
+// Helper pour obtenir l'icône et la couleur
 const getIcon = (axe: StrategicAxis) => axe.icon || defaultAxesConfig[axe.title]?.icon || 'bullseye'
 const getColor = (axe: StrategicAxis) => axe.color || defaultAxesConfig[axe.title]?.color || '#3695d8'
+
+// Détecter si l'icône est une image (URL) ou un nom FontAwesome
+const isCustomImage = (icon: string | null) => {
+  if (!icon) return false
+  return icon.startsWith('/') || icon.startsWith('http')
+}
 </script>
 
 <template>
@@ -68,7 +74,16 @@ const getColor = (axe: StrategicAxis) => axe.color || defaultAxesConfig[axe.titl
             class="w-16 h-16 rounded-xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110"
             :style="{ backgroundColor: getColor(axe) + '20' }"
           >
+            <!-- Image personnalisée -->
+            <img
+              v-if="isCustomImage(axe.icon)"
+              :src="axe.icon!"
+              alt=""
+              class="w-8 h-8 object-contain"
+            />
+            <!-- Icône FontAwesome -->
             <font-awesome-icon
+              v-else
               :icon="getIcon(axe)"
               class="w-8 h-8"
               :style="{ color: getColor(axe) }"
