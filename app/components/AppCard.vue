@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { thumb } = useImageVariants()
+
 interface Props {
   // Image
   image?: string
@@ -28,6 +30,9 @@ const props = withDefaults(defineProps<Props>(), {
   aspectRatio: 'video',
   linkText: 'Lire la suite'
 })
+
+// Utiliser la variante thumb pour les cartes (images miniatures)
+const imageUrl = computed(() => thumb(props.image))
 
 // Formater la date
 const formattedDate = computed(() => {
@@ -81,7 +86,7 @@ const cardClasses = computed(() => {
       ]"
     >
       <img
-        :src="image"
+        :src="imageUrl"
         :alt="imageAlt || title || 'Image'"
         loading="lazy"
         class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"

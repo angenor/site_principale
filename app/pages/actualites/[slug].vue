@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { editorJsToHtml } from '~/utils/editorjs'
 
+const { original } = useImageVariants()
+
 definePageMeta({
   layout: 'default'
 })
@@ -152,7 +154,7 @@ function getFileColor(mimeType: string): string {
           class="relative h-64 md:h-96 lg:h-[500px] overflow-hidden"
         >
           <img
-            :src="article.coverImage"
+            :src="original(article.coverImage)"
             :alt="article.title"
             class="w-full h-full object-cover"
           />

@@ -6,6 +6,8 @@ interface Props {
   aspectRatio?: number | null
   maxFileSize?: number
   enableEditor?: boolean
+  /** Générer des variantes d'image (thumb, medium, original) avec Sharp - pour les grandes images */
+  generateVariants?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -14,7 +16,8 @@ const props = withDefaults(defineProps<Props>(), {
   placeholder: 'https://... ou téléverser une image',
   aspectRatio: null,
   maxFileSize: 0, // Pas de limite (0 = illimité)
-  enableEditor: true
+  enableEditor: true,
+  generateVariants: false // Par défaut désactivé (rétrocompatibilité)
 })
 
 const emit = defineEmits<{
@@ -127,7 +130,12 @@ async function uploadFile(file: File | Blob) {
       }
     }, 100)
 
-    const response = await $fetch<{ success: boolean; url: string }>('/api/admin/upload', {
+    // Ajouter le paramètre variants si activé
+    const uploadUrl = props.generateVariants
+      ? '/api/admin/upload?variants=true'
+      : '/api/admin/upload'
+
+    const response = await $fetch<{ success: boolean; url: string }>(uploadUrl, {
       method: 'POST',
       body: formData
     })

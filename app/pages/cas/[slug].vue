@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { editorJsToHtml } from '~/utils/editorjs'
 
+const { original, thumb } = useImageVariants()
+
 // Interfaces
 interface Category {
   id: number
@@ -195,7 +197,7 @@ const copyLink = async () => {
     <!-- Image de couverture -->
     <section class="relative h-[400px] lg:h-[500px]">
       <img
-        :src="caseStudy.coverImage || '/images/placeholder-case.jpg'"
+        :src="original(caseStudy.coverImage) || '/images/placeholder-case.jpg'"
         :alt="caseStudy.title"
         class="absolute inset-0 w-full h-full object-cover"
       />
@@ -380,7 +382,7 @@ const copyLink = async () => {
           >
             <div class="aspect-video relative overflow-hidden">
               <img
-                :src="related.coverImage || '/images/placeholder-case.jpg'"
+                :src="thumb(related.coverImage) || '/images/placeholder-case.jpg'"
                 :alt="related.title"
                 loading="lazy"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

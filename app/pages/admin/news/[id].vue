@@ -355,7 +355,7 @@ async function togglePublish() {
           <!-- Cover Image -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Image de couverture</h3>
-            <ImageUpload v-model="form.coverImage" />
+            <ImageUpload v-model="form.coverImage" :generate-variants="true" />
           </div>
 
           <!-- External URL -->

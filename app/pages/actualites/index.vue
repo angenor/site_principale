@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { thumb } = useImageVariants()
+
 definePageMeta({
   layout: 'default'
 })
@@ -133,7 +135,7 @@ function changePage(page: number) {
             <div class="relative h-48 overflow-hidden">
               <img
                 v-if="item.coverImage"
-                :src="item.coverImage"
+                :src="thumb(item.coverImage)"
                 :alt="item.title"
                 loading="lazy"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
