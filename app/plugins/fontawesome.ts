@@ -109,6 +109,9 @@ import {
   faListCheck,
   faQuoteLeft,
   faVideo,
+  // Icônes pour la gestion des médias
+  faDatabase,
+  faSync,
 } from '@fortawesome/free-solid-svg-icons'
 
 // Regular icons
@@ -244,6 +247,9 @@ library.add(
   faListCheck,
   faQuoteLeft,
   faVideo,
+  // Icônes pour la gestion des médias
+  faDatabase,
+  faSync,
   // Regular
   farHeart,
   farStar,

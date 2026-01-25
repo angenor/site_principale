@@ -6,6 +6,7 @@ const navigation = [
   { name: 'Tableau de bord', href: '/admin', icon: 'chart-pie' },
   { name: 'Études de cas', href: '/admin/cases', icon: 'folder-open' },
   { name: 'Actualités', href: '/admin/news', icon: 'newspaper' },
+  { name: 'Médias', href: '/admin/media', icon: 'image' },
   { name: 'Signalements', href: '/admin/contacts', icon: 'envelope' },
   { name: 'Contenu', href: '/admin/content', icon: 'file-lines' },
   { name: 'Page À propos', href: '/admin/about', icon: 'info-circle' },

@@ -330,6 +330,8 @@ onMounted(async () => {
         }
       }
     },
+    // Configuration des tunes pour tous les blocs (déplacer, supprimer)
+    defaultBlock: 'paragraph',
     onChange: async () => {
       if (editor) {
         const data = await editor.save()
@@ -560,8 +562,8 @@ defineExpose({ save })
 .content-editor {
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
-  overflow: hidden;
   background-color: white;
+  overflow: visible;
 }
 
 .dark .content-editor {
@@ -674,23 +676,28 @@ defineExpose({ save })
 
 :deep(.codex-editor__redactor) {
   padding-bottom: 1rem;
+  padding-left: 40px;
 }
 
-:deep(.ce-block__content),
+:deep(.ce-block__content) {
+  max-width: none;
+  margin: 0;
+}
+
 :deep(.ce-toolbar__content) {
   max-width: none;
+  margin: 0;
 }
 
-/* Make toolbar always visible on block hover */
+:deep(.ce-toolbar__actions) {
+  left: -36px;
+  position: absolute;
+  opacity: 1 !important;
+}
+
+/* Toolbar Editor.js */
 :deep(.ce-toolbar) {
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-
-:deep(.ce-block:hover .ce-toolbar),
-:deep(.ce-block--focused .ce-toolbar),
-:deep(.codex-editor--narrow .ce-toolbar) {
-  opacity: 1;
+  z-index: 10;
 }
 
 :deep(.ce-toolbar__plus),
@@ -742,6 +749,7 @@ defineExpose({ save })
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  z-index: 100 !important;
 }
 
 .dark :deep(.ce-toolbox) {
@@ -770,7 +778,10 @@ defineExpose({ save })
 :deep(.ce-conversion-toolbar),
 :deep(.ce-settings) {
   background-color: white;
-  border-color: #e5e7eb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  z-index: 100 !important;
 }
 
 .dark :deep(.ce-inline-toolbar),
@@ -778,6 +789,29 @@ defineExpose({ save })
 .dark :deep(.ce-settings) {
   background-color: #374151;
   border-color: #4b5563;
+}
+
+/* Bouton de suppression en rouge */
+:deep(.ce-settings .cdx-settings-button[data-tune="delete"]),
+:deep(.ce-settings .ce-settings__button--delete) {
+  color: #dc2626;
+}
+
+:deep(.ce-settings .cdx-settings-button[data-tune="delete"]:hover),
+:deep(.ce-settings .ce-settings__button--delete:hover) {
+  background-color: #fef2f2;
+  color: #b91c1c;
+}
+
+.dark :deep(.ce-settings .cdx-settings-button[data-tune="delete"]),
+.dark :deep(.ce-settings .ce-settings__button--delete) {
+  color: #f87171;
+}
+
+.dark :deep(.ce-settings .cdx-settings-button[data-tune="delete"]:hover),
+.dark :deep(.ce-settings .ce-settings__button--delete:hover) {
+  background-color: rgba(220, 38, 38, 0.2);
+  color: #fca5a5;
 }
 
 :deep(.ce-inline-tool),
