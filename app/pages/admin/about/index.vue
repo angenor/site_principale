@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { OutputData } from '@editorjs/editorjs'
+
 definePageMeta({
   layout: 'admin',
   middleware: 'auth'
@@ -25,83 +27,11 @@ const success = ref('')
 const form = ref({
   section: '',
   title: '',
-  content: '',
+  content: '' as string | OutputData,
   image: '',
   sortOrder: 0,
   isActive: true
 })
-
-// Configuration des sections avec leurs champs spécifiques
-const sectionConfig = {
-  mission: {
-    label: 'Mission',
-    description: 'Texte décrivant la mission de l\'organisation',
-    fields: ['title', 'content'],
-    contentPlaceholder: 'Décrivez la mission...',
-    contentHelp: 'Texte simple ou HTML pour le formatage.'
-  },
-  vision: {
-    label: 'Vision',
-    description: 'Texte décrivant la vision de l\'organisation',
-    fields: ['title', 'content'],
-    contentPlaceholder: 'Décrivez la vision...',
-    contentHelp: 'Texte simple ou HTML pour le formatage.'
-  },
-  context: {
-    label: 'Contexte',
-    description: 'Contexte et enjeux du secteur minier',
-    fields: ['title', 'content'],
-    contentPlaceholder: 'Décrivez le contexte avec des paragraphes, listes, etc.',
-    contentHelp: 'Utilisez du HTML : <p>, <ul>, <li>, <strong> pour structurer le contenu.'
-  },
-  timg: {
-    label: 'Présentation TIMG',
-    description: 'Présentation de Transparency International Madagascar',
-    fields: ['title', 'content', 'image'],
-    contentPlaceholder: 'Description de TI Madagascar...',
-    contentHelp: 'Texte de présentation de l\'organisation.',
-    imageHelp: 'Logo ou image représentant l\'organisation'
-  },
-  pcqvp: {
-    label: 'Présentation PCQVP',
-    description: 'Présentation de PCQVP Madagascar',
-    fields: ['title', 'content', 'image'],
-    contentPlaceholder: 'Description de PCQVP...',
-    contentHelp: 'Texte de présentation de l\'organisation.',
-    imageHelp: 'Logo ou image représentant l\'organisation'
-  },
-  team: {
-    label: 'Équipe',
-    description: 'Présentation de l\'équipe (optionnel)',
-    fields: ['title', 'content', 'image'],
-    contentPlaceholder: 'Présentation de l\'équipe...',
-    contentHelp: 'Vous pouvez utiliser du HTML pour structurer la présentation.'
-  }
-}
-
-// Sections prédéfinies pour le dropdown
-const predefinedSections = Object.entries(sectionConfig).map(([value, config]) => ({
-  value,
-  label: config.label,
-  description: config.description
-}))
-
-// Section actuelle sélectionnée
-const currentSectionConfig = computed(() => {
-  if (!form.value.section) return null
-  return sectionConfig[form.value.section as keyof typeof sectionConfig] || null
-})
-
-// Détermine si un champ doit être affiché
-function shouldShowField(field: string): boolean {
-  if (!currentSectionConfig.value) return true // Afficher tous si pas de config
-  return currentSectionConfig.value.fields.includes(field)
-}
-
-function getSectionLabel(section: string): string {
-  const config = sectionConfig[section as keyof typeof sectionConfig]
-  return config?.label || section
-}
 
 function startCreate() {
   editingContent.value = null
@@ -121,10 +51,24 @@ function startCreate() {
 function startEdit(content: AboutContent) {
   isCreating.value = false
   editingContent.value = content
+
+  // Parser le contenu si c'est du JSON EditorJS
+  let parsedContent: string | OutputData = content.content
+  if (content.content) {
+    try {
+      const parsed = JSON.parse(content.content)
+      if (parsed.blocks) {
+        parsedContent = parsed
+      }
+    } catch {
+      // Garder comme string si ce n'est pas du JSON
+    }
+  }
+
   form.value = {
     section: content.section,
     title: content.title,
-    content: content.content,
+    content: parsedContent,
     image: content.image || '',
     sortOrder: content.sortOrder,
     isActive: content.isActive
@@ -143,23 +87,43 @@ async function save() {
   error.value = ''
   success.value = ''
 
-  if (!form.value.section.trim() || !form.value.title.trim() || !form.value.content.trim()) {
-    error.value = 'Section, titre et contenu sont requis'
+  // Validation
+  if (!form.value.title.trim()) {
+    error.value = 'Le titre est requis'
+    return
+  }
+
+  // Vérifier si le contenu EditorJS a des blocs
+  const hasContent = typeof form.value.content === 'object'
+    ? form.value.content.blocks && form.value.content.blocks.length > 0
+    : form.value.content && form.value.content.trim().length > 0
+
+  if (!hasContent) {
+    error.value = 'Le contenu est requis'
     return
   }
 
   isSaving.value = true
   try {
+    // Préparer les données - sérialiser le contenu EditorJS en JSON
+    const bodyData = {
+      ...form.value,
+      section: form.value.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+      content: typeof form.value.content === 'object'
+        ? JSON.stringify(form.value.content)
+        : form.value.content
+    }
+
     if (isCreating.value) {
       await $fetch('/api/admin/about', {
         method: 'POST',
-        body: form.value
+        body: bodyData
       })
       success.value = 'Section créée avec succès'
     } else if (editingContent.value) {
       await $fetch(`/api/admin/about/${editingContent.value.id}`, {
         method: 'PUT',
-        body: form.value
+        body: bodyData
       })
       success.value = 'Section mise à jour avec succès'
     }
@@ -174,7 +138,7 @@ async function save() {
 }
 
 async function deleteContent(content: AboutContent) {
-  if (!confirm(`Supprimer la section "${getSectionLabel(content.section)}" ?`)) {
+  if (!confirm(`Supprimer la section "${content.title}" ?`)) {
     return
   }
 
@@ -238,108 +202,85 @@ async function toggleActive(content: AboutContent) {
       </h2>
 
       <form @submit.prevent="save" class="space-y-4">
-        <!-- Section -->
+        <!-- Titre de la section -->
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Section *
+            Titre de la section *
           </label>
-          <select
-            v-model="form.section"
+          <input
+            v-model="form.title"
+            type="text"
             class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            :disabled="!isCreating"
-          >
-            <option value="">Sélectionner une section...</option>
-            <option v-for="s in predefinedSections" :key="s.value" :value="s.value">
-              {{ s.label }}
-            </option>
-          </select>
-          <!-- Description de la section -->
-          <p v-if="currentSectionConfig" class="text-xs text-ti-blue dark:text-ti-blue-400 mt-1">
+            placeholder="Ex: Notre Mission, Qui sommes-nous, Nos Valeurs..."
+          />
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
             <font-awesome-icon icon="info-circle" class="mr-1" />
-            {{ currentSectionConfig.description }}
+            Saisissez le titre qui apparaîtra sur la page À propos
           </p>
         </div>
 
-        <!-- Champs dynamiques basés sur la section sélectionnée -->
-        <template v-if="form.section">
-          <!-- Titre -->
-          <div v-if="shouldShowField('title')">
+        <!-- Contenu riche avec EditorJS -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Contenu *
+          </label>
+          <ClientOnly>
+            <ContentEditor
+              v-model="form.content"
+              placeholder="Rédigez le contenu de cette section..."
+              :min-height="300"
+            />
+            <template #fallback>
+              <div class="h-[300px] bg-gray-100 dark:bg-gray-700 rounded-lg animate-pulse" />
+            </template>
+          </ClientOnly>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+            <font-awesome-icon icon="lightbulb" class="mr-1" />
+            Utilisez le bouton + pour ajouter : texte, titres, listes, tableaux, images, citations, etc.
+          </p>
+        </div>
+
+        <!-- Image optionnelle -->
+        <div>
+          <ImageUpload
+            v-model="form.image"
+            label="Image de la section (optionnel)"
+            placeholder="Sélectionnez ou déposez une image"
+          />
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Ordre -->
+          <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Titre *
+              Ordre d'affichage
             </label>
             <input
-              v-model="form.title"
-              type="text"
+              v-model.number="form.sortOrder"
+              type="number"
               class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              placeholder="Titre de la section"
             />
           </div>
 
-          <!-- Contenu -->
-          <div v-if="shouldShowField('content')">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Contenu *
-            </label>
-            <textarea
-              v-model="form.content"
-              rows="8"
-              class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              :placeholder="currentSectionConfig?.contentPlaceholder || 'Contenu de la section...'"
-            />
-            <p class="text-xs text-gray-500 mt-1">
-              {{ currentSectionConfig?.contentHelp || 'Vous pouvez utiliser du HTML pour le formatage.' }}
-            </p>
-          </div>
-
-          <!-- Image (uniquement pour certaines sections) -->
-          <div v-if="shouldShowField('image')">
-            <ImageUpload
-              v-model="form.image"
-              :label="currentSectionConfig?.imageHelp || 'Image de la section'"
-              placeholder="Sélectionnez ou déposez une image"
-            />
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Ordre -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Ordre d'affichage
-              </label>
+          <!-- Actif -->
+          <div class="flex items-center pt-6">
+            <label class="flex items-center cursor-pointer">
               <input
-                v-model.number="form.sortOrder"
-                type="number"
-                class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                v-model="form.isActive"
+                type="checkbox"
+                class="w-5 h-5 rounded border-gray-300 text-ti-blue focus:ring-ti-blue"
               />
-            </div>
-
-            <!-- Actif -->
-            <div class="flex items-center pt-6">
-              <label class="flex items-center cursor-pointer">
-                <input
-                  v-model="form.isActive"
-                  type="checkbox"
-                  class="w-5 h-5 rounded border-gray-300 text-ti-blue focus:ring-ti-blue"
-                />
-                <span class="ml-2 text-gray-700 dark:text-gray-300">Section active</span>
-              </label>
-            </div>
+              <span class="ml-2 text-gray-700 dark:text-gray-300">Section active</span>
+            </label>
           </div>
-        </template>
-
-        <!-- Message si aucune section sélectionnée -->
-        <div v-else class="text-center py-8 text-gray-500 dark:text-gray-400">
-          <font-awesome-icon icon="hand-pointer" class="text-3xl mb-2" />
-          <p>Sélectionnez une section pour afficher le formulaire</p>
         </div>
 
         <!-- Actions -->
         <div class="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
           <button
             type="submit"
-            :disabled="isSaving || !form.section"
+            :disabled="isSaving"
             class="btn-ti"
-            :class="{ 'opacity-50 cursor-not-allowed': !form.section }"
           >
             <font-awesome-icon v-if="isSaving" icon="spinner" class="animate-spin mr-2" />
             {{ isCreating ? 'Créer' : 'Enregistrer' }}
@@ -355,22 +296,8 @@ async function toggleActive(content: AboutContent) {
       </form>
     </div>
 
-    <!-- Liens vers les autres pages de gestion -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-      <NuxtLink
-        to="/admin/timeline"
-        class="flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:border-ti-blue dark:hover:border-ti-blue transition-colors"
-      >
-        <div class="w-12 h-12 rounded-lg bg-ti-blue/10 flex items-center justify-center">
-          <font-awesome-icon icon="timeline" class="text-ti-blue text-xl" />
-        </div>
-        <div>
-          <h3 class="font-semibold text-gray-900 dark:text-white">Historique / Timeline</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Gérer les événements de la timeline</p>
-        </div>
-        <font-awesome-icon icon="arrow-right" class="ml-auto text-gray-400" />
-      </NuxtLink>
-
+    <!-- Lien vers les informations de contact -->
+    <div class="mb-6">
       <NuxtLink
         to="/admin/config"
         class="flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:border-ti-blue dark:hover:border-ti-blue transition-colors"
@@ -393,9 +320,6 @@ async function toggleActive(content: AboutContent) {
           <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Section
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Titre
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -411,13 +335,19 @@ async function toggleActive(content: AboutContent) {
           </thead>
           <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
             <tr v-for="content in contents" :key="content.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs font-medium bg-ti-blue-100 text-ti-blue-700 dark:bg-ti-blue-900 dark:text-ti-blue-300 rounded">
-                  {{ getSectionLabel(content.section) }}
-                </span>
-              </td>
               <td class="px-6 py-4">
-                <span class="text-gray-900 dark:text-white font-medium">{{ content.title }}</span>
+                <div class="flex items-center gap-3">
+                  <img
+                    v-if="content.image"
+                    :src="content.image"
+                    alt=""
+                    class="w-10 h-10 rounded-lg object-cover"
+                  />
+                  <div v-else class="w-10 h-10 rounded-lg bg-ti-blue/10 flex items-center justify-center">
+                    <font-awesome-icon icon="file-alt" class="text-ti-blue" />
+                  </div>
+                  <span class="text-gray-900 dark:text-white font-medium">{{ content.title }}</span>
+                </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-gray-500 dark:text-gray-400">
                 {{ content.sortOrder }}
@@ -453,7 +383,7 @@ async function toggleActive(content: AboutContent) {
               </td>
             </tr>
             <tr v-if="!contents?.length">
-              <td colspan="5" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+              <td colspan="4" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                 Aucune section définie. Cliquez sur "Nouvelle section" pour commencer.
               </td>
             </tr>

@@ -9,6 +9,14 @@ const route = useRoute()
 const slug = route.params.slug as string
 const { setArticleSchema, setBreadcrumbSchema } = useJsonLd()
 
+interface Attachment {
+  id: string
+  filename: string
+  url: string
+  mimeType: string
+  fileSize: number
+}
+
 interface NewsArticle {
   id: string
   slug: string
@@ -20,6 +28,7 @@ interface NewsArticle {
   publishedAt: string
   author: string
   viewCount: number
+  attachments?: Attachment[]
 }
 
 const { data: article, status, error } = await useFetch<NewsArticle>(`/api/news/${slug}`)
@@ -72,6 +81,32 @@ const contentHtml = computed(() => {
   if (!article.value?.content) return ''
   return editorJsToHtml(article.value.content)
 })
+
+// Helpers pour les fichiers annexes
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} o`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} Ko`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`
+}
+
+function getFileIcon(mimeType: string): string {
+  if (mimeType.includes('pdf')) return 'file-pdf'
+  if (mimeType.includes('word') || mimeType.includes('document')) return 'file-word'
+  if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return 'file-excel'
+  if (mimeType.includes('powerpoint') || mimeType.includes('presentation')) return 'file-powerpoint'
+  if (mimeType.includes('image')) return 'file-image'
+  if (mimeType.includes('zip') || mimeType.includes('rar') || mimeType.includes('7z')) return 'file-zipper'
+  return 'file'
+}
+
+function getFileColor(mimeType: string): string {
+  if (mimeType.includes('pdf')) return 'text-red-500'
+  if (mimeType.includes('word') || mimeType.includes('document')) return 'text-blue-600'
+  if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return 'text-green-600'
+  if (mimeType.includes('powerpoint') || mimeType.includes('presentation')) return 'text-orange-500'
+  if (mimeType.includes('image')) return 'text-purple-500'
+  return 'text-gray-500'
+}
 </script>
 
 <template>
@@ -192,6 +227,37 @@ const contentHtml = computed(() => {
         <!-- Message si pas de contenu -->
         <div v-else class="text-center py-8 text-gray-500 dark:text-gray-400">
           <p>Le contenu complet de cette actualité n'est pas disponible.</p>
+        </div>
+
+        <!-- Fichiers annexes -->
+        <div v-if="article.attachments && article.attachments.length > 0" class="mt-10 bg-gray-50 dark:bg-gray-800 rounded-xl p-6">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <font-awesome-icon icon="paperclip" class="text-ti-blue" />
+            Documents annexes
+          </h3>
+          <div class="space-y-3">
+            <a
+              v-for="attachment in article.attachments"
+              :key="attachment.id"
+              :href="attachment.url"
+              target="_blank"
+              download
+              class="flex items-center gap-4 p-4 bg-white dark:bg-gray-700 rounded-lg hover:shadow-md transition-shadow group"
+            >
+              <div :class="['w-12 h-12 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-600', getFileColor(attachment.mimeType)]">
+                <font-awesome-icon :icon="getFileIcon(attachment.mimeType)" class="w-6 h-6" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="font-medium text-gray-900 dark:text-white truncate group-hover:text-ti-blue dark:group-hover:text-ti-blue-400 transition-colors">
+                  {{ attachment.filename }}
+                </p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  {{ formatFileSize(attachment.fileSize) }}
+                </p>
+              </div>
+              <font-awesome-icon icon="download" class="w-5 h-5 text-gray-400 group-hover:text-ti-blue transition-colors" />
+            </a>
+          </div>
         </div>
 
         <!-- Actions -->

@@ -1,4 +1,12 @@
-import type { OutputData } from '@editorjs/editorjs'
+interface OutputData {
+  time?: number
+  blocks: Array<{
+    id?: string
+    type: string
+    data: any
+  }>
+  version?: string
+}
 
 /**
  * Convert Editor.js output data to HTML
@@ -88,34 +96,18 @@ function renderDelimiter(): string {
   return '<hr />'
 }
 
-function renderTable(data: { content: string[][]; withHeadings?: boolean; stretched?: boolean }): string {
+function renderTable(data: { content: string[][] }): string {
   if (!data.content || !data.content.length) return ''
 
-  const tableClass = data.stretched ? 'editor-table stretched' : 'editor-table'
-
-  if (data.withHeadings && data.content.length > 1) {
-    // First row is header
-    const headerRow = data.content[0]
-    const headerCells = headerRow.map(cell => `<th>${cell}</th>`).join('')
-    const thead = `<thead><tr>${headerCells}</tr></thead>`
-
-    // Rest are body rows
-    const bodyRows = data.content.slice(1).map(row => {
-      const cells = row.map(cell => `<td>${cell}</td>`).join('')
-      return `<tr>${cells}</tr>`
+  const rows = data.content.map((row, index) => {
+    const cells = row.map(cell => {
+      const tag = index === 0 ? 'th' : 'td'
+      return `<${tag}>${cell}</${tag}>`
     }).join('')
-    const tbody = `<tbody>${bodyRows}</tbody>`
-
-    return `<table class="${tableClass}">${thead}${tbody}</table>`
-  }
-
-  // No headers - all rows in tbody
-  const rows = data.content.map(row => {
-    const cells = row.map(cell => `<td>${cell}</td>`).join('')
     return `<tr>${cells}</tr>`
   }).join('')
 
-  return `<table class="${tableClass}"><tbody>${rows}</tbody></table>`
+  return `<table><tbody>${rows}</tbody></table>`
 }
 
 function renderEmbed(data: { service: string; embed: string; caption?: string }): string {
@@ -169,52 +161,4 @@ function renderChecklist(data: { items: Array<{ text: string; checked: boolean }
   }).join('')
 
   return `<ul class="checklist">${items}</ul>`
-}
-
-/**
- * Check if content is in Editor.js format
- */
-export function isEditorJsFormat(content: string | OutputData | null | undefined): boolean {
-  if (!content) return false
-
-  if (typeof content === 'object' && content.blocks) {
-    return true
-  }
-
-  if (typeof content === 'string') {
-    try {
-      const parsed = JSON.parse(content)
-      return Boolean(parsed.blocks)
-    } catch {
-      return false
-    }
-  }
-
-  return false
-}
-
-/**
- * Stringify Editor.js data for storage
- */
-export function stringifyEditorData(data: OutputData | null | undefined): string | null {
-  if (!data) return null
-  return JSON.stringify(data)
-}
-
-/**
- * Parse Editor.js data from string
- */
-export function parseEditorData(content: string | null | undefined): OutputData | null {
-  if (!content) return null
-
-  try {
-    const parsed = JSON.parse(content)
-    if (parsed.blocks) {
-      return parsed
-    }
-  } catch {
-    // Not valid JSON
-  }
-
-  return null
 }

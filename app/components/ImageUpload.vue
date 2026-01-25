@@ -142,8 +142,13 @@ async function uploadFile(file: File | Blob) {
       emit('update:modelValue', response.url)
     }
   } catch (err: unknown) {
-    const e = err as { data?: { statusMessage?: string }; message?: string }
-    error.value = e.data?.statusMessage || e.message || 'Erreur lors du téléversement'
+    const e = err as { data?: { statusMessage?: string }; message?: string; statusCode?: number }
+    console.error('Erreur upload:', e)
+    if (e.statusCode === 401) {
+      error.value = 'Session expirée. Veuillez vous reconnecter.'
+    } else {
+      error.value = e.data?.statusMessage || e.message || 'Erreur lors du téléversement'
+    }
   } finally {
     isUploading.value = false
     uploadProgress.value = 0

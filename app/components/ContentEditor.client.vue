@@ -10,6 +10,7 @@ import Marker from '@editorjs/marker'
 import InlineCode from '@editorjs/inline-code'
 import Paragraph from '@editorjs/paragraph'
 import ImageTool from '@editorjs/image'
+import Checklist from '@editorjs/checklist'
 
 interface Props {
   modelValue?: string | OutputData | null
@@ -217,6 +218,10 @@ onMounted(async () => {
       },
       inlineCode: {
         class: InlineCode
+      },
+      checklist: {
+        class: Checklist,
+        inlineToolbar: true
       },
       image: {
         class: ImageTool,
@@ -565,5 +570,60 @@ defineExpose({ save })
 
 :deep(.image-tool--stretched .image-tool__image-picture) {
   width: 100%;
+}
+
+/* Checklist styles */
+:deep(.cdx-checklist) {
+  padding-left: 0;
+}
+
+:deep(.cdx-checklist__item) {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.375rem 0;
+}
+
+:deep(.cdx-checklist__item-checkbox) {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+  border: 2px solid #9ca3af;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.dark :deep(.cdx-checklist__item-checkbox) {
+  border-color: #6b7280;
+}
+
+:deep(.cdx-checklist__item--checked .cdx-checklist__item-checkbox) {
+  background-color: #16a34a;
+  border-color: #16a34a;
+}
+
+:deep(.cdx-checklist__item--checked .cdx-checklist__item-checkbox::after) {
+  content: '';
+  width: 0.375rem;
+  height: 0.625rem;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+:deep(.cdx-checklist__item--checked .cdx-checklist__item-text) {
+  text-decoration: line-through;
+  color: #9ca3af;
+}
+
+:deep(.cdx-checklist__item-text) {
+  flex: 1;
+  outline: none;
+  line-height: 1.5;
 }
 </style>

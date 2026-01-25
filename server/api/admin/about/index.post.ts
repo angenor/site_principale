@@ -5,28 +5,19 @@ export default defineEventHandler(async (event) => {
 
   const { section, title, content, image, sortOrder, isActive } = body
 
-  if (!section || !title || !content) {
+  if (!title || !content) {
     throw createError({
       statusCode: 400,
-      message: 'Section, titre et contenu sont requis'
+      message: 'Titre et contenu sont requis'
     })
   }
 
-  // Vérifier que la section n'existe pas déjà
-  const existing = await prisma.aboutContent.findUnique({
-    where: { section }
-  })
-
-  if (existing) {
-    throw createError({
-      statusCode: 400,
-      message: 'Cette section existe déjà'
-    })
-  }
+  // Générer le slug de section à partir du titre
+  const sectionSlug = section || title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
 
   const newContent = await prisma.aboutContent.create({
     data: {
-      section,
+      section: sectionSlug,
       title,
       content,
       image: image || null,

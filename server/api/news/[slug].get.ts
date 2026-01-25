@@ -21,6 +21,9 @@ export default defineEventHandler(async (event) => {
           firstName: true,
           lastName: true
         }
+      },
+      attachments: {
+        orderBy: { sortOrder: 'asc' }
       }
     }
   })

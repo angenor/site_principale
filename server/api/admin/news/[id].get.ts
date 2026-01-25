@@ -18,6 +18,9 @@ export default defineEventHandler(async (event) => {
     include: {
       author: {
         select: { id: true, firstName: true, lastName: true }
+      },
+      attachments: {
+        orderBy: { sortOrder: 'asc' }
       }
     }
   })
@@ -45,6 +48,7 @@ export default defineEventHandler(async (event) => {
     author: news.author ? {
       id: news.author.id,
       name: `${news.author.firstName} ${news.author.lastName}`
-    } : null
+    } : null,
+    attachments: news.attachments || []
   }
 })

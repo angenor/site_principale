@@ -171,9 +171,27 @@ model News {
   // Relations
   authorId    String
   author      User      @relation("NewsAuthor", fields: [authorId], references: [id])
+  attachments NewsAttachment[]
 
   @@index([publishedAt])
   @@map("news")
+}
+
+// Fichiers annexes des actualités (PDF, documents, etc.)
+model NewsAttachment {
+  id          String   @id @default(cuid())
+  newsId      String
+  news        News     @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  filename    String   // Nom original du fichier
+  filepath    String   // Chemin de stockage
+  url         String   // URL publique
+  mimeType    String
+  fileSize    Int      // Taille en octets
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([newsId])
+  @@map("news_attachments")
 }
 
 // ============================================================================
@@ -346,14 +364,16 @@ model SiteConfig {
 
 model AboutContent {
   id          String    @id @default(cuid())
-  section     String    @unique // ex: "mission", "vision", "history"
+  section     String    // Slug généré à partir du titre
   title       String
-  content     String    @db.Text
+  content     String    @db.Text // Contenu EditorJS (JSON) ou HTML
   image       String?
   sortOrder   Int       @default(0)
   isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  @@index([sortOrder])
   @@map("about_content")
 }
 

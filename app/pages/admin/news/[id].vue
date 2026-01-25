@@ -7,6 +7,15 @@ definePageMeta({
   middleware: 'auth'
 })
 
+interface Attachment {
+  id: string
+  filename: string
+  url: string
+  mimeType: string
+  fileSize: number
+  sortOrder: number
+}
+
 interface NewsItem {
   id: string
   slug: string
@@ -16,6 +25,7 @@ interface NewsItem {
   coverImage: string | null
   externalUrl: string | null
   isPublished: boolean
+  attachments?: Attachment[]
 }
 
 const route = useRoute()
@@ -31,6 +41,9 @@ const form = ref({
   externalUrl: '',
   isPublished: false
 })
+
+// Fichiers annexes
+const attachments = ref<Attachment[]>([])
 
 const isLoading = ref(false)
 const isSaving = ref(false)
@@ -49,6 +62,10 @@ if (!isNew) {
         coverImage: newsData.value.coverImage || '',
         externalUrl: newsData.value.externalUrl || '',
         isPublished: newsData.value.isPublished
+      }
+      // Charger les fichiers annexes
+      if (newsData.value.attachments) {
+        attachments.value = newsData.value.attachments
       }
     }
   } catch (e) {
@@ -112,6 +129,23 @@ async function handleSubmit() {
         body: payload
       })
       if (result.success) {
+        // Associer les fichiers temporaires à l'actualité créée
+        const tempAttachments = attachments.value.filter(a => a.id.startsWith('temp-'))
+        for (const attachment of tempAttachments) {
+          try {
+            await $fetch(`/api/admin/news/${result.data.id}/attachments`, {
+              method: 'POST',
+              body: {
+                url: attachment.url,
+                filename: attachment.filename,
+                mimeType: attachment.mimeType,
+                fileSize: attachment.fileSize
+              }
+            })
+          } catch (err) {
+            console.error('Erreur lors de l\'association du fichier:', err)
+          }
+        }
         success.value = 'Actualité créée avec succès'
         setTimeout(() => {
           router.push(`/admin/news/${result.data.id}`)
@@ -311,6 +345,21 @@ async function togglePublish() {
                 placeholder="https://..."
               />
             </div>
+          </div>
+
+          <!-- Fichiers annexes -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              <font-awesome-icon icon="paperclip" class="mr-2 text-green-600" />
+              Fichiers annexes
+            </h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+              Ajoutez des documents à télécharger (PDF, Word, Excel, etc.)
+            </p>
+            <FileUpload
+              v-model="attachments"
+              :news-id="isNew ? undefined : id"
+            />
           </div>
         </div>
       </div>

@@ -23,3 +23,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 Email: admin@mom.mg
 Mot de passe: Admin123!
+
+
+rm -rf .nuxt .output node_modules/.cache
+pnpm dev

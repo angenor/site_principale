@@ -427,3 +427,188 @@ h6 { font-size: var(--text-lg); }
   background-color: var(--color-ti-blue);
   color: var(--color-ti-white);
 }
+
+/* ============================================================================
+   STYLES POUR CONTENU EDITOR.JS (TABLES, CHECKLISTS, ETC.)
+   ============================================================================ */
+
+/* Tables */
+.prose table,
+.editor-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: var(--text-sm);
+}
+
+.prose table.stretched,
+.editor-table.stretched {
+  width: 100%;
+}
+
+.prose table thead th,
+.editor-table thead th {
+  background-color: var(--color-ti-blue-50);
+  color: var(--color-ti-blue-800);
+  font-weight: var(--font-semibold);
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-ti-blue-200);
+}
+
+.dark .prose table thead th,
+.dark .editor-table thead th {
+  background-color: var(--color-ti-blue-900);
+  color: var(--color-ti-blue-100);
+  border-color: var(--color-ti-blue-700);
+}
+
+.prose table tbody td,
+.editor-table tbody td {
+  padding: 0.75rem 1rem;
+  border: 1px solid #e5e7eb;
+  vertical-align: top;
+}
+
+.dark .prose table tbody td,
+.dark .editor-table tbody td {
+  border-color: #4b5563;
+}
+
+.prose table tbody tr:nth-child(even),
+.editor-table tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.dark .prose table tbody tr:nth-child(even),
+.dark .editor-table tbody tr:nth-child(even) {
+  background-color: #1f2937;
+}
+
+/* Checklists */
+.prose .checklist,
+ul.checklist {
+  list-style: none;
+  padding-left: 0;
+  margin: 1rem 0;
+}
+
+.prose .checklist-item,
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.dark .prose .checklist-item,
+.dark .checklist-item {
+  border-bottom-color: #374151;
+}
+
+.prose .checklist-item:last-child,
+.checklist-item:last-child {
+  border-bottom: none;
+}
+
+.prose .checklist-item input[type="checkbox"],
+.checklist-item input[type="checkbox"] {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+  accent-color: var(--color-ti-blue);
+  cursor: default;
+}
+
+.prose .checklist-item.checked span,
+.checklist-item.checked span {
+  text-decoration: line-through;
+  color: #9ca3af;
+}
+
+/* Content images */
+.prose .content-image,
+figure.content-image {
+  margin: 1.5rem 0;
+}
+
+.prose .content-image img,
+figure.content-image img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-lg);
+}
+
+.prose .content-image.with-border img,
+figure.content-image.with-border img {
+  border: 1px solid #e5e7eb;
+}
+
+.dark .prose .content-image.with-border img,
+.dark figure.content-image.with-border img {
+  border-color: #4b5563;
+}
+
+.prose .content-image.with-background,
+figure.content-image.with-background {
+  background-color: #f3f4f6;
+  padding: 1rem;
+  border-radius: var(--radius-lg);
+}
+
+.dark .prose .content-image.with-background,
+.dark figure.content-image.with-background {
+  background-color: #374151;
+}
+
+.prose .content-image.stretched img,
+figure.content-image.stretched img {
+  width: 100%;
+}
+
+.prose .content-image figcaption,
+figure.content-image figcaption {
+  text-align: center;
+  font-size: var(--text-sm);
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+
+.dark .prose .content-image figcaption,
+.dark figure.content-image figcaption {
+  color: #9ca3af;
+}
+
+/* Embed responsive */
+.prose .embed-responsive,
+.embed-responsive {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  height: 0;
+  overflow: hidden;
+  margin: 1.5rem 0;
+  border-radius: var(--radius-lg);
+}
+
+.prose .embed-responsive iframe,
+.embed-responsive iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.prose .embed-responsive .caption,
+.embed-responsive .caption {
+  position: absolute;
+  bottom: -2rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: var(--text-sm);
+  color: #6b7280;
+}

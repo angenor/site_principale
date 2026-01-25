@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@amcharts/amcharts5": "^5.14.3",
+    "@editorjs/checklist": "^1.6.0",
     "@editorjs/delimiter": "^1.4.2",
     "@editorjs/editorjs": "^2.31.0",
     "@editorjs/embed": "^2.8.0",

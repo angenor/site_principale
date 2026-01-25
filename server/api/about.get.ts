@@ -1,22 +1,19 @@
 import prisma from '../utils/prisma'
+import { editorJsToHtml } from '../utils/editorjs'
 
 export default defineEventHandler(async () => {
-  const content = await prisma.aboutContent.findMany({
+  const sections = await prisma.aboutContent.findMany({
     where: {
       isActive: true
     },
     orderBy: { sortOrder: 'asc' }
   })
 
-  // Transformer en objet clé-valeur pour faciliter l'utilisation
-  const contentMap: Record<string, any> = {}
-  content.forEach(item => {
-    contentMap[item.section] = {
-      title: item.title,
-      content: item.content,
-      image: item.image
-    }
-  })
-
-  return contentMap
+  return sections.map(section => ({
+    id: section.id,
+    title: section.title,
+    content: editorJsToHtml(section.content),
+    image: section.image,
+    sortOrder: section.sortOrder
+  }))
 })
