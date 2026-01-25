@@ -102,6 +102,13 @@ import {
   faTreeCity,
   faCrop,
   faTriangleExclamation,
+  // Icônes pour l'éditeur de contenu
+  faHeading,
+  faParagraph,
+  faListUl,
+  faListCheck,
+  faQuoteLeft,
+  faVideo,
 } from '@fortawesome/free-solid-svg-icons'
 
 // Regular icons
@@ -230,6 +237,13 @@ library.add(
   faTreeCity,
   faCrop,
   faTriangleExclamation,
+  // Icônes pour l'éditeur de contenu
+  faHeading,
+  faParagraph,
+  faListUl,
+  faListCheck,
+  faQuoteLeft,
+  faVideo,
   // Regular
   farHeart,
   farStar,

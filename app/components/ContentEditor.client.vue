@@ -170,6 +170,72 @@ onMounted(async () => {
     readOnly: props.readOnly,
     minHeight: props.minHeight,
     data: initialData,
+    // Configuration i18n pour les labels français
+    i18n: {
+      messages: {
+        ui: {
+          blockTunes: {
+            toggler: {
+              'Click to tune': 'Cliquez pour configurer',
+              'or drag to move': 'ou glissez pour déplacer'
+            }
+          },
+          inlineToolbar: {
+            converter: {
+              'Convert to': 'Convertir en'
+            }
+          },
+          toolbar: {
+            toolbox: {
+              Add: 'Ajouter'
+            }
+          }
+        },
+        toolNames: {
+          Text: 'Texte',
+          Heading: 'Titre',
+          List: 'Liste',
+          Checklist: 'Liste de tâches',
+          Quote: 'Citation',
+          Delimiter: 'Séparateur',
+          Table: 'Tableau',
+          Image: 'Image',
+          Embed: 'Vidéo intégrée'
+        },
+        tools: {
+          header: {
+            'Heading 2': 'Titre 2',
+            'Heading 3': 'Titre 3',
+            'Heading 4': 'Titre 4'
+          },
+          list: {
+            Unordered: 'Liste à puces',
+            Ordered: 'Liste numérotée'
+          },
+          table: {
+            'Add row above': 'Ajouter une ligne au-dessus',
+            'Add row below': 'Ajouter une ligne en-dessous',
+            'Delete row': 'Supprimer la ligne',
+            'Add column to left': 'Ajouter une colonne à gauche',
+            'Add column to right': 'Ajouter une colonne à droite',
+            'Delete column': 'Supprimer la colonne',
+            'With headings': 'Avec en-têtes',
+            'Without headings': 'Sans en-têtes'
+          }
+        },
+        blockTunes: {
+          delete: {
+            Delete: 'Supprimer'
+          },
+          moveUp: {
+            'Move up': 'Déplacer vers le haut'
+          },
+          moveDown: {
+            'Move down': 'Déplacer vers le bas'
+          }
+        }
+      }
+    },
     tools: {
       header: {
         class: Header,
@@ -320,6 +386,59 @@ onBeforeUnmount(() => {
   }
 })
 
+// Insert block functions
+async function insertBlock(type: string, data: Record<string, unknown> = {}) {
+  if (!editor) return
+
+  try {
+    await editor.isReady
+    const currentIndex = editor.blocks.getCurrentBlockIndex()
+    const insertIndex = currentIndex >= 0 ? currentIndex + 1 : 0
+
+    await editor.blocks.insert(type, data, undefined, insertIndex, true)
+    // Focus on the new block
+    editor.caret.setToBlock(insertIndex, 'start')
+  } catch (err) {
+    console.error('Error inserting block:', err)
+  }
+}
+
+function insertHeading() {
+  insertBlock('header', { text: '', level: 2 })
+}
+
+function insertParagraph() {
+  insertBlock('paragraph', { text: '' })
+}
+
+function insertList() {
+  insertBlock('list', { style: 'unordered', items: [''] })
+}
+
+function insertChecklist() {
+  insertBlock('checklist', { items: [{ text: '', checked: false }] })
+}
+
+function insertQuote() {
+  insertBlock('quote', { text: '', caption: '' })
+}
+
+function insertTable() {
+  insertBlock('table', { withHeadings: true, content: [['', ''], ['', '']] })
+}
+
+function insertImage() {
+  insertBlock('image', {})
+}
+
+function insertDelimiter() {
+  insertBlock('delimiter', {})
+}
+
+function insertEmbed() {
+  insertBlock('embed', {})
+}
+
 // Expose save method
 const save = async (): Promise<OutputData | null> => {
   if (editor) {
@@ -332,16 +451,112 @@ defineExpose({ save })
 </script>
 
 <template>
-  <div class="content-editor">
-    <div
-      ref="editorContainer"
-      class="editor-container"
-      :style="{ minHeight: `${minHeight}px` }"
-    />
+  <div class="content-editor-wrapper">
+    <div class="content-editor">
+      <!-- Toolbar fixe -->
+      <div v-if="!readOnly" class="editor-toolbar">
+        <span class="toolbar-label">Insérer :</span>
+        <div class="toolbar-buttons">
+          <button
+            type="button"
+            class="toolbar-btn"
+            title="Titre"
+            @click="insertHeading"
+          >
+            <font-awesome-icon icon="heading" />
+            <span class="btn-label">Titre</span>
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn"
+            title="Paragraphe"
+            @click="insertParagraph"
+          >
+            <font-awesome-icon icon="paragraph" />
+            <span class="btn-label">Texte</span>
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn"
+            title="Liste"
+            @click="insertList"
+          >
+            <font-awesome-icon icon="list-ul" />
+            <span class="btn-label">Liste</span>
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn"
+            title="Liste de tâches"
+            @click="insertChecklist"
+          >
+            <font-awesome-icon icon="list-check" />
+            <span class="btn-label">Tâches</span>
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn"
+            title="Tableau"
+            @click="insertTable"
+          >
+            <font-awesome-icon icon="table" />
+            <span class="btn-label">Tableau</span>
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn"
+            title="Image"
+            @click="insertImage"
+          >
+            <font-awesome-icon icon="image" />
+            <span class="btn-label">Image</span>
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn"
+            title="Citation"
+            @click="insertQuote"
+          >
+            <font-awesome-icon icon="quote-left" />
+            <span class="btn-label">Citation</span>
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn"
+            title="Séparateur"
+            @click="insertDelimiter"
+          >
+            <font-awesome-icon icon="minus" />
+            <span class="btn-label">Séparateur</span>
+          </button>
+          <button
+            type="button"
+            class="toolbar-btn"
+            title="Vidéo YouTube/Vimeo"
+            @click="insertEmbed"
+          >
+            <font-awesome-icon icon="video" />
+            <span class="btn-label">Vidéo</span>
+          </button>
+        </div>
+      </div>
+      <!-- Éditeur -->
+      <div
+        ref="editorContainer"
+        class="editor-container"
+        :style="{ minHeight: `${minHeight}px` }"
+      />
+    </div>
   </div>
 </template>
 
 <style scoped>
+.content-editor-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 .content-editor {
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
@@ -352,6 +567,96 @@ defineExpose({ save })
 .dark .content-editor {
   border-color: #4b5563;
   background-color: #1f2937;
+}
+
+/* Toolbar styles */
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  flex-wrap: wrap;
+}
+
+.dark .editor-toolbar {
+  background-color: #1f2937;
+  border-bottom-color: #374151;
+}
+
+.toolbar-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.dark .toolbar-label {
+  color: #9ca3af;
+}
+
+.toolbar-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #374151;
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.toolbar-btn:hover {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+  color: #111827;
+}
+
+.toolbar-btn:active {
+  background-color: #e5e7eb;
+}
+
+.dark .toolbar-btn {
+  color: #d1d5db;
+  background-color: #374151;
+  border-color: #4b5563;
+}
+
+.dark .toolbar-btn:hover {
+  background-color: #4b5563;
+  border-color: #6b7280;
+  color: white;
+}
+
+.dark .toolbar-btn:active {
+  background-color: #6b7280;
+}
+
+.toolbar-btn svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.toolbar-btn .btn-label {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .toolbar-btn .btn-label {
+    display: inline;
+  }
 }
 
 .editor-container {
@@ -376,26 +681,88 @@ defineExpose({ save })
   max-width: none;
 }
 
+/* Make toolbar always visible on block hover */
+:deep(.ce-toolbar) {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+:deep(.ce-block:hover .ce-toolbar),
+:deep(.ce-block--focused .ce-toolbar),
+:deep(.codex-editor--narrow .ce-toolbar) {
+  opacity: 1;
+}
+
 :deep(.ce-toolbar__plus),
 :deep(.ce-toolbar__settings-btn) {
   color: #4b5563;
   background-color: #f3f4f6;
   border-radius: 0.25rem;
+  width: 28px;
+  height: 28px;
 }
 
-.dark :deep(.ce-toolbar__plus),
+:deep(.ce-toolbar__plus) {
+  background-color: #dcfce7;
+  color: #16a34a;
+  font-weight: bold;
+}
+
+.dark :deep(.ce-toolbar__plus) {
+  background-color: rgba(22, 163, 74, 0.2);
+  color: #4ade80;
+}
+
 .dark :deep(.ce-toolbar__settings-btn) {
   color: #9ca3af;
   background-color: #374151;
 }
 
-:deep(.ce-toolbar__plus:hover),
+:deep(.ce-toolbar__plus:hover) {
+  background-color: #bbf7d0;
+  color: #15803d;
+}
+
 :deep(.ce-toolbar__settings-btn:hover) {
   background-color: #e5e7eb;
 }
 
-.dark :deep(.ce-toolbar__plus:hover),
+.dark :deep(.ce-toolbar__plus:hover) {
+  background-color: rgba(22, 163, 74, 0.3);
+  color: #86efac;
+}
+
 .dark :deep(.ce-toolbar__settings-btn:hover) {
+  background-color: #4b5563;
+}
+
+/* Make toolbox popup more visible */
+:deep(.ce-toolbox) {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.dark :deep(.ce-toolbox) {
+  background-color: #374151;
+  border-color: #4b5563;
+}
+
+:deep(.ce-toolbox__button) {
+  color: #374151;
+  border-radius: 0.25rem;
+}
+
+.dark :deep(.ce-toolbox__button) {
+  color: #e5e7eb;
+}
+
+:deep(.ce-toolbox__button:hover) {
+  background-color: #f3f4f6;
+}
+
+.dark :deep(.ce-toolbox__button:hover) {
   background-color: #4b5563;
 }
 
