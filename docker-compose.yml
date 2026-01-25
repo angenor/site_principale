@@ -28,6 +28,8 @@ services:
       - DATABASE_URL=${DATABASE_URL:-postgresql://mom_user:mom_password@db:5432/mom_db}
       - NUXT_PUBLIC_API_BASE_URL=${NUXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
       - NUXT_PUBLIC_SITE_URL=${NUXT_PUBLIC_SITE_URL:-https://mom.transparency.mg}
+    volumes:
+      - uploads_data:/app/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -89,6 +91,8 @@ services:
 # ==========================================
 volumes:
   postgres_data:
+    driver: local
+  uploads_data:
     driver: local
 
 # ==========================================

@@ -71,6 +71,9 @@ COPY --from=builder --chown=nuxtjs:nodejs /app/package.json ./package.json
 # Copy prisma schema for potential migrations
 COPY --from=builder --chown=nuxtjs:nodejs /app/prisma ./prisma
 
+# Create uploads directory with proper permissions
+RUN mkdir -p /app/uploads && chown -R nuxtjs:nodejs /app/uploads
+
 # Set environment variables
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0

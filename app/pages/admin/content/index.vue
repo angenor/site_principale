@@ -350,8 +350,8 @@ async function deleteImage(id: string) {
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Icône (FontAwesome)</label>
-                  <input v-model="newAxis.icon" type="text" placeholder="eye, leaf, shield-alt..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Icône</label>
+                  <IconPicker v-model="newAxis.icon" />
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Couleur</label>

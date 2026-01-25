@@ -61,15 +61,38 @@ export default defineEventHandler(async (event) => {
     // Générer un nom de fichier unique
     const filename = `${randomUUID()}${ext}`
 
+    // Déterminer le répertoire uploads selon l'environnement
+    // En production (Docker), utiliser /app/uploads qui sera monté comme volume
+    // En développement, utiliser public/uploads
+    const isProduction = process.env.NODE_ENV === 'production'
+    const uploadsDir = isProduction
+      ? '/app/uploads'
+      : join(process.cwd(), 'public', 'uploads')
+
     // Créer le répertoire uploads s'il n'existe pas
-    const uploadsDir = join(process.cwd(), 'public', 'uploads')
     if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
+      try {
+        await mkdir(uploadsDir, { recursive: true })
+      } catch (mkdirError) {
+        console.error('Erreur création répertoire uploads:', mkdirError)
+        throw createError({
+          statusCode: 500,
+          statusMessage: 'Impossible de créer le répertoire de téléversement'
+        })
+      }
     }
 
     // Sauvegarder le fichier
     const filepath = join(uploadsDir, filename)
-    await writeFile(filepath, file.data)
+    try {
+      await writeFile(filepath, file.data)
+    } catch (writeError) {
+      console.error('Erreur écriture fichier:', writeError)
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Impossible d\'écrire le fichier. Vérifiez les permissions du répertoire uploads.'
+      })
+    }
 
     // Retourner l'URL publique
     const url = `/uploads/${filename}`
