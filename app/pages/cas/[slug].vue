@@ -194,9 +194,10 @@ const copyLink = async () => {
   <div v-else>
     <!-- Image de couverture -->
     <section class="relative h-[400px] lg:h-[500px]">
-      <div
-        class="absolute inset-0 bg-cover bg-center"
-        :style="{ backgroundImage: `url(${caseStudy.coverImage || '/images/placeholder-case.jpg'})` }"
+      <img
+        :src="caseStudy.coverImage || '/images/placeholder-case.jpg'"
+        :alt="caseStudy.title"
+        class="absolute inset-0 w-full h-full object-cover"
       />
       <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
@@ -316,6 +317,7 @@ const copyLink = async () => {
                   <img
                     :src="img.url"
                     :alt="img.caption || img.filename || 'Image'"
+                    loading="lazy"
                     class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                   />
                 </div>
@@ -380,6 +382,7 @@ const copyLink = async () => {
               <img
                 :src="related.coverImage || '/images/placeholder-case.jpg'"
                 :alt="related.title"
+                loading="lazy"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
             </div>

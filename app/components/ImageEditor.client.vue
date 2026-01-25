@@ -8,8 +8,8 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   aspectRatio: null,
-  maxFileSize: 2 * 1024 * 1024,
-  minQuality: 30
+  maxFileSize: 0, // Pas de limite (0 = illimité)
+  minQuality: 10
 })
 
 const emit = defineEmits<{
@@ -54,7 +54,8 @@ const estimatedSize = ref(0)
 const isProcessing = ref(false)
 
 const sizeWarning = computed(() => {
-  if (estimatedSize.value > props.maxFileSize) {
+  // Pas de limite si maxFileSize = 0
+  if (props.maxFileSize > 0 && estimatedSize.value > props.maxFileSize) {
     return `Fichier trop lourd (${formatSize(estimatedSize.value)}). Maximum: ${formatSize(props.maxFileSize)}`
   }
   return null
@@ -694,7 +695,7 @@ function setAspectRatio(ratio: number | null) {
           >
             {{ formatSize(estimatedSize) }}
           </div>
-          <div class="text-xs text-gray-500 mt-1">
+          <div v-if="maxFileSize > 0" class="text-xs text-gray-500 mt-1">
             Maximum: {{ formatSize(maxFileSize) }}
           </div>
         </div>

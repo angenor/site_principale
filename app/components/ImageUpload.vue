@@ -13,7 +13,7 @@ const props = withDefaults(defineProps<Props>(), {
   label: 'Image',
   placeholder: 'https://... ou téléverser une image',
   aspectRatio: null,
-  maxFileSize: 2 * 1024 * 1024, // 2MB
+  maxFileSize: 0, // Pas de limite (0 = illimité)
   enableEditor: true
 })
 
@@ -115,10 +115,7 @@ async function uploadFile(file: File | Blob) {
       throw new Error('Le fichier doit être une image')
     }
 
-    // Vérifier la taille (5MB max for server)
-    if (file.size > 5 * 1024 * 1024) {
-      throw new Error('L\'image ne doit pas dépasser 5MB')
-    }
+    // Pas de limite de taille - l'utilisateur peut ajuster avec l'éditeur
 
     const formData = new FormData()
     formData.append('file', file)
@@ -266,7 +263,7 @@ function toggleUrlInput() {
             ou glissez-déposez une image
           </p>
           <p class="text-xs text-gray-400 mt-2">
-            JPEG, PNG, GIF, WebP • Max 5MB
+            JPEG, PNG, GIF, WebP
           </p>
           <p v-if="enableEditor" class="text-xs text-ti-blue mt-1">
             <font-awesome-icon icon="crop" class="mr-1" />

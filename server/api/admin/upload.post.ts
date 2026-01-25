@@ -39,14 +39,7 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Vérifier la taille (max 5MB)
-    const maxSize = 5 * 1024 * 1024
-    if (file.data.length > maxSize) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Fichier trop volumineux. Taille maximum: 5MB'
-      })
-    }
+    // Pas de limite de taille - l'utilisateur peut ajuster avec l'éditeur d'image
 
     // Déterminer l'extension
     const extensions: Record<string, string> = {

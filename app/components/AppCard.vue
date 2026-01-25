@@ -83,6 +83,7 @@ const cardClasses = computed(() => {
       <img
         :src="image"
         :alt="imageAlt || title || 'Image'"
+        loading="lazy"
         class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
       />
       <!-- Overlay pour les cartes "featured" -->

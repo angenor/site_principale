@@ -135,6 +135,7 @@ function changePage(page: number) {
                 v-if="item.coverImage"
                 :src="item.coverImage"
                 :alt="item.title"
+                loading="lazy"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
               <div v-else class="w-full h-full bg-gradient-to-br from-ti-blue/20 to-ti-blue/40 flex items-center justify-center">
