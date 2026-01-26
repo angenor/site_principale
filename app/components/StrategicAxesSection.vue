@@ -38,6 +38,28 @@ const isCustomImage = (icon: string | null) => {
   if (!icon) return false
   return icon.startsWith('/') || icon.startsWith('http')
 }
+
+// Limite de caractères pour afficher le bouton "Voir plus"
+const DESCRIPTION_LIMIT = 150
+
+// État du modal
+const selectedAxe = ref<StrategicAxis | null>(null)
+const isModalOpen = ref(false)
+
+// Vérifier si le texte est tronqué
+const isTextTruncated = (description: string) => description.length > DESCRIPTION_LIMIT
+
+// Ouvrir le modal
+const openModal = (axe: StrategicAxis) => {
+  selectedAxe.value = axe
+  isModalOpen.value = true
+}
+
+// Fermer le modal
+const closeModal = () => {
+  isModalOpen.value = false
+  selectedAxe.value = null
+}
 </script>
 
 <template>
@@ -102,9 +124,19 @@ const isCustomImage = (icon: string | null) => {
           <h3 class="text-xl font-heading font-bold uppercase text-gray-900 dark:text-white mb-3">
             {{ axe.title }}
           </h3>
-          <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+          <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed line-clamp-4">
             {{ axe.description }}
           </p>
+          <!-- Bouton Voir plus -->
+          <button
+            v-if="isTextTruncated(axe.description)"
+            @click="openModal(axe)"
+            class="mt-3 text-sm font-medium cursor-pointer hover:underline transition-colors"
+            :style="{ color: getColor(axe) }"
+          >
+            Voir plus
+            <font-awesome-icon icon="arrow-right" class="ml-1 w-3 h-3" />
+          </button>
         </article>
       </div>
 
@@ -115,5 +147,99 @@ const isCustomImage = (icon: string | null) => {
         </p>
       </div>
     </div>
+
+    <!-- Modal Popup -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div
+          v-if="isModalOpen && selectedAxe"
+          class="fixed inset-0 z-50 flex items-center justify-center p-4"
+          @click.self="closeModal"
+        >
+          <!-- Overlay -->
+          <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+          <!-- Modal Content -->
+          <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-hidden">
+            <!-- Header avec couleur de l'axe -->
+            <div
+              class="p-6 text-white"
+              :style="{ backgroundColor: getColor(selectedAxe) }"
+            >
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                  <!-- Icône -->
+                  <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
+                    <img
+                      v-if="isCustomImage(selectedAxe.icon)"
+                      :src="selectedAxe.icon!"
+                      alt=""
+                      class="w-6 h-6 object-contain"
+                    />
+                    <font-awesome-icon
+                      v-else
+                      :icon="getIcon(selectedAxe)"
+                      class="w-6 h-6 text-white"
+                    />
+                  </div>
+                  <h3 class="text-xl font-heading font-bold uppercase">
+                    {{ selectedAxe.title }}
+                  </h3>
+                </div>
+                <!-- Bouton fermer -->
+                <button
+                  @click="closeModal"
+                  class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors cursor-pointer"
+                >
+                  <font-awesome-icon icon="xmark" class="w-5 h-5 text-white" />
+                </button>
+              </div>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6 overflow-y-auto max-h-[50vh]">
+              <p class="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+                {{ selectedAxe.description }}
+              </p>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+              <button
+                @click="closeModal"
+                class="w-full py-2.5 px-4 rounded-lg font-medium text-white transition-colors cursor-pointer"
+                :style="{ backgroundColor: getColor(selectedAxe) }"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </section>
 </template>
+
+<style scoped>
+/* Animation du modal */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-enter-active .relative,
+.modal-leave-active .relative {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from .relative,
+.modal-leave-to .relative {
+  transform: scale(0.95) translateY(10px);
+  opacity: 0;
+}
+</style>
