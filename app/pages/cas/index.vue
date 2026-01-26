@@ -67,9 +67,9 @@ watch(searchQuery, (newVal) => {
   }, 300)
 })
 
-// Charger les catégories et régions
-const { data: categoriesData } = await useFetch<Category[]>('/api/categories')
-const { data: regionsData } = await useFetch<Region[]>('/api/regions')
+// Charger les catégories et régions (useLazyFetch pour éviter les problèmes de cache lors de la navigation client)
+const { data: categoriesData, refresh: refreshCategories } = useLazyFetch<Category[]>('/api/categories')
+const { data: regionsData, refresh: refreshRegions } = useLazyFetch<Region[]>('/api/regions')
 
 const categories = computed(() => categoriesData.value || [])
 const regions = computed(() => regionsData.value || [])
@@ -85,9 +85,16 @@ const queryParams = computed(() => ({
 }))
 
 // Charger les études de cas avec les filtres
-const { data: casesResponse, pending, error, refresh } = await useFetch<CasesResponse>('/api/cases', {
+const { data: casesResponse, pending, error, refresh } = useLazyFetch<CasesResponse>('/api/cases', {
   query: queryParams,
   watch: [queryParams]
+})
+
+// Forcer le rafraîchissement des données lors de la navigation client
+onMounted(() => {
+  refreshCategories()
+  refreshRegions()
+  refresh()
 })
 
 const caseStudies = computed(() => casesResponse.value?.data || [])
@@ -131,6 +138,26 @@ const getDisplayDate = (cs: CaseStudy) => cs.eventDate || cs.publishedAt || unde
         </div>
       </div>
     </section>
+
+    <!-- Fil d'Ariane -->
+    <nav class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <ol class="flex items-center space-x-2 text-sm">
+          <li>
+            <NuxtLink to="/" class="text-gray-500 dark:text-gray-400 hover:text-ti-blue dark:hover:text-ti-blue-400 transition-colors">
+              <font-awesome-icon icon="home" class="w-4 h-4" />
+              <span class="sr-only">Accueil</span>
+            </NuxtLink>
+          </li>
+          <li class="text-gray-400 dark:text-gray-500">
+            <font-awesome-icon icon="chevron-right" class="w-3 h-3" />
+          </li>
+          <li class="text-gray-900 dark:text-white font-medium">
+            Études de cas
+          </li>
+        </ol>
+      </div>
+    </nav>
 
     <!-- Filtres et résultats -->
     <section class="py-12 lg:py-16 bg-white dark:bg-gray-900">

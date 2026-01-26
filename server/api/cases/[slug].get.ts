@@ -22,7 +22,11 @@ export default defineEventHandler(async (event) => {
           category: true
         }
       },
-      keywords: true,
+      keywords: {
+        include: {
+          keyword: true
+        }
+      },
       media: {
         include: {
           media: true
@@ -86,7 +90,13 @@ export default defineEventHandler(async (event) => {
   return {
     ...caseStudy,
     categories: caseStudy.categories.map(c => c.category),
-    keywords: caseStudy.keywords.map(k => k.keyword),
+    keywords: caseStudy.keywords.map(k => ({
+      id: k.keyword.id,
+      name: k.keyword.name,
+      slug: k.keyword.slug,
+      icon: k.keyword.icon,
+      color: k.keyword.color
+    })),
     media: caseStudy.media.map(m => ({
       ...m.media,
       caption: m.caption

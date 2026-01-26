@@ -32,6 +32,14 @@ interface RelatedCase {
   coverImage: string | null
 }
 
+interface Keyword {
+  id: string
+  name: string
+  slug: string
+  icon: string | null
+  color: string | null
+}
+
 interface CaseStudyDetail {
   id: number
   slug: string
@@ -46,7 +54,7 @@ interface CaseStudyDetail {
   viewCount: number
   region: Region | null
   categories: Category[]
-  keywords: string[]
+  keywords: Keyword[]
   media: Media[]
   author: string
   relatedCases: RelatedCase[]
@@ -89,9 +97,6 @@ watchEffect(() => {
     ])
   }
 })
-
-// Obtenir la catégorie principale
-const primaryCategory = computed(() => caseStudy.value?.categories[0] || null)
 
 // Convertir le contenu Editor.js en HTML
 const contentHtml = computed(() => {
@@ -206,15 +211,30 @@ const copyLink = async () => {
       <!-- Contenu superposé -->
       <div class="absolute bottom-0 left-0 right-0 pb-12 lg:pb-16">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <!-- Badge catégorie -->
-          <span
-            v-if="primaryCategory"
-            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold text-white mb-4"
-            :style="{ backgroundColor: primaryCategory.color }"
-          >
-            <font-awesome-icon v-if="primaryCategory.icon" :icon="primaryCategory.icon" class="w-3 h-3 mr-2" />
-            {{ primaryCategory.name }}
-          </span>
+          <!-- Badges catégories -->
+          <div v-if="caseStudy.categories.length > 0" class="flex flex-wrap gap-2 mb-4">
+            <span
+              v-for="category in caseStudy.categories"
+              :key="category.id"
+              class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold text-white"
+              :style="{ backgroundColor: category.color || '#6b7280' }"
+            >
+              <!-- Icône uploadée (image) -->
+              <img
+                v-if="category.icon && (category.icon.startsWith('/') || category.icon.startsWith('http'))"
+                :src="category.icon"
+                alt=""
+                class="w-4 h-4 object-contain mr-2"
+              />
+              <!-- Icône FontAwesome -->
+              <font-awesome-icon
+                v-else-if="category.icon"
+                :icon="category.icon"
+                class="w-3 h-3 mr-2"
+              />
+              {{ category.name }}
+            </span>
+          </div>
 
           <!-- Titre -->
           <h1 class="text-3xl lg:text-5xl font-heading font-bold uppercase text-white mb-3">
@@ -247,6 +267,34 @@ const copyLink = async () => {
       </div>
     </section>
 
+    <!-- Fil d'Ariane -->
+    <nav class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <ol class="flex items-center space-x-2 text-sm">
+          <li>
+            <NuxtLink to="/" class="text-gray-500 dark:text-gray-400 hover:text-ti-blue dark:hover:text-ti-blue-400 transition-colors">
+              <font-awesome-icon icon="home" class="w-4 h-4" />
+              <span class="sr-only">Accueil</span>
+            </NuxtLink>
+          </li>
+          <li class="text-gray-400 dark:text-gray-500">
+            <font-awesome-icon icon="chevron-right" class="w-3 h-3" />
+          </li>
+          <li>
+            <NuxtLink to="/cas" class="text-gray-500 dark:text-gray-400 hover:text-ti-blue dark:hover:text-ti-blue-400 transition-colors">
+              Études de cas
+            </NuxtLink>
+          </li>
+          <li class="text-gray-400 dark:text-gray-500">
+            <font-awesome-icon icon="chevron-right" class="w-3 h-3" />
+          </li>
+          <li class="text-gray-900 dark:text-white font-medium truncate max-w-xs">
+            {{ caseStudy.title }}
+          </li>
+        </ol>
+      </div>
+    </nav>
+
     <!-- Contenu principal -->
     <section class="py-12 lg:py-16 bg-white dark:bg-gray-900">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -273,10 +321,27 @@ const copyLink = async () => {
               <div class="flex flex-wrap gap-2">
                 <span
                   v-for="keyword in caseStudy.keywords"
-                  :key="keyword"
-                  class="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm rounded-full"
+                  :key="keyword.id"
+                  class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium"
+                  :style="{
+                    backgroundColor: keyword.color ? `${keyword.color}15` : '#f3f4f6',
+                    color: keyword.color || '#374151'
+                  }"
                 >
-                  {{ keyword }}
+                  <!-- Icône uploadée (image) -->
+                  <img
+                    v-if="keyword.icon && (keyword.icon.startsWith('/') || keyword.icon.startsWith('http'))"
+                    :src="keyword.icon"
+                    alt=""
+                    class="w-4 h-4 object-contain"
+                  />
+                  <!-- Icône FontAwesome -->
+                  <font-awesome-icon
+                    v-else-if="keyword.icon"
+                    :icon="keyword.icon"
+                    class="w-3 h-3"
+                  />
+                  {{ keyword.name }}
                 </span>
               </div>
             </div>
