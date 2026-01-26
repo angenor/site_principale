@@ -55,6 +55,8 @@ export default defineEventHandler(async (event) => {
       publishedAt: item.publishedAt,
       viewCount: item.viewCount,
       createdAt: item.createdAt,
+      label: item.label,
+      labelExpiresAt: item.labelExpiresAt,
       author: item.author ? `${item.author.firstName} ${item.author.lastName}` : null
     })),
     pagination: {

@@ -25,6 +25,8 @@ interface NewsItem {
   coverImage: string | null
   externalUrl: string | null
   isPublished: boolean
+  label: 'STANDARD' | 'TRENDING' | 'FEATURED'
+  labelExpiresAt: string | null
   attachments?: Attachment[]
 }
 
@@ -39,7 +41,9 @@ const form = ref({
   content: '' as string | OutputData,
   coverImage: '',
   externalUrl: '',
-  isPublished: false
+  isPublished: false,
+  label: 'STANDARD' as 'STANDARD' | 'TRENDING' | 'FEATURED',
+  labelExpiresAt: '' as string
 })
 
 // Fichiers annexes
@@ -71,13 +75,22 @@ if (!isNew) {
     }
 
     if (newsData.value) {
+      // Formater la date d'expiration pour l'input datetime-local
+      let formattedExpiry = ''
+      if (newsData.value.labelExpiresAt) {
+        const date = new Date(newsData.value.labelExpiresAt)
+        formattedExpiry = date.toISOString().slice(0, 16)
+      }
+
       form.value = {
         title: newsData.value.title,
         summary: newsData.value.summary || '',
         content: newsData.value.content || '',
         coverImage: newsData.value.coverImage || '',
         externalUrl: newsData.value.externalUrl || '',
-        isPublished: newsData.value.isPublished
+        isPublished: newsData.value.isPublished,
+        label: newsData.value.label || 'STANDARD',
+        labelExpiresAt: formattedExpiry
       }
       // Charger les fichiers annexes
       if (newsData.value.attachments) {
@@ -139,7 +152,9 @@ async function handleSubmit() {
       content: contentToSave,
       coverImage: form.value.coverImage || null,
       externalUrl: form.value.externalUrl || null,
-      isPublished: form.value.isPublished
+      isPublished: form.value.isPublished,
+      label: form.value.label,
+      labelExpiresAt: form.value.labelExpiresAt || null
     }
 
     if (isNew) {
@@ -375,6 +390,75 @@ async function togglePublish() {
                 type="url"
                 class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 placeholder="https://..."
+              />
+            </div>
+          </div>
+
+          <!-- Étiquette -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              <font-awesome-icon icon="tag" class="mr-2 text-green-600" />
+              Étiquette
+            </h3>
+
+            <div class="space-y-2 mb-4">
+              <label
+                class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors"
+                :class="form.label === 'STANDARD' ? 'border-green-500 bg-green-50 dark:bg-green-900/30' : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'"
+              >
+                <input
+                  type="radio"
+                  v-model="form.label"
+                  value="STANDARD"
+                  class="text-green-600 focus:ring-green-500"
+                />
+                <span class="text-gray-900 dark:text-white">Standard (Récent)</span>
+              </label>
+
+              <label
+                class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors"
+                :class="form.label === 'TRENDING' ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30' : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'"
+              >
+                <input
+                  type="radio"
+                  v-model="form.label"
+                  value="TRENDING"
+                  class="text-yellow-600 focus:ring-yellow-500"
+                />
+                <span class="flex items-center gap-2">
+                  <span class="bg-yellow-500 text-white text-xs px-2 py-0.5 rounded font-medium">À la une</span>
+                </span>
+              </label>
+
+              <label
+                class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors"
+                :class="form.label === 'FEATURED' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30' : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'"
+              >
+                <input
+                  type="radio"
+                  v-model="form.label"
+                  value="FEATURED"
+                  class="text-indigo-600 focus:ring-indigo-500"
+                />
+                <span class="flex items-center gap-2">
+                  <span class="bg-indigo-500 text-white text-xs px-2 py-0.5 rounded font-medium">En vedette</span>
+                </span>
+              </label>
+            </div>
+
+            <!-- Date d'expiration (visible si TRENDING ou FEATURED) -->
+            <div v-if="form.label !== 'STANDARD'" class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <label for="labelExpiresAt" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Date d'expiration
+              </label>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                Après cette date, l'article sera automatiquement classé dans "Récent"
+              </p>
+              <input
+                id="labelExpiresAt"
+                v-model="form.labelExpiresAt"
+                type="datetime-local"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
               />
             </div>
           </div>

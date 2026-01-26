@@ -42,6 +42,8 @@ export default defineEventHandler(async (event) => {
     externalUrl: news.externalUrl,
     isPublished: news.isPublished,
     publishedAt: news.publishedAt,
+    label: news.label,
+    labelExpiresAt: news.labelExpiresAt,
     viewCount: news.viewCount,
     createdAt: news.createdAt,
     updatedAt: news.updatedAt,

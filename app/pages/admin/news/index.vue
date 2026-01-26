@@ -16,6 +16,8 @@ interface NewsItem {
   viewCount: number
   createdAt: string
   author: string | null
+  label: 'STANDARD' | 'TRENDING' | 'FEATURED'
+  labelExpiresAt: string | null
 }
 
 interface NewsResponse {
@@ -78,6 +80,20 @@ function formatDate(dateString: string | null) {
     month: 'short',
     year: 'numeric'
   })
+}
+
+function isLabelActive(item: NewsItem): boolean {
+  if (item.label === 'STANDARD') return false
+  if (!item.labelExpiresAt) return true
+  return new Date(item.labelExpiresAt) > new Date()
+}
+
+function isExpiringSoon(dateString: string | null): boolean {
+  if (!dateString) return false
+  const expiry = new Date(dateString)
+  const now = new Date()
+  const hoursUntilExpiry = (expiry.getTime() - now.getTime()) / (1000 * 60 * 60)
+  return hoursUntilExpiry > 0 && hoursUntilExpiry < 24
 }
 </script>
 
@@ -185,9 +201,31 @@ function formatDate(dateString: string | null) {
                     <font-awesome-icon icon="newspaper" class="text-gray-400 dark:text-gray-500" />
                   </div>
                   <div>
-                    <p class="font-medium text-gray-900 dark:text-white line-clamp-1">
-                      {{ item.title }}
-                    </p>
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <p class="font-medium text-gray-900 dark:text-white line-clamp-1">
+                        {{ item.title }}
+                      </p>
+                      <span
+                        v-if="item.label === 'TRENDING' && isLabelActive(item)"
+                        class="bg-yellow-500 text-white text-xs px-2 py-0.5 rounded font-medium whitespace-nowrap"
+                      >
+                        À la une
+                      </span>
+                      <span
+                        v-else-if="item.label === 'FEATURED' && isLabelActive(item)"
+                        class="bg-indigo-500 text-white text-xs px-2 py-0.5 rounded font-medium whitespace-nowrap"
+                      >
+                        En vedette
+                      </span>
+                      <span
+                        v-if="item.label !== 'STANDARD' && isExpiringSoon(item.labelExpiresAt)"
+                        class="text-orange-500 text-xs whitespace-nowrap"
+                        title="L'étiquette expire dans moins de 24h"
+                      >
+                        <font-awesome-icon icon="clock" class="mr-1" />
+                        Expire bientôt
+                      </span>
+                    </div>
                     <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
                       {{ item.summary }}
                     </p>

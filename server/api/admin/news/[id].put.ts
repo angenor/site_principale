@@ -8,6 +8,8 @@ interface UpdateNewsBody {
   coverImage?: string
   externalUrl?: string
   isPublished?: boolean
+  label?: 'STANDARD' | 'TRENDING' | 'FEATURED'
+  labelExpiresAt?: string | null
 }
 
 export default defineEventHandler(async (event) => {
@@ -81,6 +83,14 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  if (body.label !== undefined) {
+    updateData.label = body.label
+  }
+
+  if (body.labelExpiresAt !== undefined) {
+    updateData.labelExpiresAt = body.labelExpiresAt ? new Date(body.labelExpiresAt) : null
+  }
+
   const updatedNews = await prisma.news.update({
     where: { id },
     data: updateData,
@@ -103,6 +113,8 @@ export default defineEventHandler(async (event) => {
       externalUrl: updatedNews.externalUrl,
       isPublished: updatedNews.isPublished,
       publishedAt: updatedNews.publishedAt,
+      label: updatedNews.label,
+      labelExpiresAt: updatedNews.labelExpiresAt,
       createdAt: updatedNews.createdAt,
       updatedAt: updatedNews.updatedAt,
       author: updatedNews.author ? `${updatedNews.author.firstName} ${updatedNews.author.lastName}` : null

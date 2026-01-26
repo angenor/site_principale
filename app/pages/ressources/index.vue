@@ -70,14 +70,6 @@ function formatDate(date: string) {
   })
 }
 
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'Ko', 'Mo', 'Go']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
-}
-
 function getFileIcon(mimeType: string): string {
   if (mimeType.includes('pdf')) return 'file-pdf'
   if (mimeType.includes('word') || mimeType.includes('document')) return 'file-word'
@@ -116,6 +108,11 @@ async function trackAndDownload(resource: ResourceItem) {
 
 function viewResource(resource: ResourceItem) {
   window.open(resource.fileUrl, '_blank')
+}
+
+function filterByCategory(categoryId: string) {
+  selectedCategory.value = categoryId
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 </script>
 
@@ -196,16 +193,9 @@ function viewResource(resource: ResourceItem) {
     <section class="py-12">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Loading -->
-        <div v-if="status === 'pending'" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div v-for="i in 6" :key="i" class="animate-pulse bg-white dark:bg-gray-800 rounded-xl p-6">
-            <div class="flex items-start gap-4">
-              <div class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg" />
-              <div class="flex-1 space-y-3">
-                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
-                <div class="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
-                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
-              </div>
-            </div>
+        <div v-if="status === 'pending'" class="grid md:grid-cols-2 xl:grid-cols-3 gap-x-20 gap-y-10">
+          <div v-for="i in 6" :key="i" class="animate-pulse">
+            <div class="bg-gray-200 dark:bg-gray-700 h-64 rounded-lg" />
           </div>
         </div>
 
@@ -220,84 +210,61 @@ function viewResource(resource: ResourceItem) {
           </p>
         </div>
 
-        <!-- Grille de ressources -->
-        <div v-else class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <article
-            v-for="item in resources"
-            :key="item.id"
-            class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300"
-          >
-            <!-- Image -->
-            <div class="relative h-40 overflow-hidden">
+        <!-- Grille de ressources avec design card -->
+        <div v-else class="grid sm:grid-cols-2 lg:flex lg:flex-wrap items-center justify-center gap-16 lg:gap-28 xl:gap-44">
+          <article v-for="item in resources" :key="item.id">
+            <div class="relative">
+              <!-- Image -->
               <img
                 v-if="item.coverImage"
                 :src="thumb(item.coverImage)"
                 :alt="item.title"
                 loading="lazy"
-                class="w-full h-full object-cover"
+                class="w-full aspect-[3/2] lg:aspect-[3/4] h-44 lg:h-[32rem] object-cover shadow-lg"
               />
-              <div v-else class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center">
-                <font-awesome-icon :icon="getFileIcon(item.mimeType)" class="w-16 h-16 text-gray-400 dark:text-gray-500" />
+              <div
+                v-else
+                class="w-full aspect-[3/2] lg:aspect-[3/4] h-44 lg:h-[32rem] bg-gradient-to-br from-ti-blue to-ti-blue-700 shadow-lg flex items-center justify-center"
+              >
+                <font-awesome-icon :icon="getFileIcon(item.mimeType)" class="w-16 h-16 text-white/50" />
               </div>
-              <!-- Category badge -->
-              <div v-if="item.category" class="absolute top-3 left-3">
-                <span
-                  class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-white shadow"
-                  :style="{ backgroundColor: item.category.color || '#3B82F6' }"
+
+              <!-- Info Card avec design chevauchant -->
+              <div class="lg:rounded-l-[30px] lg:rounded-t-[30px] bg-white dark:bg-gray-800 lg:absolute bottom-8 -right-14 lg:w-[19rem] px-8 pt-6 pb-8 lg:h-96 shadow flex flex-col">
+                <span class="inline-block text-sm text-gray-500 dark:text-gray-400">
+                  {{ formatDate(item.publishedAt) }}
+                </span>
+                <h2 class="text-2xl font-bold leading-tight mt-1.5 mb-2.5 text-gray-900 dark:text-white line-clamp-2">
+                  {{ item.title }}
+                </h2>
+                <button
+                  v-if="item.category"
+                  @click="filterByCategory(item.category.id)"
+                  class="inline-block text-blue-400 text-sm capitalize hover:underline cursor-pointer"
                 >
-                  <font-awesome-icon
-                    v-if="item.category.icon && !item.category.icon.startsWith('/')"
-                    :icon="item.category.icon"
-                    class="text-xs"
-                  />
                   {{ item.category.name }}
-                </span>
-              </div>
-              <!-- File type badge -->
-              <div class="absolute top-3 right-3">
-                <span class="bg-white/90 dark:bg-gray-800/90 px-2 py-1 rounded text-xs font-medium text-gray-600 dark:text-gray-300 uppercase">
-                  {{ item.mimeType.split('/').pop()?.split('.').pop() }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Contenu -->
-            <div class="p-5">
-              <h2 class="text-lg font-bold text-gray-900 dark:text-white line-clamp-2 mb-2">
-                {{ item.title }}
-              </h2>
-              <p v-if="item.description" class="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 mb-3">
-                {{ item.description }}
-              </p>
-
-              <!-- Meta -->
-              <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mb-4">
-                <span class="flex items-center gap-1">
-                  <font-awesome-icon icon="file" />
-                  {{ formatFileSize(item.fileSize) }}
-                </span>
-                <span class="flex items-center gap-1">
-                  <font-awesome-icon icon="download" />
-                  {{ item.downloadCount }} téléchargement(s)
-                </span>
-              </div>
-
-              <!-- Actions -->
-              <div class="flex gap-2">
-                <button
-                  @click="viewResource(item)"
-                  class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer font-medium text-sm"
-                >
-                  <font-awesome-icon icon="eye" />
-                  Voir
                 </button>
-                <button
-                  @click="trackAndDownload(item)"
-                  class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-ti-blue text-white rounded-lg hover:bg-ti-blue-700 transition-colors cursor-pointer font-medium text-sm"
-                >
-                  <font-awesome-icon icon="download" />
-                  Télécharger
-                </button>
+                <p class="text-gray-800 dark:text-gray-300 mt-7 leading-relaxed line-clamp-4 flex-1">
+                  {{ item.description || 'Cliquez pour consulter cette ressource.' }}
+                </p>
+                <div class="flex justify-end items-center gap-4 mt-auto">
+                  <button
+                    @click="viewResource(item)"
+                    class="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                    title="Voir le document"
+                  >
+                    <font-awesome-icon icon="eye" class="text-lg" />
+                  </button>
+                  <a
+                    :href="item.fileUrl"
+                    target="_blank"
+                    @click.prevent="trackAndDownload(item)"
+                    class="flex items-center uppercase text-blue-800 dark:text-blue-400 font-semibold text-sm hover:underline cursor-pointer"
+                  >
+                    <span class="mr-4 block w-10 h-0.5 bg-blue-800 dark:bg-blue-400" />
+                    télécharger
+                  </a>
+                </div>
               </div>
             </div>
           </article>

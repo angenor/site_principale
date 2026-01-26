@@ -8,6 +8,8 @@ interface CreateNewsBody {
   coverImage?: string
   externalUrl?: string
   isPublished?: boolean
+  label?: 'STANDARD' | 'TRENDING' | 'FEATURED'
+  labelExpiresAt?: string | null
 }
 
 function generateSlug(title: string): string {
@@ -66,7 +68,9 @@ export default defineEventHandler(async (event) => {
       externalUrl: body.externalUrl || null,
       authorId: auth.userId,
       isPublished: body.isPublished || false,
-      publishedAt: body.isPublished ? new Date() : null
+      publishedAt: body.isPublished ? new Date() : null,
+      label: body.label || 'STANDARD',
+      labelExpiresAt: body.labelExpiresAt ? new Date(body.labelExpiresAt) : null
     },
     include: {
       author: {
