@@ -11,7 +11,7 @@ interface UpdateCaseBody {
   location?: string
   regionId?: string | null
   categoryIds?: string[]
-  keywords?: string[]
+  keywordIds?: string[]
   isPublished?: boolean
 }
 
@@ -128,18 +128,18 @@ export default defineEventHandler(async (event) => {
     }
 
     // Update keywords if provided
-    if (body.keywords !== undefined) {
+    if (body.keywordIds !== undefined) {
       // Delete existing keywords
       await tx.caseStudyKeyword.deleteMany({
         where: { caseStudyId: id }
       })
 
       // Create new keywords
-      if (body.keywords.length > 0) {
+      if (body.keywordIds.length > 0) {
         await tx.caseStudyKeyword.createMany({
-          data: body.keywords.map(keyword => ({
+          data: body.keywordIds.map(keywordId => ({
             caseStudyId: id,
-            keyword: keyword.trim()
+            keywordId
           }))
         })
       }
@@ -164,7 +164,11 @@ export default defineEventHandler(async (event) => {
           }
         },
         keywords: {
-          select: { keyword: true }
+          include: {
+            keyword: {
+              select: { id: true, name: true, color: true, icon: true }
+            }
+          }
         }
       }
     })
@@ -194,7 +198,13 @@ export default defineEventHandler(async (event) => {
         name: c.category.name,
         color: c.category.color
       })),
-      keywords: updatedCase.keywords.map(k => k.keyword)
+      keywords: updatedCase.keywords.map(k => ({
+        id: k.keyword.id,
+        name: k.keyword.name,
+        color: k.keyword.color,
+        icon: k.keyword.icon
+      })),
+      keywordIds: updatedCase.keywords.map(k => k.keyword.id)
     }
   }
 })

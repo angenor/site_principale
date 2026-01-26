@@ -20,6 +20,14 @@ interface Region {
   name: string
 }
 
+interface Keyword {
+  id: string
+  name: string
+  slug: string
+  color: string | null
+  icon: string | null
+}
+
 interface CaseStudy {
   id: string
   slug: string
@@ -33,7 +41,7 @@ interface CaseStudy {
   isPublished: boolean
   regionId: string | null
   categoryIds: string[]
-  keywords: string[]
+  keywordIds: string[]
 }
 
 const route = useRoute()
@@ -52,19 +60,27 @@ const form = ref({
   location: '',
   regionId: '',
   categoryIds: [] as string[],
-  keywords: [] as string[],
+  keywordIds: [] as string[],
   isPublished: false
 })
 
-const newKeyword = ref('')
 const isLoading = ref(false)
 const isSaving = ref(false)
 const error = ref('')
 const success = ref('')
+const keywordSearch = ref('')
 
-// Fetch categories and regions
-const { data: categories } = await useFetch<Category[]>('/api/categories')
-const { data: regions } = await useFetch<Region[]>('/api/regions')
+// Fetch categories, regions, and keywords (use useLazyFetch to avoid caching issues on client navigation)
+const { data: categories, pending: categoriesPending, refresh: refreshCategories } = useLazyFetch<Category[]>('/api/categories')
+const { data: regions, pending: regionsPending, refresh: refreshRegions } = useLazyFetch<Region[]>('/api/regions')
+const { data: keywords, pending: keywordsPending, refresh: refreshKeywords } = useLazyFetch<Keyword[]>('/api/keywords')
+
+// Ensure data is loaded on client-side navigation
+onMounted(() => {
+  refreshCategories()
+  refreshRegions()
+  refreshKeywords()
+})
 
 // Fetch existing case if editing
 if (!isNew) {
@@ -82,7 +98,7 @@ if (!isNew) {
         location: caseData.value.location || '',
         regionId: caseData.value.regionId || '',
         categoryIds: caseData.value.categoryIds || [],
-        keywords: caseData.value.keywords || [],
+        keywordIds: caseData.value.keywordIds || [],
         isPublished: caseData.value.isPublished
       }
     }
@@ -103,27 +119,26 @@ function toggleCategory(categoryId: string) {
   }
 }
 
-// Add keyword
-function addKeyword() {
-  const keyword = newKeyword.value.trim()
-  if (keyword && !form.value.keywords.includes(keyword)) {
-    form.value.keywords.push(keyword)
-    newKeyword.value = ''
+// Toggle keyword selection
+function toggleKeyword(keywordId: string) {
+  const index = form.value.keywordIds.indexOf(keywordId)
+  if (index === -1) {
+    form.value.keywordIds.push(keywordId)
+  } else {
+    form.value.keywordIds.splice(index, 1)
   }
 }
 
-// Remove keyword
-function removeKeyword(keyword: string) {
-  form.value.keywords = form.value.keywords.filter(k => k !== keyword)
-}
-
-// Handle keyword input keydown
-function handleKeywordKeydown(e: KeyboardEvent) {
-  if (e.key === 'Enter') {
-    e.preventDefault()
-    addKeyword()
-  }
-}
+// Filter keywords based on search
+const filteredKeywords = computed(() => {
+  if (!keywords.value) return []
+  const query = keywordSearch.value.toLowerCase().trim()
+  if (!query) return keywords.value
+  return keywords.value.filter(k =>
+    k.name.toLowerCase().includes(query) ||
+    k.slug.toLowerCase().includes(query)
+  )
+})
 
 // Check if content has blocks
 function hasContent(content: string | OutputData): boolean {
@@ -176,7 +191,7 @@ async function handleSubmit() {
       location: form.value.location || null,
       regionId: form.value.regionId || null,
       categoryIds: form.value.categoryIds,
-      keywords: form.value.keywords,
+      keywordIds: form.value.keywordIds,
       isPublished: form.value.isPublished
     }
 
@@ -375,44 +390,104 @@ async function togglePublish() {
 
           <!-- Keywords -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Mots-clés</h3>
-
-            <div class="flex gap-2 mb-3">
-              <input
-                v-model="newKeyword"
-                type="text"
-                @keydown="handleKeywordKeydown"
-                class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-ti-blue focus:border-ti-blue"
-                placeholder="Ajouter un mot-clé"
-              />
-              <button
-                type="button"
-                @click="addKeyword"
-                class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer"
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Mots-clés</h3>
+              <NuxtLink
+                to="/admin/keywords"
+                class="text-xs text-ti-blue hover:underline"
               >
-                <font-awesome-icon icon="plus" />
-              </button>
+                <font-awesome-icon icon="cog" class="mr-1" />
+                Gérer
+              </NuxtLink>
+            </div>
+
+            <!-- Search bar -->
+            <div v-if="keywords?.length && keywords.length > 5" class="relative mb-3">
+              <font-awesome-icon
+                icon="search"
+                class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-3 h-3"
+              />
+              <input
+                v-model="keywordSearch"
+                type="text"
+                placeholder="Rechercher un mot-clé..."
+                class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-ti-blue focus:border-ti-blue"
+              />
             </div>
 
             <div class="flex flex-wrap gap-2">
-              <span
-                v-for="keyword in form.keywords"
-                :key="keyword"
-                class="inline-flex items-center gap-1 px-3 py-1 bg-ti-blue/10 text-ti-blue rounded-full text-sm"
+              <label
+                v-for="keyword in filteredKeywords"
+                :key="keyword.id"
+                class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors"
+                :class="form.keywordIds.includes(keyword.id)
+                  ? 'border-ti-blue bg-ti-blue/10'
+                  : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'"
               >
-                {{ keyword }}
-                <button
-                  type="button"
-                  @click="removeKeyword(keyword)"
-                  class="hover:text-red-500 transition-colors cursor-pointer"
+                <input
+                  type="checkbox"
+                  :checked="form.keywordIds.includes(keyword.id)"
+                  @change="toggleKeyword(keyword.id)"
+                  class="sr-only"
+                />
+                <span
+                  v-if="keyword.icon && (keyword.icon.startsWith('/') || keyword.icon.startsWith('http'))"
+                  class="w-5 h-5 rounded flex items-center justify-center overflow-hidden"
+                  :style="{ backgroundColor: keyword.color ? `${keyword.color}20` : '#e5e7eb' }"
                 >
-                  <font-awesome-icon icon="xmark" class="w-3 h-3" />
-                </button>
-              </span>
-              <span v-if="form.keywords.length === 0" class="text-gray-500 dark:text-gray-400 text-sm">
-                Aucun mot-clé ajouté
-              </span>
+                  <img :src="keyword.icon" alt="" class="w-4 h-4 object-contain" />
+                </span>
+                <span
+                  v-else-if="keyword.icon"
+                  class="w-5 h-5 rounded flex items-center justify-center text-xs"
+                  :style="{ backgroundColor: keyword.color ? `${keyword.color}20` : '#e5e7eb', color: keyword.color || '#374151' }"
+                >
+                  <font-awesome-icon :icon="keyword.icon" />
+                </span>
+                <span
+                  v-else
+                  class="w-5 h-5 rounded flex items-center justify-center text-xs bg-gray-100 dark:bg-gray-700"
+                >
+                  <font-awesome-icon icon="hashtag" class="text-gray-400" />
+                </span>
+                <span class="text-sm text-gray-700 dark:text-gray-300">{{ keyword.name }}</span>
+                <font-awesome-icon
+                  v-if="form.keywordIds.includes(keyword.id)"
+                  icon="check"
+                  class="w-3 h-3 text-ti-blue"
+                />
+              </label>
+              <!-- No results from search -->
+              <div v-if="keywords?.length && !filteredKeywords.length" class="w-full text-center py-3">
+                <p class="text-gray-500 dark:text-gray-400 text-sm">
+                  Aucun mot-clé trouvé pour "{{ keywordSearch }}"
+                </p>
+              </div>
+              <!-- Loading keywords -->
+              <div v-else-if="keywordsPending" class="w-full text-center py-3">
+                <font-awesome-icon icon="spinner" class="animate-spin text-gray-400" />
+                <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Chargement...</p>
+              </div>
+              <!-- No keywords at all -->
+              <div v-else-if="!keywords?.length" class="w-full text-center py-3">
+                <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">
+                  <font-awesome-icon icon="exclamation-triangle" class="mr-1 text-amber-500" />
+                  Aucun mot-clé disponible
+                </p>
+                <NuxtLink
+                  to="/admin/keywords"
+                  class="inline-flex items-center gap-1 text-sm text-ti-blue hover:underline"
+                >
+                  <font-awesome-icon icon="plus" />
+                  Créer un mot-clé
+                </NuxtLink>
+              </div>
             </div>
+
+            <!-- Selected count -->
+            <p v-if="form.keywordIds.length > 0" class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+              {{ form.keywordIds.length }} mot(s)-clé(s) sélectionné(s)
+            </p>
           </div>
         </div>
 
@@ -452,7 +527,11 @@ async function togglePublish() {
                     {{ region.name }}
                   </option>
                 </select>
-                <p v-if="!regions?.length" class="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                <p v-if="regionsPending" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <font-awesome-icon icon="spinner" class="animate-spin mr-1" />
+                  Chargement des régions...
+                </p>
+                <p v-else-if="!regions?.length" class="text-xs text-amber-600 dark:text-amber-400 mt-1">
                   <font-awesome-icon icon="exclamation-triangle" class="mr-1" />
                   Aucune région disponible.
                   <NuxtLink to="/admin/regions" class="underline">Créer une région</NuxtLink>
@@ -520,7 +599,11 @@ async function togglePublish() {
                 </span>
                 <span class="text-gray-700 dark:text-gray-300">{{ category.name }}</span>
               </label>
-              <div v-if="!categories?.length" class="text-center py-3">
+              <div v-if="categoriesPending" class="text-center py-3">
+                <font-awesome-icon icon="spinner" class="animate-spin text-gray-400" />
+                <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Chargement...</p>
+              </div>
+              <div v-else-if="!categories?.length" class="text-center py-3">
                 <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">
                   <font-awesome-icon icon="exclamation-triangle" class="mr-1 text-amber-500" />
                   Aucune catégorie disponible

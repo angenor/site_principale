@@ -11,7 +11,7 @@ interface CreateCaseBody {
   location?: string
   regionId?: string
   categoryIds?: string[]
-  keywords?: string[]
+  keywordIds?: string[]
   isPublished?: boolean
 }
 
@@ -84,10 +84,10 @@ export default defineEventHandler(async (event) => {
           categoryId
         }))
       } : undefined,
-      // Create keywords
-      keywords: body.keywords?.length ? {
-        create: body.keywords.map(keyword => ({
-          keyword: keyword.trim()
+      // Create keywords relations
+      keywords: body.keywordIds?.length ? {
+        create: body.keywordIds.map(keywordId => ({
+          keywordId
         }))
       } : undefined
     },
@@ -106,7 +106,11 @@ export default defineEventHandler(async (event) => {
         }
       },
       keywords: {
-        select: { keyword: true }
+        include: {
+          keyword: {
+            select: { id: true, name: true, color: true, icon: true }
+          }
+        }
       }
     }
   })
@@ -128,7 +132,12 @@ export default defineEventHandler(async (event) => {
         name: c.category.name,
         color: c.category.color
       })),
-      keywords: caseStudy.keywords.map(k => k.keyword)
+      keywords: caseStudy.keywords.map(k => ({
+        id: k.keyword.id,
+        name: k.keyword.name,
+        color: k.keyword.color,
+        icon: k.keyword.icon
+      }))
     }
   }
 })

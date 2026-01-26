@@ -30,7 +30,11 @@ export default defineEventHandler(async (event) => {
         }
       },
       keywords: {
-        select: { id: true, keyword: true }
+        include: {
+          keyword: {
+            select: { id: true, name: true, slug: true, color: true, icon: true }
+          }
+        }
       },
       media: {
         include: {
@@ -74,6 +78,7 @@ export default defineEventHandler(async (event) => {
     categories: caseStudy.categories.map(c => c.category),
     categoryIds: caseStudy.categories.map(c => c.categoryId),
     keywords: caseStudy.keywords.map(k => k.keyword),
+    keywordIds: caseStudy.keywords.map(k => k.keywordId),
     media: caseStudy.media.map(m => ({
       id: m.id,
       caption: m.caption,

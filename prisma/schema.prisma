@@ -100,16 +100,36 @@ model CaseStudyMedia {
   @@map("case_study_media")
 }
 
-// Mots-clés pour les études de cas
+// Table pivot pour les mots-clés des études de cas
 model CaseStudyKeyword {
-  id          String    @id @default(cuid())
   caseStudyId String
+  keywordId   String
   caseStudy   CaseStudy @relation(fields: [caseStudyId], references: [id], onDelete: Cascade)
-  keyword     String
+  keyword     Keyword   @relation(fields: [keywordId], references: [id], onDelete: Cascade)
 
-  @@index([caseStudyId])
-  @@index([keyword])
+  @@id([caseStudyId, keywordId])
   @@map("case_study_keywords")
+}
+
+// ============================================================================
+// MOTS-CLÉS / TAGS
+// ============================================================================
+
+model Keyword {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  icon        String?   // Nom de l'icône FontAwesome ou URL
+  color       String?   // Couleur associée (hex)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  caseStudies CaseStudyKeyword[]
+
+  @@map("keywords")
 }
 
 // ============================================================================

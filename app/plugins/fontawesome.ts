@@ -115,6 +115,7 @@ import {
   // Icônes pour la navigation admin (sous-menus)
   faList,
   faTags,
+  faHashtag,
 } from '@fortawesome/free-solid-svg-icons'
 
 // Regular icons
@@ -256,6 +257,7 @@ library.add(
   // Icônes pour la navigation admin (sous-menus)
   faList,
   faTags,
+  faHashtag,
   // Regular
   farHeart,
   farStar,

@@ -24,7 +24,8 @@ const navigation: NavItem[] = [
     children: [
       { name: 'Liste des cas', href: '/admin/cases', icon: 'list' },
       { name: 'Catégories', href: '/admin/categories', icon: 'tags' },
-      { name: 'Régions', href: '/admin/regions', icon: 'map-marker-alt' }
+      { name: 'Régions', href: '/admin/regions', icon: 'map-marker-alt' },
+      { name: 'Mots-clés', href: '/admin/keywords', icon: 'hashtag' }
     ]
   },
   { name: 'Actualités', href: '/admin/news', icon: 'newspaper' },
