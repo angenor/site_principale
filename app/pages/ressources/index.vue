@@ -211,7 +211,7 @@ function filterByCategory(categoryId: string) {
         </div>
 
         <!-- Grille de ressources avec design card -->
-        <div v-else class="grid sm:grid-cols-2 lg:flex lg:flex-wrap items-center justify-center gap-16 lg:gap-28 xl:gap-44">
+        <div v-else class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-start justify-center gap-12 lg:gap-16">
           <article v-for="item in resources" :key="item.id">
             <div class="relative">
               <!-- Image -->
@@ -220,48 +220,48 @@ function filterByCategory(categoryId: string) {
                 :src="thumb(item.coverImage)"
                 :alt="item.title"
                 loading="lazy"
-                class="w-full aspect-[3/2] lg:aspect-[3/4] h-44 lg:h-[32rem] object-cover shadow-lg"
+                class="w-full aspect-[3/2] lg:aspect-[3/4] h-32 lg:h-[22rem] object-cover shadow-lg"
               />
               <div
                 v-else
-                class="w-full aspect-[3/2] lg:aspect-[3/4] h-44 lg:h-[32rem] bg-gradient-to-br from-ti-blue to-ti-blue-700 shadow-lg flex items-center justify-center"
+                class="w-full aspect-[3/2] lg:aspect-[3/4] h-32 lg:h-[22rem] bg-gradient-to-br from-ti-blue to-ti-blue-700 shadow-lg flex items-center justify-center"
               >
-                <font-awesome-icon :icon="getFileIcon(item.mimeType)" class="w-16 h-16 text-white/50" />
+                <font-awesome-icon :icon="getFileIcon(item.mimeType)" class="w-12 h-12 text-white/50" />
               </div>
 
               <!-- Info Card avec design chevauchant -->
-              <div class="lg:rounded-l-[30px] lg:rounded-t-[30px] bg-white dark:bg-gray-800 lg:absolute bottom-8 -right-14 lg:w-[19rem] px-8 pt-6 pb-8 lg:h-96 shadow flex flex-col">
-                <span class="inline-block text-sm text-gray-500 dark:text-gray-400">
+              <div class="lg:rounded-l-[20px] lg:rounded-t-[20px] bg-white dark:bg-gray-800 lg:absolute bottom-6 -right-10 lg:w-[13rem] px-5 pt-4 pb-6 lg:h-72 shadow flex flex-col">
+                <span class="inline-block text-xs text-gray-500 dark:text-gray-400">
                   {{ formatDate(item.publishedAt) }}
                 </span>
-                <h2 class="text-2xl font-bold leading-tight mt-1.5 mb-2.5 text-gray-900 dark:text-white line-clamp-2">
+                <h2 class="text-lg font-bold leading-tight mt-1 mb-1.5 text-gray-900 dark:text-white line-clamp-2">
                   {{ item.title }}
                 </h2>
                 <button
                   v-if="item.category"
                   @click="filterByCategory(item.category.id)"
-                  class="inline-block text-blue-400 text-sm capitalize hover:underline cursor-pointer"
+                  class="inline-block text-blue-400 text-xs capitalize hover:underline cursor-pointer text-left"
                 >
                   {{ item.category.name }}
                 </button>
-                <p class="text-gray-800 dark:text-gray-300 mt-7 leading-relaxed line-clamp-4 flex-1">
+                <p class="text-gray-800 dark:text-gray-300 mt-4 leading-relaxed text-xs line-clamp-3 flex-1">
                   {{ item.description || 'Cliquez pour consulter cette ressource.' }}
                 </p>
-                <div class="flex justify-end items-center gap-4 mt-auto">
+                <div class="flex justify-end items-center gap-3 mt-auto">
                   <button
                     @click="viewResource(item)"
                     class="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
                     title="Voir le document"
                   >
-                    <font-awesome-icon icon="eye" class="text-lg" />
+                    <font-awesome-icon icon="eye" />
                   </button>
                   <a
                     :href="item.fileUrl"
                     target="_blank"
                     @click.prevent="trackAndDownload(item)"
-                    class="flex items-center uppercase text-blue-800 dark:text-blue-400 font-semibold text-sm hover:underline cursor-pointer"
+                    class="flex items-center uppercase text-blue-800 dark:text-blue-400 font-semibold text-xs hover:underline cursor-pointer"
                   >
-                    <span class="mr-4 block w-10 h-0.5 bg-blue-800 dark:bg-blue-400" />
+                    <span class="mr-3 block w-8 h-0.5 bg-blue-800 dark:bg-blue-400" />
                     télécharger
                   </a>
                 </div>
