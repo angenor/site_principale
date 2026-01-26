@@ -211,6 +211,14 @@ const copyLink = async () => {
       <!-- Contenu superposé -->
       <div class="absolute bottom-0 left-0 right-0 pb-12 lg:pb-16">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <!-- Titre -->
+          <h1 class="text-3xl lg:text-5xl font-heading font-bold uppercase text-white mb-3">
+            {{ caseStudy.title }}
+          </h1>
+          <p v-if="caseStudy.subtitle" class="text-xl text-gray-200 mb-4">
+            {{ caseStudy.subtitle }}
+          </p>
+
           <!-- Badges catégories -->
           <div v-if="caseStudy.categories.length > 0" class="flex flex-wrap gap-2 mb-4">
             <span
@@ -235,14 +243,6 @@ const copyLink = async () => {
               {{ category.name }}
             </span>
           </div>
-
-          <!-- Titre -->
-          <h1 class="text-3xl lg:text-5xl font-heading font-bold uppercase text-white mb-3">
-            {{ caseStudy.title }}
-          </h1>
-          <p v-if="caseStudy.subtitle" class="text-xl text-gray-200 mb-6">
-            {{ caseStudy.subtitle }}
-          </p>
 
           <!-- Métadonnées -->
           <div class="flex flex-wrap items-center gap-4 text-sm text-gray-300">
