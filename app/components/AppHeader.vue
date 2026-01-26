@@ -14,6 +14,7 @@ const navLinks = [
   { name: 'Accueil', path: '/' },
   { name: 'Études de cas', path: '/cas' },
   { name: 'Actualités', path: '/actualites' },
+  { name: 'Ressources', path: '/ressources' },
   { name: 'À propos', path: '/a-propos' }
 ]
 

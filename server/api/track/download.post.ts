@@ -4,9 +4,9 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const headers = getHeaders(event)
 
-  const mediaId = body.mediaId
+  const { mediaId, resourceId } = body
 
-  if (!mediaId) {
+  if (!mediaId && !resourceId) {
     return { tracked: false }
   }
 
@@ -17,24 +17,49 @@ export default defineEventHandler(async (event) => {
     : getRequestIP(event) || null
 
   try {
-    // Create download record
-    await prisma.download.create({
-      data: {
-        mediaId,
-        userAgent,
-        ipAddress
-      }
-    })
+    // Track resource download
+    if (resourceId) {
+      await prisma.download.create({
+        data: {
+          mediaId: resourceId, // Reuse mediaId field for resourceId
+          userAgent,
+          ipAddress
+        }
+      })
 
-    // Increment download count on media
-    await prisma.media.update({
-      where: { id: mediaId },
-      data: {
-        downloadCount: { increment: 1 }
-      }
-    })
+      // Increment download count on resource
+      await prisma.resource.update({
+        where: { id: resourceId },
+        data: {
+          downloadCount: { increment: 1 }
+        }
+      })
 
-    return { tracked: true }
+      return { tracked: true }
+    }
+
+    // Track media download
+    if (mediaId) {
+      await prisma.download.create({
+        data: {
+          mediaId,
+          userAgent,
+          ipAddress
+        }
+      })
+
+      // Increment download count on media
+      await prisma.media.update({
+        where: { id: mediaId },
+        data: {
+          downloadCount: { increment: 1 }
+        }
+      })
+
+      return { tracked: true }
+    }
+
+    return { tracked: false }
   } catch {
     return { tracked: false }
   }

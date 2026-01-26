@@ -37,6 +37,7 @@ model User {
   // Relations
   caseStudies   CaseStudy[]   @relation("CaseStudyAuthor")
   newsArticles  News[]        @relation("NewsAuthor")
+  resources     Resource[]    @relation("ResourceAuthor")
 
   @@map("users")
 }
@@ -212,6 +213,55 @@ model NewsAttachment {
 
   @@index([newsId])
   @@map("news_attachments")
+}
+
+// ============================================================================
+// RESSOURCES TÉLÉCHARGEABLES (Guides, Recherches, Rapports)
+// ============================================================================
+
+model ResourceCategory {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  slug        String     @unique
+  description String?
+  icon        String?    // Nom FontAwesome (ex: "book") ou URL d'image
+  color       String?    // Couleur en hexadécimal (ex: "#3B82F6")
+  sortOrder   Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  resources   Resource[]
+
+  @@map("resource_categories")
+}
+
+model Resource {
+  id            String            @id @default(cuid())
+  slug          String            @unique
+  title         String
+  description   String?           @db.Text
+  coverImage    String?           // Image de couverture
+  fileUrl       String            // URL du fichier à télécharger
+  filename      String            // Nom original du fichier
+  mimeType      String
+  fileSize      Int               // Taille en octets
+  isPublished   Boolean           @default(false)
+  publishedAt   DateTime?
+  downloadCount Int               @default(0)
+  sortOrder     Int               @default(0)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  // Relations
+  categoryId    String?
+  category      ResourceCategory? @relation(fields: [categoryId], references: [id])
+  authorId      String
+  author        User              @relation("ResourceAuthor", fields: [authorId], references: [id])
+
+  @@index([publishedAt])
+  @@index([categoryId])
+  @@map("resources")
 }
 
 // ============================================================================

@@ -29,6 +29,14 @@ const navigation: NavItem[] = [
     ]
   },
   { name: 'Actualités', href: '/admin/news', icon: 'newspaper' },
+  {
+    name: 'Ressources',
+    icon: 'book',
+    children: [
+      { name: 'Liste des ressources', href: '/admin/resources', icon: 'list' },
+      { name: 'Catégories', href: '/admin/resource-categories', icon: 'tags' }
+    ]
+  },
   { name: 'Médias', href: '/admin/media', icon: 'image' },
   { name: 'Signalements', href: '/admin/contacts', icon: 'envelope' },
   { name: 'Contenu', href: '/admin/content', icon: 'file-lines' },
