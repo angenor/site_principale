@@ -1,6 +1,13 @@
 <script setup lang="ts">
 const { thumb } = useImageVariants()
 
+interface Category {
+  id: string | number
+  name: string
+  color?: string | null
+  icon?: string | null
+}
+
 interface Props {
   // Image
   image?: string
@@ -11,8 +18,9 @@ interface Props {
   description?: string
   // Metadata
   date?: string
-  category?: string
-  categoryColor?: string
+  category?: string // Deprecated: use categories
+  categoryColor?: string // Deprecated: use categories
+  categories?: Category[] // New: array of category objects
   region?: string
   // Actions
   linkTo?: string
@@ -94,14 +102,44 @@ const cardClasses = computed(() => {
       <!-- Overlay pour les cartes "featured" -->
       <div v-if="variant === 'featured'" class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
-      <!-- Badge catégorie sur l'image -->
-      <span
-        v-if="category && variant !== 'compact'"
-        class="absolute top-3 left-3 badge-category"
-        :style="categoryColor ? { backgroundColor: categoryColor + '20', color: categoryColor } : {}"
-      >
-        {{ category }}
-      </span>
+      <!-- Badges catégories sur l'image -->
+      <div v-if="(categories?.length || category) && variant !== 'compact'" class="absolute top-3 left-3 flex flex-wrap gap-1.5">
+        <!-- Nouvelles catégories avec icônes -->
+        <template v-if="categories?.length">
+          <span
+            v-for="cat in categories"
+            :key="cat.id"
+            class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold backdrop-blur-sm"
+            :style="{
+              backgroundColor: cat.color ? `${cat.color}dd` : 'rgba(107, 114, 128, 0.9)',
+              color: 'white'
+            }"
+          >
+            <!-- Icône uploadée (image) -->
+            <img
+              v-if="cat.icon && (cat.icon.startsWith('/') || cat.icon.startsWith('http'))"
+              :src="cat.icon"
+              alt=""
+              class="w-3 h-3 object-contain"
+            />
+            <!-- Icône FontAwesome -->
+            <font-awesome-icon
+              v-else-if="cat.icon"
+              :icon="cat.icon"
+              class="w-2.5 h-2.5"
+            />
+            {{ cat.name }}
+          </span>
+        </template>
+        <!-- Fallback: ancienne prop category (rétrocompatibilité) -->
+        <span
+          v-else-if="category"
+          class="badge-category"
+          :style="categoryColor ? { backgroundColor: categoryColor + '20', color: categoryColor } : {}"
+        >
+          {{ category }}
+        </span>
+      </div>
     </div>
 
     <!-- Contenu -->
@@ -128,13 +166,22 @@ const cardClasses = computed(() => {
         </span>
       </div>
 
-      <!-- Catégorie (pour compact) -->
-      <span
-        v-if="category && variant === 'compact'"
-        class="text-xs font-semibold uppercase tracking-wide text-ti-blue dark:text-ti-blue-400 mb-1"
-      >
-        {{ category }}
-      </span>
+      <!-- Catégories (pour compact) -->
+      <div v-if="(categories?.length || category) && variant === 'compact'" class="flex flex-wrap gap-1 mb-1">
+        <template v-if="categories?.length">
+          <span
+            v-for="cat in categories"
+            :key="cat.id"
+            class="text-xs font-semibold uppercase tracking-wide"
+            :style="{ color: cat.color || undefined }"
+          >
+            {{ cat.name }}
+          </span>
+        </template>
+        <span v-else-if="category" class="text-xs font-semibold uppercase tracking-wide text-ti-blue dark:text-ti-blue-400">
+          {{ category }}
+        </span>
+      </div>
 
       <!-- Titre -->
       <h3

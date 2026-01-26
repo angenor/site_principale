@@ -264,7 +264,7 @@ onMounted(() => {
         <div v-if="orphanData.orphans.length === 0" class="p-8 text-center text-gray-500 dark:text-gray-400">
           <font-awesome-icon icon="check-circle" class="text-4xl text-green-500 mb-3" />
           <p class="text-lg font-medium">Aucune image orpheline</p>
-          <p class="text-sm">Toutes les images sont utilisées dans vos actualités.</p>
+          <p class="text-sm">Toutes les images sont utilisées dans le site.</p>
         </div>
 
         <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 p-4">
@@ -327,7 +327,8 @@ onMounted(() => {
           <div class="text-sm text-blue-800 dark:text-blue-200">
             <p class="font-medium mb-1">À propos des images orphelines</p>
             <p class="text-blue-700 dark:text-blue-300">
-              Les images orphelines sont des fichiers uploadés mais qui ne sont plus référencés dans aucune actualité.
+              Les images orphelines sont des fichiers uploadés mais qui ne sont plus référencés nulle part
+              (actualités, études de cas, catégories, mots-clés, partenaires, slider, etc.).
               Cela peut arriver quand vous supprimez une image du contenu ou quand vous n'enregistrez pas les modifications.
               Supprimer ces images libère de l'espace disque mais cette action est irréversible.
             </p>

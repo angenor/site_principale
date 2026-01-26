@@ -39,8 +39,7 @@ export default defineEventHandler(async (event) => {
               icon: true
             }
           }
-        },
-        take: 1 // Prendre seulement la première catégorie pour l'affichage
+        }
       }
     }
   })
@@ -48,6 +47,6 @@ export default defineEventHandler(async (event) => {
   // Formater les résultats
   return featuredCases.map(cs => ({
     ...cs,
-    category: cs.categories[0]?.category || null
+    categories: cs.categories.map(c => c.category)
   }))
 })

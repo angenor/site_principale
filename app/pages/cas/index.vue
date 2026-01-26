@@ -115,9 +115,6 @@ const resetFilters = () => {
   currentPage.value = 1
 }
 
-// Obtenir la première catégorie d'un cas
-const getPrimaryCategory = (cs: CaseStudy) => cs.categories[0] || null
-
 // Obtenir la date à afficher
 const getDisplayDate = (cs: CaseStudy) => cs.eventDate || cs.publishedAt || undefined
 </script>
@@ -292,8 +289,7 @@ const getDisplayDate = (cs: CaseStudy) => cs.eventDate || cs.publishedAt || unde
             :title="caseStudy.title"
             :subtitle="caseStudy.subtitle || undefined"
             :description="caseStudy.summary || undefined"
-            :category="getPrimaryCategory(caseStudy)?.name"
-            :category-color="getPrimaryCategory(caseStudy)?.color"
+            :categories="caseStudy.categories"
             :region="caseStudy.region?.name"
             :date="getDisplayDate(caseStudy)"
             :link-to="`/cas/${caseStudy.slug}`"

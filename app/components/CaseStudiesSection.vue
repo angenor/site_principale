@@ -22,7 +22,7 @@ interface CaseStudy {
   eventDate: string | null
   publishedAt: string | null
   region: Region | null
-  category: Category | null
+  categories: Category[]
 }
 
 // Charger les études de cas depuis l'API
@@ -91,8 +91,7 @@ const getDisplayDate = (cs: CaseStudy) => cs.eventDate || cs.publishedAt || unde
             :image="featuredCase.coverImage || '/images/placeholder-case.jpg'"
             :title="featuredCase.title"
             :subtitle="featuredCase.subtitle || undefined"
-            :category="featuredCase.category?.name"
-            :category-color="featuredCase.category?.color"
+            :categories="featuredCase.categories"
             :region="featuredCase.region?.name"
             :date="getDisplayDate(featuredCase)"
             :link-to="`/cas/${featuredCase.slug}`"
@@ -109,8 +108,7 @@ const getDisplayDate = (cs: CaseStudy) => cs.eventDate || cs.publishedAt || unde
             :key="caseStudy.id"
             :image="caseStudy.coverImage || '/images/placeholder-case.jpg'"
             :title="caseStudy.title"
-            :category="caseStudy.category?.name"
-            :category-color="caseStudy.category?.color"
+            :categories="caseStudy.categories"
             :region="caseStudy.region?.name"
             :link-to="`/cas/${caseStudy.slug}`"
             variant="default"
