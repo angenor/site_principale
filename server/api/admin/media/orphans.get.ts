@@ -260,6 +260,35 @@ export default defineEventHandler(async (event) => {
     }
 
     // ===========================================================================
+    // 12. RESSOURCES (Resource) - images de couverture
+    // ===========================================================================
+    const allResources = await prisma.resource.findMany({
+      select: {
+        coverImage: true
+      }
+    })
+
+    for (const resource of allResources) {
+      addImageWithVariants(usedImages, usedBaseIds, extractFilename(resource.coverImage))
+    }
+
+    // ===========================================================================
+    // 13. CATÉGORIES DE RESSOURCES (ResourceCategory) - icônes uploadées
+    // ===========================================================================
+    const allResourceCategories = await prisma.resourceCategory.findMany({
+      select: {
+        icon: true
+      }
+    })
+
+    for (const cat of allResourceCategories) {
+      // L'icône peut être un nom FontAwesome ou une URL
+      if (cat.icon && (cat.icon.startsWith('/') || cat.icon.startsWith('http'))) {
+        addImageWithVariants(usedImages, usedBaseIds, extractFilename(cat.icon))
+      }
+    }
+
+    // ===========================================================================
     // IDENTIFIER LES IMAGES ORPHELINES
     // ===========================================================================
     const orphans: Array<{

@@ -328,7 +328,7 @@ onMounted(() => {
             <p class="font-medium mb-1">À propos des images orphelines</p>
             <p class="text-blue-700 dark:text-blue-300">
               Les images orphelines sont des fichiers uploadés mais qui ne sont plus référencés nulle part
-              (actualités, études de cas, catégories, mots-clés, partenaires, slider, etc.).
+              (actualités, études de cas, catégories, mots-clés, partenaires, slider, ressources, etc.).
               Cela peut arriver quand vous supprimez une image du contenu ou quand vous n'enregistrez pas les modifications.
               Supprimer ces images libère de l'espace disque mais cette action est irréversible.
             </p>
