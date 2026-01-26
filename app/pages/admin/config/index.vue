@@ -41,6 +41,14 @@ const configGroups: ConfigGroup[] = [
     ]
   },
   {
+    label: 'Contenus des sections',
+    icon: 'file-lines',
+    items: [
+      { key: 'strategic_axes_intro', label: 'Introduction Axes Stratégiques', type: 'textarea', placeholder: 'Quatre piliers fondamentaux pour une gouvernance minière responsable à Madagascar' },
+      { key: 'partners_intro', label: 'Introduction Partenaires', type: 'text', placeholder: 'Ensemble pour une gouvernance minière transparente' }
+    ]
+  },
+  {
     label: 'Contact',
     icon: 'envelope',
     items: [

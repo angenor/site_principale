@@ -13,6 +13,14 @@ interface StrategicAxis {
 // Charger les axes stratégiques depuis l'API
 const { data: axes, pending, error } = await useFetch<StrategicAxis[]>('/api/strategic-axes')
 
+// Charger la configuration du site
+const { data: siteConfig } = await useFetch<Record<string, string>>('/api/config')
+
+// Texte d'introduction (dynamique ou fallback)
+const introText = computed(() => {
+  return siteConfig.value?.strategic_axes_intro || 'Quatre piliers fondamentaux pour une gouvernance minière responsable à Madagascar'
+})
+
 // Valeurs par défaut pour les axes sans icon/color définis
 const defaultAxesConfig: Record<string, { icon: string; color: string }> = {
   'Transparence': { icon: 'eye', color: '#3695d8' },
@@ -41,7 +49,7 @@ const isCustomImage = (icon: string | null) => {
           Nos Axes Stratégiques
         </h2>
         <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-          Quatre piliers fondamentaux pour une gouvernance minière responsable à Madagascar
+          {{ introText }}
         </p>
       </div>
 

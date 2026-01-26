@@ -1,5 +1,24 @@
 <script setup lang="ts">
+interface Partner {
+  id: string
+  name: string
+  logo: string
+  websiteUrl: string | null
+  description: string | null
+}
+
 const currentYear = new Date().getFullYear()
+
+// Charger la configuration du site
+const { data: siteConfig } = await useFetch<Record<string, string>>('/api/config')
+
+// Charger les partenaires
+const { data: partners } = await useFetch<Partner[]>('/api/partners')
+
+// Partenaires pour le footer (limité à 3)
+const footerPartners = computed(() => {
+  return (partners.value || []).slice(0, 3)
+})
 
 // Liens rapides
 const quickLinks = [
@@ -9,12 +28,29 @@ const quickLinks = [
   { name: 'Signaler un cas', path: '/signaler' }
 ]
 
-// Réseaux sociaux
-const socialLinks = [
-  { name: 'Facebook', icon: ['fab', 'facebook-f'], url: 'https://www.facebook.com/transparency.mg' },
-  { name: 'Twitter', icon: ['fab', 'twitter'], url: 'https://twitter.com/transparency_mg' },
-  { name: 'LinkedIn', icon: ['fab', 'linkedin-in'], url: 'https://www.linkedin.com/company/transparency-international-initiative-madagascar' }
+// Contact dynamique
+const contactEmail = computed(() => siteConfig.value?.contact_email || 'vramaherison@transparency.mg')
+const contactPhone = computed(() => siteConfig.value?.contact_phone || '+261 20 22 309 71')
+const contactAddress = computed(() => siteConfig.value?.contact_address || 'Lot IVG 167 Ter, Ambatoroka\nAntananarivo 101, Madagascar')
+
+// Configuration des réseaux sociaux
+const socialConfig = [
+  { key: 'social_facebook', name: 'Facebook', icon: ['fab', 'facebook-f'] },
+  { key: 'social_twitter', name: 'X', icon: ['fab', 'x-twitter'] },
+  { key: 'social_youtube', name: 'YouTube', icon: ['fab', 'youtube'] },
+  { key: 'social_linkedin', name: 'LinkedIn', icon: ['fab', 'linkedin-in'] }
 ]
+
+// Réseaux sociaux dynamiques (seulement ceux avec une URL configurée)
+const socialLinks = computed(() => {
+  return socialConfig
+    .filter(social => siteConfig.value?.[social.key])
+    .map(social => ({
+      name: social.name,
+      icon: social.icon,
+      url: siteConfig.value?.[social.key] || ''
+    }))
+})
 </script>
 
 <template>
@@ -62,44 +98,47 @@ const socialLinks = [
           <ul class="space-y-3 text-sm">
             <li class="flex items-start">
               <font-awesome-icon icon="location-dot" class="w-4 h-4 mt-1 mr-3 text-ti-blue-400" />
-              <span class="text-gray-400">
-                Lot IVG 167 Ter, Ambatoroka<br>
-                Antananarivo 101, Madagascar
-              </span>
+              <span class="text-gray-400 whitespace-pre-line">{{ contactAddress }}</span>
             </li>
             <li class="flex items-center">
               <font-awesome-icon icon="envelope" class="w-4 h-4 mr-3 text-ti-blue-400" />
-              <a href="mailto:vramaherison@transparency.mg" class="text-gray-400 hover:text-ti-blue-400 transition-colors duration-200">
-                vramaherison@transparency.mg
+              <a :href="`mailto:${contactEmail}`" class="text-gray-400 hover:text-ti-blue-400 transition-colors duration-200">
+                {{ contactEmail }}
               </a>
             </li>
             <li class="flex items-center">
               <font-awesome-icon icon="phone" class="w-4 h-4 mr-3 text-ti-blue-400" />
-              <a href="tel:+261202230971" class="text-gray-400 hover:text-ti-blue-400 transition-colors duration-200">
-                +261 20 22 309 71
+              <a :href="`tel:${contactPhone.replace(/\s/g, '')}`" class="text-gray-400 hover:text-ti-blue-400 transition-colors duration-200">
+                {{ contactPhone }}
               </a>
             </li>
           </ul>
         </div>
 
-        <!-- Partenaires -->
+        <!-- Partenaires & Réseaux sociaux -->
         <div>
           <h3 class="font-heading font-bold text-lg uppercase tracking-wide mb-4 text-ti-blue-400">
             Partenaires
           </h3>
-          <div class="space-y-4">
-            <div>
-              <p class="text-white font-semibold text-sm">Transparency International</p>
-              <p class="text-gray-500 text-xs">Initiative Madagascar</p>
-            </div>
-            <div>
-              <p class="text-white font-semibold text-sm">PCQVP Madagascar</p>
-              <p class="text-gray-500 text-xs">Publiez Ce Que Vous Payez</p>
+          <div class="space-y-3">
+            <div v-for="partner in footerPartners" :key="partner.id">
+              <a
+                v-if="partner.websiteUrl"
+                :href="partner.websiteUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-white font-semibold text-sm hover:text-ti-blue-400 transition-colors duration-200"
+              >
+                {{ partner.name }}
+              </a>
+              <p v-else class="text-white font-semibold text-sm">{{ partner.name }}</p>
+              <p v-if="partner.description" class="text-gray-500 text-xs">{{ partner.description }}</p>
             </div>
           </div>
 
           <!-- Réseaux sociaux -->
-          <div class="mt-6">
+          <div v-if="socialLinks.length > 0" class="mt-6">
+            <p class="text-gray-400 text-sm mb-3">Suivez-nous sur les réseaux sociaux</p>
             <div class="flex space-x-3">
               <a
                 v-for="social in socialLinks"

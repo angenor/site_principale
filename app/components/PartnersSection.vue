@@ -11,6 +11,14 @@ interface Partner {
 // Charger les partenaires depuis l'API
 const { data: partners, pending, error } = await useFetch<Partner[]>('/api/partners')
 
+// Charger la configuration du site
+const { data: siteConfig } = await useFetch<Record<string, string>>('/api/config')
+
+// Texte d'introduction (dynamique ou fallback)
+const introText = computed(() => {
+  return siteConfig.value?.partners_intro || 'Ensemble pour une gouvernance minière transparente'
+})
+
 // Dupliquer les partenaires pour créer un effet de défilement infini
 const duplicatedPartners = computed(() => {
   const p = partners.value || []
@@ -27,7 +35,7 @@ const duplicatedPartners = computed(() => {
           Nos Partenaires
         </h2>
         <p class="text-gray-600 dark:text-gray-400">
-          Ensemble pour une gouvernance minière transparente
+          {{ introText }}
         </p>
       </div>
     </div>
