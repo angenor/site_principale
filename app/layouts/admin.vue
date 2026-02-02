@@ -112,7 +112,7 @@ async function handleLogout() {
         <div class="flex h-16 items-center justify-between px-4 border-b border-gray-800">
           <NuxtLink to="/admin" class="flex items-center gap-2">
             <img
-              src="/images/logos/logo.jpeg"
+              src="/images/logos/MOM_Colored_300x-8_avec_texte.png"
               alt="MOM"
               class="h-10 max-w-[120px] object-contain invert hue-rotate-180"
             />
@@ -197,7 +197,7 @@ async function handleLogout() {
       <div class="flex h-16 items-center justify-between px-4 border-b border-gray-800">
         <NuxtLink v-if="isSidebarOpen" to="/admin" class="flex items-center gap-2">
           <img
-            src="/images/logos/logo.jpeg"
+            src="/images/logos/MOM_Colored_300x-8_avec_texte.png"
             alt="MOM"
             class="h-10 max-w-[120px] object-contain invert hue-rotate-180"
           />
@@ -205,7 +205,7 @@ async function handleLogout() {
         </NuxtLink>
         <NuxtLink v-else to="/admin" class="mx-auto">
           <img
-            src="/images/logos/logo.jpeg"
+            src="/images/logos/MOM_Colored_300x-8_avec_texte.png"
             alt="MOM"
             class="h-10 max-w-[60px] object-contain invert hue-rotate-180"
           />
