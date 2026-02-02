@@ -1,4 +1,9 @@
 <script setup lang="ts">
+// Utiliser la config partagée
+const { getConfig } = useAppSettings()
+
+const introText = computed(() => getConfig('case_studies_intro', 'Analyses approfondies des activités minières à Madagascar et de leurs impacts sur les communautés et l\'environnement.'))
+
 // Interfaces
 interface Category {
   id: number
@@ -129,8 +134,7 @@ const getDisplayDate = (cs: CaseStudy) => cs.eventDate || cs.publishedAt || unde
             Études de Cas
           </h1>
           <p class="text-lg text-blue-100 max-w-2xl mx-auto">
-            Analyses approfondies des activités minières à Madagascar et de leurs impacts
-            sur les communautés et l'environnement.
+            {{ introText }}
           </p>
         </div>
       </div>

@@ -1,4 +1,9 @@
 <script setup lang="ts">
+// Utiliser la config partagée
+const { getConfig } = useAppSettings()
+
+const introText = computed(() => getConfig('report_case_intro', 'Vous avez connaissance d\'un cas de mauvaise gouvernance ou d\'impact négatif lié à l\'exploitation minière ? Partagez l\'information de manière sécurisée.'))
+
 // Métadonnées de la page
 useHead({
   title: 'Signaler un cas - Observatoire des Mines de Madagascar',
@@ -97,8 +102,7 @@ const resetForm = () => {
           Signaler un cas
         </h1>
         <p class="text-lg text-blue-100 max-w-2xl mx-auto">
-          Vous avez connaissance d'un cas de mauvaise gouvernance ou d'impact négatif
-          lié à l'exploitation minière ? Partagez l'information de manière sécurisée.
+          {{ introText }}
         </p>
       </div>
     </section>

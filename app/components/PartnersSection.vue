@@ -11,13 +11,11 @@ interface Partner {
 // Charger les partenaires depuis l'API
 const { data: partners, pending, error } = await useFetch<Partner[]>('/api/partners')
 
-// Charger la configuration du site
-const { data: siteConfig } = await useFetch<Record<string, string>>('/api/config')
+// Utiliser la config partagée
+const { getConfig } = useAppSettings()
 
 // Texte d'introduction (dynamique ou fallback)
-const introText = computed(() => {
-  return siteConfig.value?.partners_intro || 'Ensemble pour une gouvernance minière transparente'
-})
+const introText = computed(() => getConfig('partners_intro', 'Ensemble pour une gouvernance minière transparente'))
 
 // Dupliquer les partenaires pour créer un effet de défilement infini
 const duplicatedPartners = computed(() => {

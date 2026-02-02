@@ -21,7 +21,9 @@ interface AboutSection {
 
 // Fetch donnees dynamiques
 const { data: sections } = await useFetch<AboutSection[]>('/api/about')
-const { data: siteConfig } = await useFetch<Record<string, string>>('/api/config')
+
+// Utiliser la config partagée
+const { getConfig } = useAppSettings()
 
 // Contact par defaut
 const defaultContact = {
@@ -32,9 +34,9 @@ const defaultContact = {
 
 // Contact (dynamique ou fallback)
 const contact = computed(() => ({
-  address: siteConfig.value?.contact_address || defaultContact.address,
-  email: siteConfig.value?.contact_email || defaultContact.email,
-  phone: siteConfig.value?.contact_phone || defaultContact.phone
+  address: getConfig('contact_address', defaultContact.address),
+  email: getConfig('contact_email', defaultContact.email),
+  phone: getConfig('contact_phone', defaultContact.phone)
 }))
 
 // Icones alternees pour les sections

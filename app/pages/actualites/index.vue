@@ -1,6 +1,11 @@
 <script setup lang="ts">
 const { thumb } = useImageVariants()
 
+// Utiliser la config partagée
+const { getConfig } = useAppSettings()
+
+const introText = computed(() => getConfig('news_intro', 'Suivez les dernières nouvelles sur la gouvernance minière et la transparence à Madagascar'))
+
 definePageMeta({
   layout: 'default'
 })
@@ -81,7 +86,7 @@ function navigateToNews(item: NewsItem) {
             Actualités
           </h1>
           <p class="text-xl text-white/90 max-w-2xl mx-auto">
-            Suivez les dernières nouvelles sur la gouvernance minière et la transparence à Madagascar
+            {{ introText }}
           </p>
         </div>
       </div>

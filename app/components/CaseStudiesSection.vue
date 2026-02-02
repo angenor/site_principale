@@ -1,4 +1,9 @@
 <script setup lang="ts">
+// Utiliser la config partagée
+const { getConfig } = useAppSettings()
+
+const introText = computed(() => getConfig('case_studies_intro', 'Analyses approfondies des activités minières à Madagascar'))
+
 interface Category {
   id: number
   name: string
@@ -50,7 +55,7 @@ const getDisplayDate = (cs: CaseStudy) => cs.eventDate || cs.publishedAt || unde
             Études de Cas
           </h2>
           <p class="text-gray-600 dark:text-gray-400">
-            Analyses approfondies des activités minières à Madagascar
+            {{ introText }}
           </p>
         </div>
         <NuxtLink

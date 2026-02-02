@@ -45,7 +45,10 @@ const configGroups: ConfigGroup[] = [
     icon: 'file-lines',
     items: [
       { key: 'strategic_axes_intro', label: 'Introduction Axes Stratégiques', type: 'textarea', placeholder: 'Quatre piliers fondamentaux pour une gouvernance minière responsable à Madagascar' },
-      { key: 'partners_intro', label: 'Introduction Partenaires', type: 'text', placeholder: 'Ensemble pour une gouvernance minière transparente' }
+      { key: 'partners_intro', label: 'Introduction Partenaires', type: 'text', placeholder: 'Ensemble pour une gouvernance minière transparente' },
+      { key: 'news_intro', label: 'Introduction Actualités', type: 'textarea', placeholder: 'Les dernières nouvelles du secteur minier malgache', description: 'Affiché sur la page d\'accueil et en sous-titre de la page Actualités' },
+      { key: 'case_studies_intro', label: 'Introduction Études de cas', type: 'textarea', placeholder: 'Analyses approfondies des activités minières à Madagascar', description: 'Affiché sur la page d\'accueil et en sous-titre de la page Études de cas' },
+      { key: 'report_case_intro', label: 'Introduction Signaler un cas', type: 'textarea', placeholder: 'Vous avez connaissance d\'un cas de mauvaise gouvernance ? Partagez l\'information de manière sécurisée.', description: 'Affiché sur la page d\'accueil et en sous-titre de la page Signaler' }
     ]
   },
   {

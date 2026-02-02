@@ -9,8 +9,8 @@ interface Partner {
 
 const currentYear = new Date().getFullYear()
 
-// Charger la configuration du site
-const { data: siteConfig } = await useFetch<Record<string, string>>('/api/config')
+// Utiliser la config partagée
+const { siteConfig, getConfig } = useAppSettings()
 
 // Charger les partenaires
 const { data: partners } = await useFetch<Partner[]>('/api/partners')
@@ -29,9 +29,9 @@ const quickLinks = [
 ]
 
 // Contact dynamique
-const contactEmail = computed(() => siteConfig.value?.contact_email || 'vramaherison@transparency.mg')
-const contactPhone = computed(() => siteConfig.value?.contact_phone || '+261 20 22 309 71')
-const contactAddress = computed(() => siteConfig.value?.contact_address || 'Lot IVG 167 Ter, Ambatoroka\nAntananarivo 101, Madagascar')
+const contactEmail = computed(() => getConfig('contact_email', 'vramaherison@transparency.mg'))
+const contactPhone = computed(() => getConfig('contact_phone', '+261 20 22 309 71'))
+const contactAddress = computed(() => getConfig('contact_address', 'Lot IVG 167 Ter, Ambatoroka\nAntananarivo 101, Madagascar'))
 
 // Configuration des réseaux sociaux
 const socialConfig = [

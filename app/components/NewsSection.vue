@@ -1,6 +1,11 @@
 <script setup lang="ts">
 const { thumb } = useImageVariants()
 
+// Utiliser la config partagée
+const { getConfig } = useAppSettings()
+
+const introText = computed(() => getConfig('news_intro', 'Les dernières nouvelles du secteur minier malgache'))
+
 interface NewsItem {
   id: string
   title: string
@@ -74,7 +79,7 @@ function navigateToNews(item: NewsItem) {
             Actualités
           </h2>
           <p class="text-gray-600 dark:text-gray-400">
-            Les dernières nouvelles du secteur minier malgache
+            {{ introText }}
           </p>
         </div>
         <NuxtLink

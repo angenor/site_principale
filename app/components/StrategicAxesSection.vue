@@ -13,13 +13,11 @@ interface StrategicAxis {
 // Charger les axes stratégiques depuis l'API
 const { data: axes, pending, error } = await useFetch<StrategicAxis[]>('/api/strategic-axes')
 
-// Charger la configuration du site
-const { data: siteConfig } = await useFetch<Record<string, string>>('/api/config')
+// Utiliser la config partagée
+const { getConfig } = useAppSettings()
 
 // Texte d'introduction (dynamique ou fallback)
-const introText = computed(() => {
-  return siteConfig.value?.strategic_axes_intro || 'Quatre piliers fondamentaux pour une gouvernance minière responsable à Madagascar'
-})
+const introText = computed(() => getConfig('strategic_axes_intro', 'Quatre piliers fondamentaux pour une gouvernance minière responsable à Madagascar'))
 
 // Valeurs par défaut pour les axes sans icon/color définis
 const defaultAxesConfig: Record<string, { icon: string; color: string }> = {

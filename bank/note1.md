@@ -76,3 +76,9 @@ Explication :
 
 lsof -ti:3001,3002 : liste les PIDs des processus utilisant les ports 3001 et 3002
 xargs kill -9 : envoie le signal SIGKILL pour forcer l'arrêt de ces processus
+
+rm -rf .nuxt .output node_modules/.cache
+
+
+ ~/.agents/skills/agent-browser  │
+│    symlink → Claude Code   
