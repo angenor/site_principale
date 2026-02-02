@@ -62,9 +62,9 @@ const socialLinks = computed(() => {
         <div class="lg:col-span-1">
           <div class="flex items-center mb-4">
             <img
-              src="/images/logos/logo.jpeg"
+              src="/images/logos/Logo_2_White_300x-8_sans_texte.png"
               alt="Observatoire des Mines de Madagascar"
-              class="h-44 max-w-[600px] object-contain invert hue-rotate-180"
+              class="h-44 max-w-[600px] object-contain"
             />
           </div>
         </div>

@@ -47,9 +47,14 @@ const closeMenu = () => {
         <!-- Logo -->
         <NuxtLink to="/" class="flex-shrink-0">
           <img
-            src="/images/logos/logo.jpeg"
+            src="/images/logos/MOM_Colored_300x-8_avec_texte.png"
             alt="Observatoire des Mines de Madagascar"
-            class="h-12 lg:h-14 max-w-[180px] lg:max-w-[220px] object-contain dark:invert dark:hue-rotate-180 transition-[filter] duration-200"
+            class="h-12 lg:h-14 max-w-[180px] lg:max-w-[220px] object-contain transition-[filter] duration-200 dark:hidden"
+          />
+          <img
+            src="/images/logos/MOM_White_300x-8_avec_text.png"
+            alt="Observatoire des Mines de Madagascar"
+            class="h-12 lg:h-14 max-w-[180px] lg:max-w-[220px] object-contain transition-[filter] duration-200 hidden dark:block"
           />
         </NuxtLink>
 
