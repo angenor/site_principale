@@ -58,13 +58,13 @@ const socialLinks = computed(() => {
     <!-- Section principale -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
-        <!-- À propos -->
+        <!-- Logo -->
         <div class="lg:col-span-1">
-          <div class="flex items-center mb-4">
+          <div class="mb-4">
             <img
-              src="/images/logos/Logo_2_White_300x-8_sans_texte.png"
+              src="/images/logos/MOM_White_300x-8_avec_text.png"
               alt="Observatoire des Mines de Madagascar"
-              class="h-44 max-w-[600px] object-contain"
+              class="h-32 w-auto object-contain"
             />
           </div>
         </div>

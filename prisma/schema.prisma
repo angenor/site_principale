@@ -445,7 +445,7 @@ model SiteConfig {
 
 model AboutContent {
   id          String    @id @default(cuid())
-  section     String    // Slug généré à partir du titre
+  section     String    @unique // Slug généré à partir du titre
   title       String
   content     String    @db.Text // Contenu EditorJS (JSON) ou HTML
   image       String?
