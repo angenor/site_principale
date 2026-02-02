@@ -118,6 +118,9 @@ import {
   faHashtag,
   faAddressCard,
   faLightbulb,
+  faSave,
+  faShareNodes,
+  faSliders,
 } from '@fortawesome/free-solid-svg-icons'
 
 // Regular icons
@@ -262,6 +265,9 @@ library.add(
   faHashtag,
   faAddressCard,
   faLightbulb,
+  faSave,
+  faShareNodes,
+  faSliders,
   // Regular
   farHeart,
   farStar,

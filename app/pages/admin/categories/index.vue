@@ -4,6 +4,21 @@ definePageMeta({
   middleware: 'auth'
 })
 
+// Use the shared composable
+const {
+  categories,
+  isLoading: categoriesLoading,
+  fetchCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory: deleteCategoryApi
+} = useCategories()
+
+// Fetch categories on mount
+onMounted(() => {
+  fetchCategories(true) // Force refresh to get latest data
+})
+
 interface Category {
   id: string
   name: string
@@ -14,10 +29,8 @@ interface Category {
   sortOrder: number
   createdAt: string
   updatedAt: string
-  caseStudiesCount: number
+  caseStudiesCount?: number
 }
-
-const { data: categories, refresh } = await useFetch<Category[]>('/api/admin/categories')
 
 const editingCategory = ref<Category | null>(null)
 const isCreating = ref(false)
@@ -115,20 +128,13 @@ async function save() {
     }
 
     if (isCreating.value) {
-      await $fetch('/api/admin/categories', {
-        method: 'POST',
-        body: payload
-      })
+      await createCategory(payload)
       success.value = 'Catégorie créée avec succès'
     } else if (editingCategory.value) {
-      await $fetch(`/api/admin/categories/${editingCategory.value.id}`, {
-        method: 'PUT',
-        body: payload
-      })
+      await updateCategory(editingCategory.value.id, payload)
       success.value = 'Catégorie mise à jour avec succès'
     }
 
-    await refresh()
     cancelEdit()
   } catch (err: unknown) {
     const e = err as { data?: { statusMessage?: string } }
@@ -138,8 +144,8 @@ async function save() {
   }
 }
 
-async function deleteCategory(category: Category) {
-  if (category.caseStudiesCount > 0) {
+async function handleDeleteCategory(category: Category) {
+  if ((category.caseStudiesCount ?? 0) > 0) {
     error.value = `Impossible de supprimer : cette catégorie est utilisée par ${category.caseStudiesCount} étude(s) de cas`
     return
   }
@@ -149,10 +155,7 @@ async function deleteCategory(category: Category) {
   }
 
   try {
-    await $fetch(`/api/admin/categories/${category.id}`, {
-      method: 'DELETE'
-    })
-    await refresh()
+    await deleteCategoryApi(category.id)
     success.value = 'Catégorie supprimée'
   } catch (err: unknown) {
     const e = err as { data?: { statusMessage?: string } }
@@ -309,7 +312,13 @@ async function deleteCategory(category: Category) {
 
     <!-- Liste des catégories -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-      <div class="overflow-x-auto">
+      <!-- Loading -->
+      <div v-if="categoriesLoading" class="p-8 text-center">
+        <font-awesome-icon icon="spinner" class="animate-spin text-ti-blue text-2xl" />
+        <p class="mt-2 text-gray-600 dark:text-gray-400">Chargement...</p>
+      </div>
+
+      <div v-else class="overflow-x-auto">
         <table class="w-full">
           <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
@@ -372,12 +381,12 @@ async function deleteCategory(category: Category) {
                 <span
                   :class="[
                     'px-2 py-1 text-xs font-medium rounded',
-                    category.caseStudiesCount > 0
+                    (category.caseStudiesCount ?? 0) > 0
                       ? 'bg-ti-blue/10 text-ti-blue'
                       : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
                   ]"
                 >
-                  {{ category.caseStudiesCount }}
+                  {{ category.caseStudiesCount ?? 0 }}
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-gray-500 dark:text-gray-400">
@@ -392,15 +401,15 @@ async function deleteCategory(category: Category) {
                   <font-awesome-icon icon="edit" />
                 </button>
                 <button
-                  @click="deleteCategory(category)"
+                  @click="handleDeleteCategory(category)"
                   :class="[
                     'cursor-pointer',
-                    category.caseStudiesCount > 0
+                    (category.caseStudiesCount ?? 0) > 0
                       ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
                       : 'text-red-500 hover:text-red-700'
                   ]"
-                  :disabled="category.caseStudiesCount > 0"
-                  :title="category.caseStudiesCount > 0 ? 'Impossible de supprimer : catégorie utilisée' : 'Supprimer'"
+                  :disabled="(category.caseStudiesCount ?? 0) > 0"
+                  :title="(category.caseStudiesCount ?? 0) > 0 ? 'Impossible de supprimer : catégorie utilisée' : 'Supprimer'"
                 >
                   <font-awesome-icon icon="trash" />
                 </button>

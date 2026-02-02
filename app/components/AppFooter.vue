@@ -67,10 +67,6 @@ const socialLinks = computed(() => {
               class="h-44 max-w-[600px] object-contain invert hue-rotate-180"
             />
           </div>
-          <p class="text-gray-400 text-sm leading-relaxed">
-            L'Observatoire des Mines de Madagascar (MOM) promeut la transparence et la bonne gouvernance
-            dans le secteur minier malgache.
-          </p>
         </div>
 
         <!-- Liens rapides -->

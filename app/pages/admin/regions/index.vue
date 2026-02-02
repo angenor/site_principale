@@ -4,16 +4,29 @@ definePageMeta({
   middleware: 'auth'
 })
 
+// Use the shared composable
+const {
+  regions,
+  isLoading: regionsLoading,
+  fetchRegions,
+  createRegion,
+  updateRegion,
+  deleteRegion: deleteRegionApi
+} = useRegions()
+
+// Fetch regions on mount
+onMounted(() => {
+  fetchRegions(true) // Force refresh to get latest data
+})
+
 interface Region {
   id: string
   name: string
   code: string | null
   description: string | null
   createdAt: string
-  caseStudiesCount: number
+  caseStudiesCount?: number
 }
-
-const { data: regions, refresh } = await useFetch<Region[]>('/api/admin/regions')
 
 const editingRegion = ref<Region | null>(null)
 const isCreating = ref(false)
@@ -75,20 +88,13 @@ async function save() {
     }
 
     if (isCreating.value) {
-      await $fetch('/api/admin/regions', {
-        method: 'POST',
-        body: payload
-      })
+      await createRegion(payload)
       success.value = 'Région créée avec succès'
     } else if (editingRegion.value) {
-      await $fetch(`/api/admin/regions/${editingRegion.value.id}`, {
-        method: 'PUT',
-        body: payload
-      })
+      await updateRegion(editingRegion.value.id, payload)
       success.value = 'Région mise à jour avec succès'
     }
 
-    await refresh()
     cancelEdit()
   } catch (err: unknown) {
     const e = err as { data?: { statusMessage?: string } }
@@ -98,8 +104,8 @@ async function save() {
   }
 }
 
-async function deleteRegion(region: Region) {
-  if (region.caseStudiesCount > 0) {
+async function handleDeleteRegion(region: Region) {
+  if ((region.caseStudiesCount ?? 0) > 0) {
     error.value = `Impossible de supprimer : cette région est utilisée par ${region.caseStudiesCount} étude(s) de cas`
     return
   }
@@ -109,10 +115,7 @@ async function deleteRegion(region: Region) {
   }
 
   try {
-    await $fetch(`/api/admin/regions/${region.id}`, {
-      method: 'DELETE'
-    })
-    await refresh()
+    await deleteRegionApi(region.id)
     success.value = 'Région supprimée'
   } catch (err: unknown) {
     const e = err as { data?: { statusMessage?: string } }
@@ -222,7 +225,13 @@ async function deleteRegion(region: Region) {
 
     <!-- Liste des régions -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-      <div class="overflow-x-auto">
+      <!-- Loading -->
+      <div v-if="regionsLoading" class="p-8 text-center">
+        <font-awesome-icon icon="spinner" class="animate-spin text-ti-blue text-2xl" />
+        <p class="mt-2 text-gray-600 dark:text-gray-400">Chargement...</p>
+      </div>
+
+      <div v-else class="overflow-x-auto">
         <table class="w-full">
           <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
@@ -267,12 +276,12 @@ async function deleteRegion(region: Region) {
                 <span
                   :class="[
                     'px-2 py-1 text-xs font-medium rounded',
-                    region.caseStudiesCount > 0
+                    (region.caseStudiesCount ?? 0) > 0
                       ? 'bg-ti-blue/10 text-ti-blue'
                       : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
                   ]"
                 >
-                  {{ region.caseStudiesCount }}
+                  {{ region.caseStudiesCount ?? 0 }}
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right">
@@ -284,15 +293,15 @@ async function deleteRegion(region: Region) {
                   <font-awesome-icon icon="edit" />
                 </button>
                 <button
-                  @click="deleteRegion(region)"
+                  @click="handleDeleteRegion(region)"
                   :class="[
                     'cursor-pointer',
-                    region.caseStudiesCount > 0
+                    (region.caseStudiesCount ?? 0) > 0
                       ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
                       : 'text-red-500 hover:text-red-700'
                   ]"
-                  :disabled="region.caseStudiesCount > 0"
-                  :title="region.caseStudiesCount > 0 ? 'Impossible de supprimer : région utilisée' : 'Supprimer'"
+                  :disabled="(region.caseStudiesCount ?? 0) > 0"
+                  :title="(region.caseStudiesCount ?? 0) > 0 ? 'Impossible de supprimer : région utilisée' : 'Supprimer'"
                 >
                   <font-awesome-icon icon="trash" />
                 </button>

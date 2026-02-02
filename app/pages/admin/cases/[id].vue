@@ -7,27 +7,6 @@ definePageMeta({
   middleware: 'auth'
 })
 
-interface Category {
-  id: string
-  name: string
-  slug: string
-  color: string | null
-  icon: string | null
-}
-
-interface Region {
-  id: string
-  name: string
-}
-
-interface Keyword {
-  id: string
-  name: string
-  slug: string
-  color: string | null
-  icon: string | null
-}
-
 interface CaseStudy {
   id: string
   slug: string
@@ -49,6 +28,18 @@ const router = useRouter()
 const id = route.params.id as string
 const isNew = id === 'new'
 
+// Use shared composables for reactive data
+const { categories, isLoading: categoriesLoading, fetchCategories } = useCategories()
+const { regions, isLoading: regionsLoading, fetchRegions } = useRegions()
+const { keywords, isLoading: keywordsLoading, fetchKeywords } = useKeywords()
+
+// Ensure data is loaded on mount
+onMounted(() => {
+  fetchCategories()
+  fetchRegions()
+  fetchKeywords()
+})
+
 // Form state
 const form = ref({
   title: '',
@@ -69,18 +60,6 @@ const isSaving = ref(false)
 const error = ref('')
 const success = ref('')
 const keywordSearch = ref('')
-
-// Fetch categories, regions, and keywords (use useLazyFetch to avoid caching issues on client navigation)
-const { data: categories, pending: categoriesPending, refresh: refreshCategories } = useLazyFetch<Category[]>('/api/categories')
-const { data: regions, pending: regionsPending, refresh: refreshRegions } = useLazyFetch<Region[]>('/api/regions')
-const { data: keywords, pending: keywordsPending, refresh: refreshKeywords } = useLazyFetch<Keyword[]>('/api/keywords')
-
-// Ensure data is loaded on client-side navigation
-onMounted(() => {
-  refreshCategories()
-  refreshRegions()
-  refreshKeywords()
-})
 
 // Fetch existing case if editing
 if (!isNew) {
@@ -464,7 +443,7 @@ async function togglePublish() {
                 </p>
               </div>
               <!-- Loading keywords -->
-              <div v-else-if="keywordsPending" class="w-full text-center py-3">
+              <div v-else-if="keywordsLoading" class="w-full text-center py-3">
                 <font-awesome-icon icon="spinner" class="animate-spin text-gray-400" />
                 <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Chargement...</p>
               </div>
@@ -527,7 +506,7 @@ async function togglePublish() {
                     {{ region.name }}
                   </option>
                 </select>
-                <p v-if="regionsPending" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p v-if="regionsLoading" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   <font-awesome-icon icon="spinner" class="animate-spin mr-1" />
                   Chargement des régions...
                 </p>
@@ -591,7 +570,14 @@ async function togglePublish() {
                   class="w-4 h-4 text-ti-blue border-gray-300 dark:border-gray-600 rounded focus:ring-ti-blue cursor-pointer"
                 />
                 <span
-                  v-if="category.icon"
+                  v-if="category.icon && (category.icon.startsWith('/') || category.icon.startsWith('http'))"
+                  class="w-6 h-6 rounded flex items-center justify-center overflow-hidden"
+                  :style="{ backgroundColor: category.color ? `${category.color}20` : '#e5e7eb' }"
+                >
+                  <img :src="category.icon" alt="" class="w-5 h-5 object-contain" />
+                </span>
+                <span
+                  v-else-if="category.icon"
                   class="w-6 h-6 rounded flex items-center justify-center text-sm"
                   :style="{ backgroundColor: category.color ? `${category.color}20` : '#e5e7eb', color: category.color || '#374151' }"
                 >
@@ -599,7 +585,7 @@ async function togglePublish() {
                 </span>
                 <span class="text-gray-700 dark:text-gray-300">{{ category.name }}</span>
               </label>
-              <div v-if="categoriesPending" class="text-center py-3">
+              <div v-if="categoriesLoading" class="text-center py-3">
                 <font-awesome-icon icon="spinner" class="animate-spin text-gray-400" />
                 <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Chargement...</p>
               </div>
