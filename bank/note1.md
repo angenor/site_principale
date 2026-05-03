@@ -82,3 +82,4 @@ rm -rf .nuxt .output node_modules/.cache
 
  ~/.agents/skills/agent-browser  │
 │    symlink → Claude Code   
+
