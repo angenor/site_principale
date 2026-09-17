@@ -2,7 +2,7 @@ import prisma from '../../utils/prisma'
 
 interface AutocompleteResult {
   id: string
-  type: 'case' | 'news' | 'resource'
+  type: 'case' | 'news' | 'resource' | 'audio-video'
   slug: string
   title: string
   summary: string
@@ -50,7 +50,15 @@ export default defineEventHandler(async (event): Promise<AutocompleteResponse> =
   const shouldSearchNews = type === 'all' || type === 'news'
   const shouldSearchResources = type === 'all' || type === 'resources'
 
-  const [cases, news, resources, casesCount, newsCount, resourcesCount] = await Promise.all([
+  const audioVideoCondition = {
+    isPublished: true,
+    OR: [
+      { title: { contains: q, mode: 'insensitive' as const } },
+      { description: { contains: q, mode: 'insensitive' as const } }
+    ]
+  }
+
+  const [cases, news, resources, audioVideos, casesCount, newsCount, resourcesCount, audioVideosCount] = await Promise.all([
     // Case studies
     shouldSearchCases
       ? prisma.caseStudy.findMany({
@@ -120,6 +128,23 @@ export default defineEventHandler(async (event): Promise<AutocompleteResponse> =
         })
       : [],
 
+    // Audios / vidéos (comptés avec les ressources)
+    shouldSearchResources
+      ? prisma.audioVideo.findMany({
+          where: audioVideoCondition,
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            coverImage: true,
+            publishedAt: true,
+            category: { select: { name: true, color: true } }
+          },
+          orderBy: { publishedAt: 'desc' },
+          take: limit
+        })
+      : [],
+
     // Counts for all types (always fetch for filter badges)
     prisma.caseStudy.count({
       where: { isPublished: true, ...searchCondition }
@@ -135,7 +160,8 @@ export default defineEventHandler(async (event): Promise<AutocompleteResponse> =
           { description: { contains: q, mode: 'insensitive' } }
         ]
       }
-    })
+    }),
+    prisma.audioVideo.count({ where: audioVideoCondition })
   ])
 
   // Transform results to unified format
@@ -190,6 +216,23 @@ export default defineEventHandler(async (event): Promise<AutocompleteResponse> =
     })
   })
 
+  // Add audios / videos
+  audioVideos.forEach(item => {
+    results.push({
+      id: item.id,
+      type: 'audio-video',
+      slug: item.id,
+      title: item.title,
+      summary: truncateText(item.description, 80),
+      coverImage: item.coverImage,
+      date: item.publishedAt?.toISOString() || null,
+      url: `/ressources/audios-videos#av-${item.id}`,
+      category: item.category
+        ? { name: item.category.name, color: item.category.color }
+        : undefined
+    })
+  })
+
   // Sort all results by date (newest first)
   results.sort((a, b) => {
     if (!a.date && !b.date) return 0
@@ -203,7 +246,7 @@ export default defineEventHandler(async (event): Promise<AutocompleteResponse> =
     counts: {
       cases: casesCount,
       news: newsCount,
-      resources: resourcesCount
+      resources: resourcesCount + audioVideosCount
     },
     query: q
   }

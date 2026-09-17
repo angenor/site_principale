@@ -4,30 +4,21 @@ definePageMeta({
   middleware: 'auth'
 })
 
-interface Category {
+interface AudioVideoRow {
   id: string
-  name: string
-  color: string | null
-  icon: string | null
-}
-
-interface ResourceItem {
-  id: string
-  slug: string
   title: string
-  description: string | null
+  format: AudioVideoFormat
+  speakers: string[]
+  externalUrl: string
   coverImage: string | null
-  files: ResourceFileVersion[]
   isPublished: boolean
   publishedAt: string | null
-  downloadCount: number
   createdAt: string
-  author: string | null
-  category: Category | null
+  category: { id: string; name: string; color: string | null; icon: string | null } | null
 }
 
-interface ResourceResponse {
-  data: ResourceItem[]
+interface AudioVideoResponse {
+  data: AudioVideoRow[]
   categories: { id: string; name: string }[]
   pagination: {
     page: number
@@ -45,40 +36,37 @@ const limit = 10
 
 const debouncedSearch = refDebounced(search, 300)
 
-const { data: resourcesResponse, pending, refresh } = await useFetch<ResourceResponse>('/api/admin/resources', {
+// Retour à la première page quand les filtres changent
+watch([debouncedSearch, status, categoryId], () => {
+  page.value = 1
+})
+
+const { data: response, pending, refresh } = await useFetch<AudioVideoResponse>('/api/admin/audio-videos', {
   query: computed(() => ({
     page: page.value,
     limit,
     search: debouncedSearch.value,
     status: status.value,
     category: categoryId.value
-  })),
-  watch: [page, debouncedSearch, status, categoryId]
+  }))
 })
 
-const resources = computed(() => resourcesResponse.value?.data || [])
-const categories = computed(() => resourcesResponse.value?.categories || [])
-const pagination = computed(() => resourcesResponse.value?.pagination)
-
-function goToPage(p: number) {
-  page.value = p
-}
+const items = computed(() => response.value?.data || [])
+const categories = computed(() => response.value?.categories || [])
+const pagination = computed(() => response.value?.pagination)
 
 function resetFilters() {
   search.value = ''
   status.value = 'all'
   categoryId.value = ''
-  page.value = 1
 }
 
-async function deleteResource(id: string, title: string) {
-  if (!confirm(`Êtes-vous sûr de vouloir supprimer "${title}" ?`)) {
-    return
-  }
+async function deleteItem(item: AudioVideoRow) {
+  if (!confirm(`Êtes-vous sûr de vouloir supprimer « ${item.title} » ?`)) return
 
   try {
-    await $fetch(`/api/admin/resources/${id}`, { method: 'DELETE' })
-    refresh()
+    await $fetch(`/api/admin/audio-videos/${item.id}`, { method: 'DELETE' })
+    await refresh()
   } catch {
     alert('Erreur lors de la suppression')
   }
@@ -92,10 +80,6 @@ function formatDate(dateString: string | null) {
     year: 'numeric'
   })
 }
-
-function fileLink(file: ResourceFileVersion): string {
-  return file.externalUrl || file.fileUrl || ''
-}
 </script>
 
 <template>
@@ -103,39 +87,39 @@ function fileLink(file: ResourceFileVersion): string {
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
       <div>
-        <h2 class="text-2xl font-heading font-bold text-gray-900 dark:text-white">Rapports</h2>
-        <p class="text-gray-600 dark:text-gray-400">Gérer les documents téléchargeables de la rubrique Ressources</p>
+        <h2 class="text-2xl font-heading font-bold text-gray-900 dark:text-white">Audios/Vidéos</h2>
+        <p class="text-gray-600 dark:text-gray-400">Contenus audios et vidéos de la rubrique Ressources</p>
       </div>
       <NuxtLink
-        to="/admin/resources/new"
+        to="/admin/audio-videos/new"
         class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
       >
         <font-awesome-icon icon="plus" />
-        Nouveau rapport
+        Nouvel audio/vidéo
       </NuxtLink>
     </div>
 
-    <!-- Filters -->
+    <!-- Filtres -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-6">
       <div class="flex flex-col sm:flex-row gap-4">
-        <div class="flex-1">
-          <div class="relative">
-            <font-awesome-icon
-              icon="search"
-              class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"
-            />
-            <input
-              v-model="search"
-              type="text"
-              placeholder="Rechercher..."
-              class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-ti-blue focus:border-ti-blue"
-            />
-          </div>
+        <div class="flex-1 relative">
+          <font-awesome-icon
+            icon="search"
+            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"
+          />
+          <input
+            v-model="search"
+            type="text"
+            placeholder="Rechercher..."
+            aria-label="Rechercher"
+            class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-ti-blue focus:border-ti-blue"
+          />
         </div>
 
         <select
           v-model="categoryId"
-          class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-ti-blue focus:border-ti-blue"
+          aria-label="Catégorie"
+          class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-ti-blue focus:border-ti-blue cursor-pointer"
         >
           <option value="">Toutes les catégories</option>
           <option v-for="cat in categories" :key="cat.id" :value="cat.id">
@@ -145,7 +129,8 @@ function fileLink(file: ResourceFileVersion): string {
 
         <select
           v-model="status"
-          class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-ti-blue focus:border-ti-blue"
+          aria-label="Statut"
+          class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-ti-blue focus:border-ti-blue cursor-pointer"
         >
           <option value="all">Tous les statuts</option>
           <option value="published">Publiés</option>
@@ -154,8 +139,8 @@ function fileLink(file: ResourceFileVersion): string {
 
         <button
           v-if="search || status !== 'all' || categoryId"
-          @click="resetFilters"
           class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white cursor-pointer"
+          @click="resetFilters"
         >
           <font-awesome-icon icon="xmark" class="mr-1" />
           Réinitialiser
@@ -163,31 +148,28 @@ function fileLink(file: ResourceFileVersion): string {
       </div>
     </div>
 
-    <!-- List -->
+    <!-- Liste -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-      <div v-if="pending" class="p-8 text-center">
+      <div v-if="pending && !items.length" class="p-8 text-center">
         <font-awesome-icon icon="spinner" class="animate-spin text-ti-blue text-2xl" />
         <p class="mt-2 text-gray-600 dark:text-gray-400">Chargement...</p>
       </div>
 
-      <div v-else-if="resources.length > 0" class="overflow-x-auto">
+      <div v-else-if="items.length > 0" class="overflow-x-auto">
         <table class="w-full">
           <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Rapport
+                Contenu
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">
                 Catégorie
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">
-                Date
+                Publication
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Statut
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden sm:table-cell">
-                Téléchargements
               </th>
               <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Actions
@@ -196,43 +178,31 @@ function fileLink(file: ResourceFileVersion): string {
           </thead>
           <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
             <tr
-              v-for="item in resources"
+              v-for="item in items"
               :key="item.id"
               class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
             >
               <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
-                  <img
-                    v-if="item.coverImage"
-                    :src="item.coverImage"
-                    :alt="item.title"
-                    class="w-12 h-12 rounded-lg object-cover"
-                  />
-                  <div
-                    v-else
-                    class="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center"
-                  >
-                    <font-awesome-icon :icon="getFileIcon(item.files[0]?.mimeType)" class="text-gray-400 dark:text-gray-500 text-lg" />
+                  <div class="relative w-20 aspect-video shrink-0 rounded-md overflow-hidden bg-gray-200 dark:bg-gray-700">
+                    <img
+                      v-if="item.coverImage"
+                      :src="getImageVariant(item.coverImage, 'thumb')"
+                      alt=""
+                      class="w-full h-full object-cover"
+                    />
+                    <span class="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center">
+                      <font-awesome-icon :icon="item.format === 'AUDIO' ? 'headphones' : 'play'" class="text-[0.55rem]" />
+                    </span>
                   </div>
-                  <div>
+                  <div class="min-w-0">
                     <p class="font-medium text-gray-900 dark:text-white line-clamp-1">
                       {{ item.title }}
                     </p>
-                    <div class="flex flex-wrap items-center gap-1 mt-1">
-                      <a
-                        v-for="file in item.files"
-                        :key="file.id"
-                        :href="fileLink(file)"
-                        target="_blank"
-                        rel="noopener"
-                        class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.7rem] font-semibold bg-ti-blue/10 text-ti-blue dark:text-blue-300 hover:bg-ti-blue/20"
-                        :title="file.externalUrl ? `${file.languageLabel} – lien externe` : `${file.languageLabel} – ${file.filename} (${formatFileSize(file.fileSize)})`"
-                      >
-                        {{ file.languageCode }}
-                        <font-awesome-icon v-if="file.externalUrl" icon="external-link-alt" class="text-[0.55rem]" />
-                      </a>
-                      <span v-if="!item.files.length" class="text-xs text-red-600 dark:text-red-400">Aucun document</span>
-                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
+                      {{ getUrlHost(item.externalUrl) }}
+                      <template v-if="item.speakers.length"> · {{ item.speakers.join(', ') }}</template>
+                    </p>
                   </div>
                 </div>
               </td>
@@ -245,19 +215,13 @@ function fileLink(file: ResourceFileVersion): string {
                     color: item.category.color || '#6B7280'
                   }"
                 >
-                  <font-awesome-icon
-                    v-if="item.category.icon && !item.category.icon.startsWith('/')"
-                    :icon="item.category.icon"
-                    class="text-xs"
-                  />
+                  <CategoryIcon :icon="item.category.icon" />
                   {{ item.category.name }}
                 </span>
                 <span v-else class="text-gray-400 dark:text-gray-500 text-sm">-</span>
               </td>
-              <td class="px-6 py-4 hidden md:table-cell">
-                <span class="text-sm text-gray-600 dark:text-gray-400">
-                  {{ formatDate(item.publishedAt || item.createdAt) }}
-                </span>
+              <td class="px-6 py-4 hidden md:table-cell text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                {{ formatDate(item.publishedAt) }}
               </td>
               <td class="px-6 py-4">
                 <span
@@ -271,25 +235,28 @@ function fileLink(file: ResourceFileVersion): string {
                   {{ item.isPublished ? 'Publié' : 'Brouillon' }}
                 </span>
               </td>
-              <td class="px-6 py-4 hidden sm:table-cell">
-                <span class="text-sm text-gray-600 dark:text-gray-400">
-                  <font-awesome-icon icon="download" class="mr-1 text-gray-400" />
-                  {{ item.downloadCount }}
-                </span>
-              </td>
               <td class="px-6 py-4">
                 <div class="flex items-center justify-end gap-2">
+                  <a
+                    :href="item.externalUrl"
+                    target="_blank"
+                    rel="noopener"
+                    class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    title="Ouvrir sur le site source"
+                  >
+                    <font-awesome-icon icon="external-link-alt" />
+                  </a>
                   <NuxtLink
-                    :to="`/admin/resources/${item.id}`"
+                    :to="`/admin/audio-videos/${item.id}`"
                     class="p-2 text-gray-400 hover:text-ti-blue transition-colors"
                     title="Modifier"
                   >
                     <font-awesome-icon icon="edit" />
                   </NuxtLink>
                   <button
-                    @click="deleteResource(item.id, item.title)"
                     class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer"
                     title="Supprimer"
+                    @click="deleteItem(item)"
                   >
                     <font-awesome-icon icon="trash" />
                   </button>
@@ -301,14 +268,14 @@ function fileLink(file: ResourceFileVersion): string {
       </div>
 
       <div v-else class="p-8 text-center">
-        <font-awesome-icon icon="book" class="text-4xl text-gray-300 dark:text-gray-600 mb-3" />
-        <p class="text-gray-600 dark:text-gray-400">Aucun rapport trouvé</p>
+        <font-awesome-icon icon="video" class="text-4xl text-gray-300 dark:text-gray-600 mb-3" />
+        <p class="text-gray-600 dark:text-gray-400">Aucun audio/vidéo trouvé</p>
         <NuxtLink
-          to="/admin/resources/new"
+          to="/admin/audio-videos/new"
           class="mt-4 inline-flex items-center gap-2 text-ti-blue hover:underline"
         >
           <font-awesome-icon icon="plus" />
-          Créer un rapport
+          Ajouter un audio/vidéo
         </NuxtLink>
       </div>
 
@@ -324,15 +291,15 @@ function fileLink(file: ResourceFileVersion): string {
         <div class="flex gap-2">
           <button
             :disabled="pagination.page === 1"
-            @click="goToPage(pagination.page - 1)"
             class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+            @click="page = pagination.page - 1"
           >
             Précédent
           </button>
           <button
             :disabled="pagination.page === pagination.totalPages"
-            @click="goToPage(pagination.page + 1)"
             class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+            @click="page = pagination.page + 1"
           >
             Suivant
           </button>

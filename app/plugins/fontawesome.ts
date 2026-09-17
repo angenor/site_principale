@@ -123,6 +123,16 @@ import {
   faSave,
   faShareNodes,
   faSliders,
+  // Icônes des ressources (rapports multilingues, audios/vidéos)
+  faPlay,
+  faHeadphones,
+  faMicrophone,
+  faLanguage,
+  faCloudArrowUp,
+  faFilePowerpoint,
+  faFileZipper,
+  faGraduationCap,
+  faComments,
 } from '@fortawesome/free-solid-svg-icons'
 
 // Regular icons
@@ -272,6 +282,15 @@ library.add(
   faSave,
   faShareNodes,
   faSliders,
+  faPlay,
+  faHeadphones,
+  faMicrophone,
+  faLanguage,
+  faCloudArrowUp,
+  faFilePowerpoint,
+  faFileZipper,
+  faGraduationCap,
+  faComments,
   // Regular
   farHeart,
   farStar,

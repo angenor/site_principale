@@ -1,5 +1,6 @@
 import prisma from '../../../utils/prisma'
 import { requireAuth } from '../../../utils/auth'
+import { resourceFilesOf, resourceFilesSelect } from '../../../utils/resources'
 
 export default defineEventHandler(async (event) => {
   await requireAuth(event)
@@ -20,7 +21,8 @@ export default defineEventHandler(async (event) => {
     where.OR = [
       { title: { contains: search, mode: 'insensitive' } },
       { description: { contains: search, mode: 'insensitive' } },
-      { filename: { contains: search, mode: 'insensitive' } }
+      { filename: { contains: search, mode: 'insensitive' } },
+      { files: { some: { filename: { contains: search, mode: 'insensitive' } } } }
     ]
   }
 
@@ -39,14 +41,15 @@ export default defineEventHandler(async (event) => {
       where,
       skip,
       take: limit,
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ publishedAt: { sort: 'desc', nulls: 'first' } }, { createdAt: 'desc' }],
       include: {
         author: {
           select: { firstName: true, lastName: true }
         },
         category: {
           select: { id: true, name: true, color: true, icon: true }
-        }
+        },
+        files: resourceFilesSelect
       }
     }),
     prisma.resource.count({ where }),
@@ -63,10 +66,7 @@ export default defineEventHandler(async (event) => {
       title: item.title,
       description: item.description,
       coverImage: item.coverImage,
-      fileUrl: item.fileUrl,
-      filename: item.filename,
-      mimeType: item.mimeType,
-      fileSize: item.fileSize,
+      files: resourceFilesOf(item),
       isPublished: item.isPublished,
       publishedAt: item.publishedAt,
       downloadCount: item.downloadCount,

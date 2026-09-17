@@ -1,12 +1,14 @@
 <script setup lang="ts">
-// Champs communs d'une catégorie d'actualité : page de gestion et création rapide
+// Champs communs d'une catégorie (actualités, audios/vidéos) : page de gestion et création rapide
 withDefaults(defineProps<{
   /** Replie la description derrière un lien (formulaire de création rapide) */
   compactDescription?: boolean
   nameInputId?: string
+  namePlaceholder?: string
 }>(), {
   compactDescription: false,
-  nameInputId: undefined
+  nameInputId: undefined,
+  namePlaceholder: 'Nom de la catégorie'
 })
 
 const name = defineModel<string>('name', { required: true })
@@ -31,7 +33,7 @@ const inputClass = 'w-full px-4 py-2 rounded-lg border border-gray-300 dark:bord
         v-model="name"
         type="text"
         :class="inputClass"
-        placeholder="Ex: Blog, Opinion, Annonce"
+        :placeholder="namePlaceholder"
       />
     </div>
 

@@ -40,8 +40,10 @@ const navigation: NavItem[] = [
     name: 'Ressources',
     icon: 'book',
     children: [
-      { name: 'Liste des ressources', href: '/admin/resources', icon: 'list' },
-      { name: 'Catégories', href: '/admin/resource-categories', icon: 'tags' }
+      { name: 'Rapports', href: '/admin/resources', icon: 'file-alt' },
+      { name: 'Catégories de rapports', href: '/admin/resource-categories', icon: 'tags' },
+      { name: 'Audios/Vidéos', href: '/admin/audio-videos', icon: 'play' },
+      { name: 'Catégories audios/vidéos', href: '/admin/audio-video-categories', icon: 'tags' }
     ]
   },
   { name: 'Médias', href: '/admin/media', icon: 'image' },

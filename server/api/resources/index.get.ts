@@ -1,4 +1,5 @@
 import prisma from '../../utils/prisma'
+import { legacyFileSelect, resourceFilesOf, resourceFilesSelect } from '../../utils/resources'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
@@ -32,10 +33,8 @@ export default defineEventHandler(async (event) => {
         title: true,
         description: true,
         coverImage: true,
-        fileUrl: true,
-        filename: true,
-        mimeType: true,
-        fileSize: true,
+        ...legacyFileSelect,
+        files: resourceFilesSelect,
         downloadCount: true,
         publishedAt: true,
         category: {
@@ -59,14 +58,17 @@ export default defineEventHandler(async (event) => {
         icon: true,
         color: true,
         _count: {
-          select: { resources: true }
+          select: { resources: { where: { isPublished: true } } }
         }
       }
     })
   ])
 
   return {
-    data: resources,
+    data: resources.map(({ fileUrl, filename, mimeType, fileSize, files, ...item }) => ({
+      ...item,
+      files: resourceFilesOf({ id: item.id, fileUrl, filename, mimeType, fileSize, files })
+    })),
     categories: categories.map(cat => ({
       id: cat.id,
       name: cat.name,

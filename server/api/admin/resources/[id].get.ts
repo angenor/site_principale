@@ -1,5 +1,6 @@
 import prisma from '../../../utils/prisma'
 import { requireAuth } from '../../../utils/auth'
+import { resourceFilesOf, resourceFilesSelect } from '../../../utils/resources'
 
 export default defineEventHandler(async (event) => {
   await requireAuth(event)
@@ -21,7 +22,8 @@ export default defineEventHandler(async (event) => {
       },
       category: {
         select: { id: true, name: true, slug: true, icon: true, color: true }
-      }
+      },
+      files: resourceFilesSelect
     }
   })
 
@@ -38,10 +40,7 @@ export default defineEventHandler(async (event) => {
     title: resource.title,
     description: resource.description,
     coverImage: resource.coverImage,
-    fileUrl: resource.fileUrl,
-    filename: resource.filename,
-    mimeType: resource.mimeType,
-    fileSize: resource.fileSize,
+    files: resourceFilesOf(resource),
     isPublished: resource.isPublished,
     publishedAt: resource.publishedAt,
     downloadCount: resource.downloadCount,

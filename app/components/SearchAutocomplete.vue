@@ -1,7 +1,7 @@
 <script setup lang="ts">
 interface AutocompleteResult {
   id: string
-  type: 'case' | 'news' | 'resource'
+  type: 'case' | 'news' | 'resource' | 'audio-video'
   slug: string
   title: string
   summary: string
@@ -108,7 +108,7 @@ const filteredResults = computed(() => {
   return results.value.filter(r => {
     if (activeType.value === 'cases') return r.type === 'case'
     if (activeType.value === 'news') return r.type === 'news'
-    if (activeType.value === 'resources') return r.type === 'resource'
+    if (activeType.value === 'resources') return r.type === 'resource' || r.type === 'audio-video'
     return true
   })
 })
@@ -128,29 +128,32 @@ function getFilterCount(key: 'all' | 'cases' | 'news' | 'resources'): number {
 }
 
 // Type styling
-function getTypeBadgeClass(type: 'case' | 'news' | 'resource'): string {
+function getTypeBadgeClass(type: 'case' | 'news' | 'resource' | 'audio-video'): string {
   const classes: Record<string, string> = {
     case: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
     news: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    resource: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+    resource: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+    'audio-video': 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'
   }
   return classes[type] || ''
 }
 
-function getTypeLabel(type: 'case' | 'news' | 'resource'): string {
+function getTypeLabel(type: 'case' | 'news' | 'resource' | 'audio-video'): string {
   const labels: Record<string, string> = {
     case: 'Étude de cas',
     news: 'Actualité',
-    resource: 'Ressource'
+    resource: 'Rapport',
+    'audio-video': 'Audio/Vidéo'
   }
   return labels[type] || ''
 }
 
-function getTypeIcon(type: 'case' | 'news' | 'resource'): string {
+function getTypeIcon(type: 'case' | 'news' | 'resource' | 'audio-video'): string {
   const icons: Record<string, string> = {
     case: 'folder-open',
     news: 'newspaper',
-    resource: 'file-alt'
+    resource: 'file-alt',
+    'audio-video': 'play'
   }
   return icons[type] || 'file'
 }

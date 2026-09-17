@@ -289,6 +289,33 @@ export default defineEventHandler(async (event) => {
     }
 
     // ===========================================================================
+    // 14. AUDIOS/VIDÉOS (AudioVideo) - images de couverture
+    // ===========================================================================
+    const allAudioVideos = await prisma.audioVideo.findMany({
+      select: {
+        coverImage: true
+      }
+    })
+
+    for (const item of allAudioVideos) {
+      addImageWithVariants(usedImages, usedBaseIds, extractFilename(item.coverImage))
+    }
+
+    // ===========================================================================
+    // 15. CATÉGORIES D'ACTUALITÉS ET D'AUDIOS/VIDÉOS - icônes uploadées
+    // ===========================================================================
+    const otherCategoryIcons = await Promise.all([
+      prisma.newsCategory.findMany({ select: { icon: true } }),
+      prisma.audioVideoCategory.findMany({ select: { icon: true } })
+    ])
+
+    for (const cat of otherCategoryIcons.flat()) {
+      if (cat.icon && (cat.icon.startsWith('/') || cat.icon.startsWith('http'))) {
+        addImageWithVariants(usedImages, usedBaseIds, extractFilename(cat.icon))
+      }
+    }
+
+    // ===========================================================================
     // IDENTIFIER LES IMAGES ORPHELINES
     // ===========================================================================
     const orphans: Array<{

@@ -1,4 +1,5 @@
 import prisma from '../../utils/prisma'
+import { legacyFileSelect, resourceFilesOf, resourceFilesSelect } from '../../utils/resources'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
@@ -18,10 +19,8 @@ export default defineEventHandler(async (event) => {
       title: true,
       description: true,
       coverImage: true,
-      fileUrl: true,
-      filename: true,
-      mimeType: true,
-      fileSize: true,
+      ...legacyFileSelect,
+      files: resourceFilesSelect,
       downloadCount: true,
       publishedAt: true,
       isPublished: true,
@@ -44,5 +43,9 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  return resource
+  const { fileUrl, filename, mimeType, fileSize, files, ...data } = resource
+  return {
+    ...data,
+    files: resourceFilesOf({ id: resource.id, fileUrl, filename, mimeType, fileSize, files })
+  }
 })

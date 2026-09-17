@@ -6,8 +6,8 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Ressources - Observatoire des Mines de Madagascar',
-  description: 'Téléchargez guides, recherches et rapports sur la gouvernance minière à Madagascar.'
+  title: 'Rapports - Ressources - Observatoire des Mines de Madagascar',
+  description: 'Téléchargez les rapports, guides et recherches sur la gouvernance minière à Madagascar, en malgache, en français ou en anglais.'
 })
 
 interface Category {
@@ -25,12 +25,9 @@ interface ResourceItem {
   title: string
   description: string | null
   coverImage: string | null
-  fileUrl: string
-  filename: string
-  mimeType: string
-  fileSize: number
+  files: ResourceFileVersion[]
   downloadCount: number
-  publishedAt: string
+  publishedAt: string | null
   category: Category | null
 }
 
@@ -62,7 +59,8 @@ const resources = computed(() => resourcesData.value?.data || [])
 const categories = computed(() => resourcesData.value?.categories || [])
 const pagination = computed(() => resourcesData.value?.pagination)
 
-function formatDate(date: string) {
+function formatDate(date: string | null) {
+  if (!date) return ''
   return new Date(date).toLocaleDateString('fr-FR', {
     day: 'numeric',
     month: 'long',
@@ -70,44 +68,9 @@ function formatDate(date: string) {
   })
 }
 
-function getFileIcon(mimeType: string): string {
-  if (mimeType.includes('pdf')) return 'file-pdf'
-  if (mimeType.includes('word') || mimeType.includes('document')) return 'file-word'
-  if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return 'file-excel'
-  if (mimeType.includes('powerpoint') || mimeType.includes('presentation')) return 'file-powerpoint'
-  if (mimeType.includes('image')) return 'file-image'
-  if (mimeType.includes('zip') || mimeType.includes('rar') || mimeType.includes('7z')) return 'file-archive'
-  return 'file'
-}
-
 function changePage(page: number) {
   currentPage.value = page
   window.scrollTo({ top: 0, behavior: 'smooth' })
-}
-
-async function trackAndDownload(resource: ResourceItem) {
-  // Track download
-  try {
-    await $fetch('/api/track/download', {
-      method: 'POST',
-      body: { resourceId: resource.id }
-    })
-  } catch (e) {
-    console.error('Erreur de tracking:', e)
-  }
-
-  // Create download link
-  const link = document.createElement('a')
-  link.href = resource.fileUrl
-  link.download = resource.filename
-  link.target = '_blank'
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-}
-
-function viewResource(resource: ResourceItem) {
-  window.open(resource.fileUrl, '_blank')
 }
 
 function filterByCategory(categoryId: string) {
@@ -118,20 +81,7 @@ function filterByCategory(categoryId: string) {
 
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <!-- Hero Section -->
-    <section class="relative bg-gradient-to-br from-ti-blue via-ti-blue-600 to-ti-blue-800 text-white py-16 lg:py-24">
-      <div class="absolute inset-0 bg-black/20" />
-      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center">
-          <h1 class="text-4xl lg:text-5xl font-bold mb-4">
-            Ressources
-          </h1>
-          <p class="text-xl text-white/90 max-w-2xl mx-auto">
-            Guides, recherches et rapports sur la gouvernance minière à Madagascar
-          </p>
-        </div>
-      </div>
-    </section>
+    <ResourcesHeader subtitle="Rapports, guides et recherches sur la gouvernance minière à Madagascar, à télécharger dans les langues disponibles" />
 
     <!-- Filtres -->
     <section class="py-6 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
@@ -184,7 +134,7 @@ function filterByCategory(categoryId: string) {
           </div>
         </div>
         <p class="mt-4 text-gray-600 dark:text-gray-400">
-          <span v-if="pagination">{{ pagination.total }} ressource(s) disponible(s)</span>
+          <span v-if="pagination">{{ pagination.total }} rapport(s) disponible(s)</span>
         </p>
       </div>
     </section>
@@ -203,16 +153,16 @@ function filterByCategory(categoryId: string) {
         <div v-else-if="resources.length === 0" class="text-center py-16">
           <font-awesome-icon icon="book" class="w-16 h-16 text-gray-400 mb-4" />
           <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            Aucune ressource disponible
+            Aucun rapport disponible
           </h3>
           <p class="text-gray-600 dark:text-gray-400">
-            Les ressources seront publiées prochainement.
+            Les rapports seront publiés prochainement.
           </p>
         </div>
 
         <!-- Grille de ressources avec design card -->
         <div v-else class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-start justify-center gap-12 lg:gap-16">
-          <article v-for="item in resources" :key="item.id">
+          <article v-for="item in resources" :id="item.slug" :key="item.id" class="scroll-mt-28">
             <div class="relative">
               <!-- Image -->
               <img
@@ -226,7 +176,7 @@ function filterByCategory(categoryId: string) {
                 v-else
                 class="w-full aspect-[3/2] lg:aspect-[3/4] h-32 lg:h-[22rem] bg-gradient-to-br from-ti-blue to-ti-blue-700 shadow-lg flex items-center justify-center"
               >
-                <font-awesome-icon :icon="getFileIcon(item.mimeType)" class="w-12 h-12 text-white/50" />
+                <font-awesome-icon :icon="getFileIcon(item.files[0]?.mimeType)" class="w-12 h-12 text-white/50" />
               </div>
 
               <!-- Info Card avec design chevauchant -->
@@ -244,27 +194,25 @@ function filterByCategory(categoryId: string) {
                 >
                   {{ item.category.name }}
                 </button>
-                <p class="text-gray-800 dark:text-gray-300 mt-4 leading-relaxed text-xs line-clamp-3 flex-1">
-                  {{ item.description || 'Cliquez pour consulter cette ressource.' }}
-                </p>
-                <div class="flex justify-end items-center gap-3 mt-auto">
-                  <button
-                    @click="viewResource(item)"
-                    class="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
-                    title="Voir le document"
+                <div v-if="item.files.length" class="flex flex-wrap gap-1 mt-2" aria-label="Langues disponibles">
+                  <span
+                    v-for="file in item.files"
+                    :key="file.id"
+                    class="px-1.5 py-0.5 rounded text-[0.65rem] font-bold bg-ti-blue/10 text-ti-blue dark:text-blue-300"
+                    :title="file.languageLabel"
                   >
-                    <font-awesome-icon icon="eye" />
-                  </button>
-                  <a
-                    :href="item.fileUrl"
-                    target="_blank"
-                    @click.prevent="trackAndDownload(item)"
-                    class="flex items-center uppercase text-blue-800 dark:text-blue-400 font-semibold text-xs hover:underline cursor-pointer"
-                  >
-                    <span class="mr-3 block w-8 h-0.5 bg-blue-800 dark:bg-blue-400" />
-                    télécharger
-                  </a>
+                    {{ file.languageCode }}
+                  </span>
                 </div>
+                <p class="text-gray-800 dark:text-gray-300 mt-3 leading-relaxed text-xs line-clamp-3 flex-1">
+                  {{ item.description || 'Téléchargez ce rapport pour le consulter.' }}
+                </p>
+                <ResourceDownloadMenu
+                  class="mt-auto"
+                  :resource-id="item.id"
+                  :title="item.title"
+                  :files="item.files"
+                />
               </div>
             </div>
           </article>

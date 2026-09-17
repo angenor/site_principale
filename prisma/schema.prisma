@@ -38,6 +38,7 @@ model User {
   caseStudies   CaseStudy[]   @relation("CaseStudyAuthor")
   newsArticles  News[]        @relation("NewsAuthor")
   resources     Resource[]    @relation("ResourceAuthor")
+  audioVideos   AudioVideo[]  @relation("AudioVideoAuthor")
 
   @@map("users")
 }
@@ -253,7 +254,7 @@ model NewsAttachment {
 }
 
 // ============================================================================
-// RESSOURCES TÉLÉCHARGEABLES (Guides, Recherches, Rapports)
+// RESSOURCES : RAPPORTS (documents téléchargeables)
 // ============================================================================
 
 model ResourceCategory {
@@ -279,10 +280,11 @@ model Resource {
   title         String
   description   String?           @db.Text
   coverImage    String?           // Image de couverture
-  fileUrl       String            // URL du fichier à télécharger
-  filename      String            // Nom original du fichier
-  mimeType      String
-  fileSize      Int               // Taille en octets
+  // Fichier unique des rapports antérieurs aux versions linguistiques (repris dans `files` à l'enregistrement)
+  fileUrl       String?
+  filename      String?
+  mimeType      String?
+  fileSize      Int?
   isPublished   Boolean           @default(false)
   publishedAt   DateTime?
   downloadCount Int               @default(0)
@@ -295,10 +297,82 @@ model Resource {
   category      ResourceCategory? @relation(fields: [categoryId], references: [id])
   authorId      String
   author        User              @relation("ResourceAuthor", fields: [authorId], references: [id])
+  files         ResourceFile[]
 
   @@index([publishedAt])
   @@index([categoryId])
   @@map("resources")
+}
+
+// Versions linguistiques d'un rapport : fichier téléversé ou lien externe vers le site source
+model ResourceFile {
+  id            String   @id @default(cuid())
+  resourceId    String
+  resource      Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  languageCode  String   // Code affiché (ex: "MG", "FR", "EN")
+  languageLabel String   // Nom de la langue (ex: "Malgache", "Français", "English")
+  fileUrl       String?  // Fichier téléversé
+  filename      String?
+  mimeType      String?
+  fileSize      Int?
+  externalUrl   String?  // Lien vers le site source, à la place d'un fichier
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  @@unique([resourceId, languageCode])
+  @@index([resourceId])
+  @@map("resource_files")
+}
+
+// ============================================================================
+// RESSOURCES : AUDIOS / VIDÉOS (liens vers le site source)
+// ============================================================================
+
+enum AudioVideoFormat {
+  VIDEO
+  AUDIO
+}
+
+// Catégories d'audios/vidéos (éducation, face-à-face, podcast...)
+model AudioVideoCategory {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  slug        String       @unique
+  description String?
+  icon        String?      // Icône FontAwesome ou URL d'image personnalisée
+  color       String?      // Couleur en hexadécimal (ex: "#3B82F6")
+  sortOrder   Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Relations
+  items       AudioVideo[]
+
+  @@map("audio_video_categories")
+}
+
+model AudioVideo {
+  id          String           @id @default(cuid())
+  title       String
+  description String           @db.Text
+  format      AudioVideoFormat @default(VIDEO)
+  speakers    String[]         @default([]) // Intervenants (optionnel)
+  externalUrl String           // Lien vers le site source (YouTube, SoundCloud...)
+  coverImage  String?
+  isPublished Boolean          @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  // Relations
+  categoryId  String?
+  category    AudioVideoCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  authorId    String
+  author      User             @relation("AudioVideoAuthor", fields: [authorId], references: [id])
+
+  @@index([publishedAt])
+  @@index([categoryId])
+  @@map("audio_videos")
 }
 
 // ============================================================================

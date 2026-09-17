@@ -1,16 +1,16 @@
 import prisma from '../../../utils/prisma'
 import { requireAuth } from '../../../utils/auth'
+import { parseDateInput } from '../../../utils/news'
+import { normalizeResourceFiles, resourceFilesCreateData } from '../../../utils/resources'
 
 interface UpdateResourceBody {
   title?: string
   description?: string
   coverImage?: string
-  fileUrl?: string
-  filename?: string
-  mimeType?: string
-  fileSize?: number
+  files?: unknown
   categoryId?: string | null
   isPublished?: boolean
+  publishedAt?: string | null
 }
 
 export default defineEventHandler(async (event) => {
@@ -57,56 +57,41 @@ export default defineEventHandler(async (event) => {
     updateData.coverImage = body.coverImage || null
   }
 
-  if (body.fileUrl !== undefined) {
-    if (!body.fileUrl.trim()) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'L\'URL du fichier ne peut pas être vide'
-      })
-    }
-    updateData.fileUrl = body.fileUrl.trim()
-  }
-
-  if (body.filename !== undefined) {
-    if (!body.filename.trim()) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Le nom du fichier ne peut pas être vide'
-      })
-    }
-    updateData.filename = body.filename.trim()
-  }
-
-  if (body.mimeType !== undefined) {
-    updateData.mimeType = body.mimeType
-  }
-
-  if (body.fileSize !== undefined) {
-    updateData.fileSize = body.fileSize
-  }
-
   if (body.categoryId !== undefined) {
     updateData.categoryId = body.categoryId || null
   }
 
+  if (body.publishedAt !== undefined) {
+    updateData.publishedAt = body.publishedAt
+      ? parseDateInput(body.publishedAt, 'Date de publication')
+      : null
+  }
+
   if (body.isPublished !== undefined) {
     updateData.isPublished = body.isPublished
-    if (body.isPublished && !existingResource.publishedAt) {
+    // Date de publication par défaut si aucune n'est définie
+    const nextPublishedAt = updateData.publishedAt !== undefined ? updateData.publishedAt : existingResource.publishedAt
+    if (body.isPublished && !nextPublishedAt) {
       updateData.publishedAt = new Date()
     }
   }
 
+  // Les versions linguistiques remplacent la liste existante (et l'ancien fichier unique)
+  if (body.files !== undefined) {
+    const files = normalizeResourceFiles(body.files)
+    updateData.files = {
+      deleteMany: {},
+      create: resourceFilesCreateData(files)
+    }
+    updateData.fileUrl = null
+    updateData.filename = null
+    updateData.mimeType = null
+    updateData.fileSize = null
+  }
+
   const updatedResource = await prisma.resource.update({
     where: { id },
-    data: updateData,
-    include: {
-      author: {
-        select: { firstName: true, lastName: true }
-      },
-      category: {
-        select: { id: true, name: true }
-      }
-    }
+    data: updateData
   })
 
   return {
@@ -115,19 +100,9 @@ export default defineEventHandler(async (event) => {
       id: updatedResource.id,
       slug: updatedResource.slug,
       title: updatedResource.title,
-      description: updatedResource.description,
-      coverImage: updatedResource.coverImage,
-      fileUrl: updatedResource.fileUrl,
-      filename: updatedResource.filename,
-      mimeType: updatedResource.mimeType,
-      fileSize: updatedResource.fileSize,
       isPublished: updatedResource.isPublished,
       publishedAt: updatedResource.publishedAt,
-      downloadCount: updatedResource.downloadCount,
-      createdAt: updatedResource.createdAt,
-      updatedAt: updatedResource.updatedAt,
-      author: updatedResource.author ? `${updatedResource.author.firstName} ${updatedResource.author.lastName}` : null,
-      category: updatedResource.category
+      updatedAt: updatedResource.updatedAt
     }
   }
 })

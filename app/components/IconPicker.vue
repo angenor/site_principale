@@ -53,6 +53,7 @@ const availableIcons = [
   { name: 'paper-plane', label: 'Envoyer' },
   { name: 'inbox', label: 'Boîte de réception' },
   { name: 'bullhorn', label: 'Annonce' },
+  { name: 'comments', label: 'Discussion' },
 
   // Localisation
   { name: 'map-marker-alt', label: 'Marqueur' },
@@ -74,6 +75,11 @@ const availableIcons = [
   { name: 'image', label: 'Image' },
   { name: 'camera', label: 'Caméra' },
   { name: 'crop', label: 'Recadrer' },
+  { name: 'video', label: 'Vidéo' },
+  { name: 'play', label: 'Lecture' },
+  { name: 'headphones', label: 'Audio' },
+  { name: 'microphone', label: 'Micro / podcast' },
+  { name: 'graduation-cap', label: 'Éducation' },
 
   // Graphiques & Données
   { name: 'chart-bar', label: 'Graphique barres' },

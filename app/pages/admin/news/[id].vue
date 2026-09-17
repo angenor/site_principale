@@ -41,21 +41,6 @@ interface NewsCategoryOption {
   color: string | null
 }
 
-// Conversion Date <-> valeur d'un input datetime-local (heure locale du navigateur)
-function toLocalInputValue(value: string | null): string {
-  if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return ''
-  const offset = date.getTimezoneOffset() * 60000
-  return new Date(date.getTime() - offset).toISOString().slice(0, 16)
-}
-
-function toIsoOrNull(value: string): string | null {
-  if (!value) return null
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? null : date.toISOString()
-}
-
 const route = useRoute()
 const router = useRouter()
 const id = route.params.id as string
@@ -677,6 +662,12 @@ async function togglePublish() {
       </div>
     </form>
 
-    <NewsCategoryQuickCreate v-model="showCategoryModal" @created="onCategoryCreated" />
+    <CategoryQuickCreate
+      v-model="showCategoryModal"
+      endpoint="/api/admin/news-categories"
+      manage-url="/admin/news-categories"
+      name-placeholder="Ex: Blog, Opinion, Annonce"
+      @created="onCategoryCreated"
+    />
   </div>
 </template>

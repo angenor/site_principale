@@ -18,11 +18,9 @@ interface ResourceItem {
   title: string
   description: string | null
   coverImage: string | null
-  fileUrl: string
-  filename: string
-  mimeType: string
-  fileSize: number
+  files: ResourceFileVersion[]
   isPublished: boolean
+  publishedAt: string | null
   categoryId: string | null
   category: Category | null
 }
@@ -36,18 +34,15 @@ const form = ref({
   title: '',
   description: '',
   coverImage: '',
-  fileUrl: '',
-  filename: '',
-  mimeType: '',
-  fileSize: 0,
+  files: (isNew ? [createEditableResourceFile('FR', 'Français')] : []) as EditableResourceFile[],
   categoryId: '',
+  publishedAt: '',
   isPublished: false
 })
 
 const categories = ref<Category[]>([])
 const isLoading = ref(false)
 const isSaving = ref(false)
-const isUploading = ref(false)
 const error = ref('')
 const success = ref('')
 
@@ -78,11 +73,9 @@ if (!isNew) {
         title: resourceData.value.title,
         description: resourceData.value.description || '',
         coverImage: resourceData.value.coverImage || '',
-        fileUrl: resourceData.value.fileUrl,
-        filename: resourceData.value.filename,
-        mimeType: resourceData.value.mimeType,
-        fileSize: resourceData.value.fileSize,
+        files: toEditableResourceFiles(resourceData.value.files),
         categoryId: resourceData.value.categoryId || '',
+        publishedAt: toLocalInputValue(resourceData.value.publishedAt),
         isPublished: resourceData.value.isPublished
       }
     }
@@ -95,7 +88,7 @@ if (!isNew) {
 
 // Sauvegarde locale de la saisie en cours
 const draft = useFormDraft({
-  key: 'resources',
+  key: 'resources-v2',
   source: () => ({ ...form.value }),
   apply: (data) => {
     form.value = { ...form.value, ...data }
@@ -107,51 +100,8 @@ onMounted(() => {
   if (!error.value) draft.start(id)
 })
 
-async function handleFileUpload(event: Event) {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
-
-  if (!file) return
-
-  isUploading.value = true
-  error.value = ''
-
-  try {
-    const formData = new FormData()
-    formData.append('file', file)
-
-    const result = await $fetch<{
-      success: boolean
-      url: string
-      filename: string
-      originalName: string
-      mimeType: string
-      fileSize: number
-    }>('/api/admin/upload-document', {
-      method: 'POST',
-      body: formData
-    })
-
-    if (result.success) {
-      form.value.fileUrl = result.url
-      form.value.filename = result.originalName || result.filename
-      form.value.mimeType = result.mimeType
-      form.value.fileSize = result.fileSize
-    }
-  } catch (e: unknown) {
-    const err = e as { data?: { statusMessage?: string } }
-    error.value = err.data?.statusMessage || 'Erreur lors du téléversement'
-  } finally {
-    isUploading.value = false
-  }
-}
-
-function removeFile() {
-  form.value.fileUrl = ''
-  form.value.filename = ''
-  form.value.mimeType = ''
-  form.value.fileSize = 0
-}
+// Aperçu : première version disponible
+const previewFile = computed(() => form.value.files[0])
 
 async function handleSubmit() {
   error.value = ''
@@ -161,8 +111,9 @@ async function handleSubmit() {
     error.value = 'Le titre est requis'
     return
   }
-  if (!form.value.fileUrl.trim()) {
-    error.value = 'Le fichier est requis'
+  const filesError = validateResourceFiles(form.value.files)
+  if (filesError) {
+    error.value = filesError
     return
   }
 
@@ -173,11 +124,9 @@ async function handleSubmit() {
       title: form.value.title.trim(),
       description: form.value.description.trim() || null,
       coverImage: form.value.coverImage || null,
-      fileUrl: form.value.fileUrl,
-      filename: form.value.filename,
-      mimeType: form.value.mimeType,
-      fileSize: form.value.fileSize,
+      files: toResourceFilesPayload(form.value.files),
       categoryId: form.value.categoryId || null,
+      publishedAt: toIsoOrNull(form.value.publishedAt),
       isPublished: form.value.isPublished
     }
 
@@ -188,18 +137,19 @@ async function handleSubmit() {
       })
       if (result.success) {
         draft.clear()
-        success.value = 'Ressource créée avec succès'
+        success.value = 'Rapport créé avec succès'
         setTimeout(() => {
           router.push(`/admin/resources/${result.data.id}`)
         }, 1500)
       }
     } else {
-      await $fetch(`/api/admin/resources/${id}`, {
+      const result = await $fetch<{ data: { publishedAt: string | null } }>(`/api/admin/resources/${id}`, {
         method: 'PUT',
         body: payload
       })
+      form.value.publishedAt = toLocalInputValue(result.data.publishedAt)
       draft.commit()
-      success.value = 'Ressource mise à jour avec succès'
+      success.value = 'Rapport mis à jour avec succès'
     }
   } catch (e: unknown) {
     const err = e as { data?: { statusMessage?: string } }
@@ -217,38 +167,22 @@ async function togglePublish() {
 
   isSaving.value = true
   try {
-    await $fetch(`/api/admin/resources/${id}`, {
+    const result = await $fetch<{ data: { publishedAt: string | null } }>(`/api/admin/resources/${id}`, {
       method: 'PUT',
       body: { isPublished: !form.value.isPublished }
     })
     form.value.isPublished = !form.value.isPublished
+    form.value.publishedAt = toLocalInputValue(result.data.publishedAt)
     draft.updateBaseline((reference) => {
       reference.isPublished = form.value.isPublished
+      reference.publishedAt = form.value.publishedAt
     })
-    success.value = form.value.isPublished ? 'Ressource publiée' : 'Ressource dépubliée'
+    success.value = form.value.isPublished ? 'Rapport publié' : 'Rapport dépublié'
   } catch {
     error.value = 'Erreur lors du changement de statut'
   } finally {
     isSaving.value = false
   }
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
-}
-
-function getFileIcon(mimeType: string): string {
-  if (mimeType.includes('pdf')) return 'file-pdf'
-  if (mimeType.includes('word') || mimeType.includes('document')) return 'file-word'
-  if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return 'file-excel'
-  if (mimeType.includes('powerpoint') || mimeType.includes('presentation')) return 'file-powerpoint'
-  if (mimeType.includes('image')) return 'file-image'
-  if (mimeType.includes('zip') || mimeType.includes('rar') || mimeType.includes('7z')) return 'file-archive'
-  return 'file'
 }
 </script>
 
@@ -265,15 +199,16 @@ function getFileIcon(mimeType: string): string {
         </NuxtLink>
         <div>
           <h2 class="text-2xl font-heading font-bold text-gray-900 dark:text-white">
-            {{ isNew ? 'Nouvelle ressource' : 'Modifier la ressource' }}
+            {{ isNew ? 'Nouveau rapport' : 'Modifier le rapport' }}
           </h2>
           <p class="text-gray-600 dark:text-gray-400">
-            {{ isNew ? 'Ajouter un nouveau document téléchargeable' : 'Modifier les informations de la ressource' }}
+            {{ isNew ? 'Ajouter un document téléchargeable, dans une ou plusieurs langues' : 'Modifier les informations du rapport' }}
           </p>
         </div>
       </div>
       <AdminPublishActions
         :published="form.isPublished"
+        published-label="Publié"
         :saving="isSaving"
         @toggle="togglePublish"
         @save="handleSubmit"
@@ -321,7 +256,7 @@ function getFileIcon(mimeType: string): string {
                   type="text"
                   required
                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  placeholder="Titre de la ressource"
+                  placeholder="Titre du rapport"
                 />
               </div>
 
@@ -353,88 +288,34 @@ function getFileIcon(mimeType: string): string {
                   </option>
                 </select>
               </div>
+
+              <div>
+                <label for="publishedAt" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Date de publication
+                </label>
+                <input
+                  id="publishedAt"
+                  v-model="form.publishedAt"
+                  type="datetime-local"
+                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {{ form.publishedAt ? 'Date affichée sur le site et utilisée pour le tri.' : 'Laissez vide pour utiliser la date de mise en ligne.' }}
+                </p>
+              </div>
             </div>
           </div>
 
-          <!-- File Upload -->
+          <!-- Documents par langue -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">
               <font-awesome-icon icon="file" class="mr-2 text-green-600" />
               Document à télécharger <span class="text-red-500">*</span>
             </h3>
-
-            <!-- File preview if uploaded -->
-            <div v-if="form.fileUrl" class="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <div class="w-12 h-12 rounded-lg bg-ti-blue/10 flex items-center justify-center">
-                    <font-awesome-icon :icon="getFileIcon(form.mimeType)" class="text-ti-blue text-xl" />
-                  </div>
-                  <div>
-                    <p class="font-medium text-gray-900 dark:text-white">{{ form.filename }}</p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ formatFileSize(form.fileSize) }}</p>
-                  </div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <a
-                    :href="form.fileUrl"
-                    target="_blank"
-                    class="p-2 text-gray-500 hover:text-ti-blue transition-colors"
-                    title="Voir le fichier"
-                  >
-                    <font-awesome-icon icon="external-link-alt" />
-                  </a>
-                  <button
-                    type="button"
-                    @click="removeFile"
-                    class="p-2 text-gray-500 hover:text-red-600 transition-colors cursor-pointer"
-                    title="Supprimer"
-                  >
-                    <font-awesome-icon icon="trash" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Upload zone -->
-            <div
-              v-if="!form.fileUrl"
-              class="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center hover:border-ti-blue transition-colors"
-            >
-              <input
-                type="file"
-                @change="handleFileUpload"
-                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar,.7z"
-              />
-              <div v-if="isUploading" class="flex flex-col items-center">
-                <font-awesome-icon icon="spinner" class="animate-spin text-ti-blue text-3xl mb-2" />
-                <p class="text-gray-600 dark:text-gray-400">Téléversement en cours...</p>
-              </div>
-              <div v-else class="flex flex-col items-center">
-                <font-awesome-icon icon="cloud-upload-alt" class="text-gray-400 text-4xl mb-3" />
-                <p class="text-gray-600 dark:text-gray-400 mb-1">
-                  Glissez un fichier ici ou cliquez pour sélectionner
-                </p>
-                <p class="text-xs text-gray-500 dark:text-gray-500">
-                  PDF, Word, Excel, PowerPoint, archives (max 20 Mo)
-                </p>
-              </div>
-            </div>
-
-            <!-- Replace file button -->
-            <div v-if="form.fileUrl" class="mt-4">
-              <label class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer">
-                <font-awesome-icon icon="sync-alt" />
-                Remplacer le fichier
-                <input
-                  type="file"
-                  @change="handleFileUpload"
-                  class="hidden"
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar,.7z"
-                />
-              </label>
-            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              Une version par langue : fichier téléversé ou lien vers le site source.
+            </p>
+            <ResourceFilesEditor v-model="form.files" @error="error = $event" />
           </div>
         </div>
 
@@ -444,7 +325,7 @@ function getFileIcon(mimeType: string): string {
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Image de couverture</h3>
             <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
-              Image qui sera affichée sur la carte de la ressource (optionnel)
+              Image qui sera affichée sur la carte du rapport (optionnel)
             </p>
             <ImageUpload v-model="form.coverImage" :generate-variants="true" />
           </div>
@@ -462,20 +343,28 @@ function getFileIcon(mimeType: string): string {
                 />
                 <font-awesome-icon
                   v-else
-                  :icon="form.mimeType ? getFileIcon(form.mimeType) : 'file'"
+                  :icon="getFileIcon(previewFile?.mimeType)"
                   class="text-gray-400 text-4xl"
                 />
               </div>
               <div class="p-4">
                 <h4 class="font-medium text-gray-900 dark:text-white line-clamp-2">
-                  {{ form.title || 'Titre de la ressource' }}
+                  {{ form.title || 'Titre du rapport' }}
                 </h4>
                 <p v-if="form.description" class="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
                   {{ form.description }}
                 </p>
-                <div class="flex gap-2 mt-3">
-                  <span class="text-xs px-2 py-1 bg-ti-blue/10 text-ti-blue rounded">Voir</span>
-                  <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded">Télécharger</span>
+                <div class="flex flex-wrap gap-1.5 mt-3">
+                  <span
+                    v-for="file in form.files"
+                    :key="file.key"
+                    class="text-xs px-2 py-0.5 rounded font-semibold bg-ti-blue/10 text-ti-blue dark:text-blue-300"
+                    :title="file.languageLabel"
+                  >
+                    {{ file.languageCode || '?' }}
+                    <font-awesome-icon v-if="file.source === 'link'" icon="external-link-alt" class="ml-0.5 text-[0.6rem]" />
+                  </span>
+                  <span class="text-xs px-2 py-0.5 bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 rounded ml-auto">Télécharger</span>
                 </div>
               </div>
             </div>
@@ -495,6 +384,7 @@ function getFileIcon(mimeType: string): string {
         </p>
         <AdminPublishActions
           :published="form.isPublished"
+          published-label="Publié"
           :saving="isSaving"
           @toggle="togglePublish"
           @save="handleSubmit"

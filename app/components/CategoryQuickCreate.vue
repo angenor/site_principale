@@ -1,7 +1,7 @@
 <script setup lang="ts">
-// Création rapide d'une catégorie d'actualité sans quitter le formulaire en cours
+// Création rapide d'une catégorie sans quitter le formulaire en cours
 
-interface CreatedNewsCategory {
+interface CreatedCategory {
   id: string
   name: string
   color: string | null
@@ -9,10 +9,20 @@ interface CreatedNewsCategory {
 
 const DEFAULT_COLOR = '#3B82F6'
 
+const props = withDefaults(defineProps<{
+  /** API de création (ex. '/api/admin/news-categories') */
+  endpoint: string
+  /** Page de gestion des catégories */
+  manageUrl: string
+  namePlaceholder?: string
+}>(), {
+  namePlaceholder: undefined
+})
+
 const open = defineModel<boolean>({ required: true })
 
 const emit = defineEmits<{
-  (e: 'created', category: CreatedNewsCategory): void
+  (e: 'created', category: CreatedCategory): void
 }>()
 
 const form = ref({ name: '', description: '', color: DEFAULT_COLOR, icon: null as string | null })
@@ -37,7 +47,7 @@ async function create() {
 
   isSaving.value = true
   try {
-    const result = await $fetch<{ data: CreatedNewsCategory }>('/api/admin/news-categories', {
+    const result = await $fetch<{ data: CreatedCategory }>(props.endpoint, {
       method: 'POST',
       body: {
         name: form.value.name.trim(),
@@ -66,17 +76,18 @@ async function create() {
       >
         {{ error }}
       </div>
-      <NewsCategoryFields
+      <CategoryFields
         v-model:name="form.name"
         v-model:description="form.description"
         v-model:color="form.color"
         v-model:icon="form.icon"
         name-input-id="quick-category-name"
+        :name-placeholder="namePlaceholder"
         compact-description
       />
       <p class="text-xs text-gray-500 dark:text-gray-400">
         Le slug et l'ordre d'affichage sont définis automatiquement. Vous pourrez les modifier dans
-        <NuxtLink to="/admin/news-categories" target="_blank" class="text-green-600 dark:text-green-400 hover:underline">la gestion des catégories</NuxtLink>.
+        <NuxtLink :to="manageUrl" target="_blank" class="text-green-600 dark:text-green-400 hover:underline">la gestion des catégories</NuxtLink>.
       </p>
     </form>
 
