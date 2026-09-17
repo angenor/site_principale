@@ -248,6 +248,14 @@ pnpm prisma generate           # Generate Prisma Client
 
 **Rationale**: Claude doesn't have root/admin access for certain operations. Providing commands allows the user to execute them with proper permissions.
 
+## Spec-Driven Development (GitHub Spec Kit)
+
+Spec Kit est initialisé (`.specify/`, skills dans `.claude/skills/speckit-*`).
+- Constitution du projet : `.specify/memory/constitution.md` (à respecter pour toute feature)
+- Workflow : `/speckit-specify` → `/speckit-clarify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-analyze` → `/speckit-implement`
+- Les specs sont générées dans `specs/NNN-nom-feature/`
+- Mise à jour : `uv tool install specify-cli --force --from git+https://github.com/github/spec-kit.git` puis `specify init --here --force --integration claude --script sh`
+
 ## Deployment & Migration
 
 **Documentation detaillee** : Voir `bank/GUIDE-MIGRATION.md`
