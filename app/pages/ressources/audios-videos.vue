@@ -1,4 +1,8 @@
 <script setup lang="ts">
+const { getConfig } = useAppSettings()
+
+const introText = computed(() => getConfig('resources_audio_videos_intro', 'Émissions, podcasts, face-à-face et contenus éducatifs sur la gouvernance minière à Madagascar'))
+
 definePageMeta({
   layout: 'default'
 })
@@ -119,7 +123,7 @@ function chipStyle(cat: Category, active: boolean) {
 
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <ResourcesHeader subtitle="Émissions, podcasts, face-à-face et contenus éducatifs sur la gouvernance minière à Madagascar" />
+    <ResourcesHeader :subtitle="introText" />
 
     <!-- Filtres -->
     <section class="py-6 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">

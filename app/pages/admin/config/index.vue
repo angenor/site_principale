@@ -48,6 +48,8 @@ const configGroups: ConfigGroup[] = [
       { key: 'partners_intro', label: 'Introduction Partenaires', type: 'text', placeholder: 'Ensemble pour une gouvernance minière transparente' },
       { key: 'news_intro', label: 'Introduction Actualités', type: 'textarea', placeholder: 'Les dernières nouvelles du secteur minier malgache', description: 'Affiché sur la page d\'accueil et en sous-titre de la page Actualités' },
       { key: 'case_studies_intro', label: 'Introduction Études de cas', type: 'textarea', placeholder: 'Analyses approfondies des activités minières à Madagascar', description: 'Affiché sur la page d\'accueil et en sous-titre de la page Études de cas' },
+      { key: 'resources_reports_intro', label: 'Introduction Ressources — Rapports', type: 'textarea', placeholder: 'Rapports, guides et recherches sur la gouvernance minière à Madagascar, à télécharger dans les langues disponibles', description: 'Affiché en sous-titre de la page Ressources > Rapports' },
+      { key: 'resources_audio_videos_intro', label: 'Introduction Ressources — Audios/Vidéos', type: 'textarea', placeholder: 'Émissions, podcasts, face-à-face et contenus éducatifs sur la gouvernance minière à Madagascar', description: 'Affiché en sous-titre de la page Ressources > Audios/Vidéos' },
       { key: 'report_case_intro', label: 'Introduction Signaler un cas', type: 'textarea', placeholder: 'Vous avez connaissance d\'un cas de mauvaise gouvernance ? Partagez l\'information de manière sécurisée.', description: 'Affiché sur la page d\'accueil et en sous-titre de la page Signaler' }
     ]
   },

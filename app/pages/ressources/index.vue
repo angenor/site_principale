@@ -1,5 +1,8 @@
 <script setup lang="ts">
 const { thumb } = useImageVariants()
+const { getConfig } = useAppSettings()
+
+const introText = computed(() => getConfig('resources_reports_intro', 'Rapports, guides et recherches sur la gouvernance minière à Madagascar, à télécharger dans les langues disponibles'))
 
 definePageMeta({
   layout: 'default'
@@ -81,7 +84,7 @@ function filterByCategory(categoryId: string) {
 
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <ResourcesHeader subtitle="Rapports, guides et recherches sur la gouvernance minière à Madagascar, à télécharger dans les langues disponibles" />
+    <ResourcesHeader :subtitle="introText" />
 
     <!-- Filtres -->
     <section class="py-6 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
