@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
     name: cat.name,
     slug: cat.slug,
     description: cat.description,
+    icon: cat.icon,
     color: cat.color,
     sortOrder: cat.sortOrder,
     createdAt: cat.createdAt,

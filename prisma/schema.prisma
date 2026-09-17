@@ -223,6 +223,7 @@ model NewsCategory {
   name        String   @unique
   slug        String   @unique
   description String?
+  icon        String?  // Icône FontAwesome (ex: "newspaper") ou URL d'image personnalisée
   color       String?  // Couleur en hexadécimal (ex: "#3B82F6")
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())

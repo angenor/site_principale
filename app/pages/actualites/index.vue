@@ -24,7 +24,7 @@ interface NewsItem {
   externalUrl: string | null
   publishedAt: string
   keywords?: string[]
-  category: { id: string; name: string; slug: string; color: string | null } | null
+  category: { id: string; name: string; slug: string; color: string | null; icon: string | null } | null
 }
 
 interface NewsCategory {
@@ -32,6 +32,7 @@ interface NewsCategory {
   name: string
   slug: string
   color: string | null
+  icon: string | null
 }
 
 interface NewsHomeResponse {
@@ -178,6 +179,7 @@ function navigateToNews(item: NewsItem) {
                   class="inline-block mr-2 px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide text-white"
                   :style="{ backgroundColor: item.category.color || '#3695d8' }"
                 >
+                  <CategoryIcon :icon="item.category.icon" class="mr-1" />
                   {{ item.category.name }}
                 </span>
                 <time class="text-white/70 text-sm">{{ formatDate(item.publishedAt) }}</time>
@@ -237,6 +239,11 @@ function navigateToNews(item: NewsItem) {
                 :style="selectedCategory === category.slug ? { backgroundColor: category.color || '#3695d8', borderColor: category.color || '#3695d8' } : {}"
                 @click="selectCategory(category.slug)"
               >
+                <CategoryIcon
+                  :icon="category.icon"
+                  class="mr-1.5"
+                  :style="selectedCategory !== category.slug && category.color ? { color: category.color } : {}"
+                />
                 {{ category.name }}
               </button>
             </div>
@@ -286,6 +293,7 @@ function navigateToNews(item: NewsItem) {
                     class="inline-block mb-1 px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide text-white"
                     :style="{ backgroundColor: item.category.color || '#3695d8' }"
                   >
+                    <CategoryIcon :icon="item.category.icon" class="mr-1" />
                     {{ item.category.name }}
                   </span>
                   <h3 class="font-bold text-xl text-gray-900 dark:text-white group-hover:text-ti-blue dark:group-hover:text-ti-blue-400 leading-tight transition-colors">
@@ -375,6 +383,7 @@ function navigateToNews(item: NewsItem) {
                 class="inline-block mb-2 px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide text-white"
                 :style="{ backgroundColor: featured.category.color || '#3695d8' }"
               >
+                <CategoryIcon :icon="featured.category.icon" class="mr-1" />
                 {{ featured.category.name }}
               </span>
               <h3 class="font-bold text-2xl text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 leading-tight transition-colors">

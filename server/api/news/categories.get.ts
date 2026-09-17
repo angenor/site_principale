@@ -11,7 +11,8 @@ export default defineEventHandler(async () => {
       id: true,
       name: true,
       slug: true,
-      color: true
+      color: true,
+      icon: true
     }
   })
 

@@ -42,7 +42,7 @@ export default defineEventHandler(async (event) => {
       publishedAt: true,
       keywords: true,
       category: {
-        select: { id: true, name: true, slug: true, color: true }
+        select: { id: true, name: true, slug: true, color: true, icon: true }
       }
     }
   })
@@ -65,7 +65,7 @@ export default defineEventHandler(async (event) => {
       publishedAt: true,
       keywords: true,
       category: {
-        select: { id: true, name: true, slug: true, color: true }
+        select: { id: true, name: true, slug: true, color: true, icon: true }
       }
     }
   })
@@ -87,7 +87,7 @@ export default defineEventHandler(async (event) => {
         publishedAt: true,
         keywords: true,
         category: {
-          select: { id: true, name: true, slug: true, color: true }
+          select: { id: true, name: true, slug: true, color: true, icon: true }
         }
       }
     }),

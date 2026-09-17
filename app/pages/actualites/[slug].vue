@@ -31,7 +31,7 @@ interface NewsArticle {
   author: string
   authors: string[]
   keywords: string[]
-  category: { id: string; name: string; slug: string; color: string | null } | null
+  category: { id: string; name: string; slug: string; color: string | null; icon: string | null } | null
   viewCount: number
   attachments?: Attachment[]
 }
@@ -197,6 +197,7 @@ function getFileColor(mimeType: string): string {
               class="inline-block mb-3 px-3 py-1 rounded text-xs font-semibold uppercase tracking-wide text-white hover:opacity-90 transition-opacity"
               :style="{ backgroundColor: article.category.color || '#3695d8' }"
             >
+              <CategoryIcon :icon="article.category.icon" class="mr-1" />
               {{ article.category.name }}
             </NuxtLink>
 

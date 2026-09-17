@@ -70,6 +70,10 @@ export default defineEventHandler(async (event) => {
   if (body.description !== undefined) {
     updateData.description = body.description?.trim() || null
   }
+  if (body.icon !== undefined) {
+    updateData.icon = body.icon?.trim() || null
+  }
+
   if (body.color !== undefined) {
     updateData.color = body.color?.trim() || null
   }

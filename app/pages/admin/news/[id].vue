@@ -81,6 +81,15 @@ const { fullName } = useAuth()
 const { data: categories } = await useFetch<NewsCategoryOption[]>('/api/admin/news-categories', {
   default: () => []
 })
+
+// Création rapide d'une catégorie depuis le formulaire
+const showCategoryModal = ref(false)
+
+function onCategoryCreated(category: NewsCategoryOption) {
+  // Placée en dernier par l'API : on l'ajoute en fin de liste et on la sélectionne
+  categories.value = [...(categories.value || []), category]
+  form.value.categoryId = category.id
+}
 const { data: suggestions } = await useFetch<{ authors: string[]; keywords: string[] }>('/api/admin/news/suggestions', {
   default: () => ({ authors: [], keywords: [] })
 })
@@ -513,18 +522,29 @@ async function togglePublish() {
                     Gérer les catégories
                   </NuxtLink>
                 </div>
-                <select
-                  id="categoryId"
-                  v-model="form.categoryId"
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 cursor-pointer"
-                >
-                  <option value="">Aucune catégorie</option>
-                  <option v-for="category in categories" :key="category.id" :value="category.id">
-                    {{ category.name }}
-                  </option>
-                </select>
+                <div class="flex items-center gap-2">
+                  <select
+                    id="categoryId"
+                    v-model="form.categoryId"
+                    class="flex-1 min-w-0 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 cursor-pointer"
+                  >
+                    <option value="">Aucune catégorie</option>
+                    <option v-for="category in categories" :key="category.id" :value="category.id">
+                      {{ category.name }}
+                    </option>
+                  </select>
+                  <button
+                    type="button"
+                    title="Nouvelle catégorie"
+                    aria-label="Nouvelle catégorie"
+                    class="shrink-0 w-10 h-10 inline-flex items-center justify-center rounded-lg border border-green-600 text-green-600 hover:bg-green-50 dark:border-green-500 dark:text-green-400 dark:hover:bg-green-900/30 transition-colors cursor-pointer"
+                    @click="showCategoryModal = true"
+                  >
+                    <font-awesome-icon icon="plus" />
+                  </button>
+                </div>
                 <p v-if="!categories?.length" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Aucune catégorie n'a encore été créée.
+                  Aucune catégorie pour l'instant : créez-en une avec le bouton +.
                 </p>
               </div>
 
@@ -658,5 +678,7 @@ async function togglePublish() {
         </div>
       </div>
     </form>
+
+    <NewsCategoryQuickCreate v-model="showCategoryModal" @created="onCategoryCreated" />
   </div>
 </template>

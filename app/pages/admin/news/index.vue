@@ -18,7 +18,7 @@ interface NewsItem {
   author: string | null
   label: 'STANDARD' | 'TRENDING' | 'FEATURED'
   labelExpiresAt: string | null
-  category: { id: string; name: string; color: string | null } | null
+  category: { id: string; name: string; color: string | null; icon: string | null } | null
   authors: string[]
   keywords: string[]
 }
@@ -228,6 +228,7 @@ function isExpiringSoon(dateString: string | null): boolean {
                         class="text-white text-xs px-2 py-0.5 rounded font-medium whitespace-nowrap"
                         :style="{ backgroundColor: item.category.color || '#6B7280' }"
                       >
+                        <CategoryIcon :icon="item.category.icon" class="mr-0.5" />
                         {{ item.category.name }}
                       </span>
                       <p class="font-medium text-gray-900 dark:text-white line-clamp-1">

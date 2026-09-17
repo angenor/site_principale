@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
         select: { id: true, firstName: true, lastName: true }
       },
       category: {
-        select: { id: true, name: true, color: true }
+        select: { id: true, name: true, color: true, icon: true }
       },
       attachments: {
         orderBy: { sortOrder: 'asc' }

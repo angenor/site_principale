@@ -46,13 +46,21 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  // Sans ordre précisé (création rapide depuis une actualité), la catégorie est placée en dernier
+  let sortOrder = body.sortOrder
+  if (typeof sortOrder !== 'number') {
+    const last = await prisma.newsCategory.aggregate({ _max: { sortOrder: true } })
+    sortOrder = (last._max.sortOrder ?? -10) + 10
+  }
+
   const category = await prisma.newsCategory.create({
     data: {
       name,
       slug,
       description: body.description?.trim() || null,
+      icon: body.icon?.trim() || null,
       color: body.color?.trim() || null,
-      sortOrder: body.sortOrder ?? 0
+      sortOrder
     }
   })
 
