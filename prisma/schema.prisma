@@ -542,6 +542,27 @@ model ContactAttachment {
 }
 
 // ============================================================================
+// NEWSLETTER
+// ============================================================================
+
+// Abonnés aux newsletters (actualités et études de cas)
+model NewsletterSubscriber {
+  id               String    @id @default(cuid())
+  name             String    // Nom d'une personne ou d'une organisation
+  email            String    @unique // Stocké en minuscules
+  unsubscribeToken String    @unique @default(cuid())
+  isActive         Boolean   @default(true)
+  ipAddress        String?
+  subscribedAt     DateTime  @default(now())
+  unsubscribedAt   DateTime?
+  updatedAt        DateTime  @updatedAt
+
+  @@index([isActive])
+  @@index([subscribedAt])
+  @@map("newsletter_subscribers")
+}
+
+// ============================================================================
 // STATISTIQUES ET SUIVI
 // ============================================================================
 

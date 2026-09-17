@@ -55,6 +55,7 @@ const navigation: NavItem[] = [
       { name: 'Catégories', href: '/admin/report-categories', icon: 'tags' }
     ]
   },
+  { name: 'Newsletter', href: '/admin/newsletter', icon: 'paper-plane' },
   { name: 'Contenu', href: '/admin/content', icon: 'file-lines' },
   { name: 'Page À propos', href: '/admin/about', icon: 'info-circle' },
   { name: 'Statistiques', href: '/admin/analytics', icon: 'chart-line' },

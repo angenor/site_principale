@@ -51,10 +51,112 @@ const socialLinks = computed(() => {
       url: siteConfig.value?.[social.key] || ''
     }))
 })
+
+// Abonnement aux newsletters
+const newsletterForm = reactive({ name: '', email: '', website: '' })
+const newsletterStatus = ref<'idle' | 'loading' | 'success' | 'error'>('idle')
+const newsletterMessage = ref('')
+
+async function subscribeNewsletter() {
+  if (newsletterStatus.value === 'loading') return
+  newsletterStatus.value = 'loading'
+  newsletterMessage.value = ''
+
+  try {
+    const response = await $fetch<{ message: string }>('/api/newsletter/subscribe', {
+      method: 'POST',
+      body: { ...newsletterForm }
+    })
+    newsletterStatus.value = 'success'
+    newsletterMessage.value = response.message
+    newsletterForm.name = ''
+    newsletterForm.email = ''
+  } catch (error: unknown) {
+    const fetchError = error as { data?: { statusMessage?: string } }
+    newsletterStatus.value = 'error'
+    newsletterMessage.value = fetchError.data?.statusMessage || 'Une erreur est survenue. Veuillez réessayer.'
+  }
+}
 </script>
 
 <template>
   <footer class="bg-gray-900 dark:bg-gray-950 text-white">
+    <!-- Abonnement aux newsletters -->
+    <div id="newsletter" class="border-b border-gray-800">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10 items-center">
+          <div class="lg:col-span-2">
+            <h3 class="font-heading font-bold text-xl uppercase tracking-wide text-ti-blue-400 flex items-center gap-3">
+              <font-awesome-icon icon="envelope" class="w-5 h-5" />
+              S’abonner aux newsletters de l’Observatoire
+            </h3>
+            <p class="mt-2 text-sm text-gray-400">
+              Recevez par e-mail les nouvelles actualités et études de cas publiées par l’Observatoire.
+            </p>
+          </div>
+
+          <form class="lg:col-span-3" novalidate @submit.prevent="subscribeNewsletter">
+            <div class="flex flex-col sm:flex-row gap-3">
+              <label class="sr-only" for="newsletter-name">Nom (personne ou organisation)</label>
+              <input
+                id="newsletter-name"
+                v-model="newsletterForm.name"
+                type="text"
+                required
+                maxlength="200"
+                autocomplete="name"
+                placeholder="Nom ou organisation"
+                class="flex-1 min-w-0 px-4 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-ti-blue focus:border-ti-blue"
+              />
+              <label class="sr-only" for="newsletter-email">Adresse électronique</label>
+              <input
+                id="newsletter-email"
+                v-model="newsletterForm.email"
+                type="email"
+                required
+                maxlength="254"
+                autocomplete="email"
+                placeholder="Adresse électronique"
+                class="flex-1 min-w-0 px-4 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-ti-blue focus:border-ti-blue"
+              />
+              <!-- Champ piège anti-robots, invisible pour les visiteurs -->
+              <input
+                v-model="newsletterForm.website"
+                type="text"
+                name="website"
+                tabindex="-1"
+                autocomplete="off"
+                aria-hidden="true"
+                class="hidden"
+              />
+              <button
+                type="submit"
+                :disabled="newsletterStatus === 'loading'"
+                class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-ti-blue hover:bg-ti-blue-600 text-white text-sm font-semibold transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap"
+              >
+                <font-awesome-icon
+                  :icon="newsletterStatus === 'loading' ? 'spinner' : 'paper-plane'"
+                  :class="{ 'animate-spin': newsletterStatus === 'loading' }"
+                  class="w-4 h-4"
+                />
+                S’abonner
+              </button>
+            </div>
+            <p
+              v-if="newsletterMessage"
+              role="status"
+              aria-live="polite"
+              :class="newsletterStatus === 'success' ? 'text-green-400' : 'text-red-400'"
+              class="mt-3 text-sm flex items-center gap-2"
+            >
+              <font-awesome-icon :icon="newsletterStatus === 'success' ? 'check-circle' : 'circle-exclamation'" class="w-4 h-4" />
+              {{ newsletterMessage }}
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <!-- Section principale -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
