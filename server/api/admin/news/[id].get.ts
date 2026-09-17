@@ -19,6 +19,9 @@ export default defineEventHandler(async (event) => {
       author: {
         select: { id: true, firstName: true, lastName: true }
       },
+      category: {
+        select: { id: true, name: true, color: true }
+      },
       attachments: {
         orderBy: { sortOrder: 'asc' }
       }
@@ -44,6 +47,10 @@ export default defineEventHandler(async (event) => {
     publishedAt: news.publishedAt,
     label: news.label,
     labelExpiresAt: news.labelExpiresAt,
+    categoryId: news.categoryId,
+    category: news.category,
+    authors: news.authors,
+    keywords: news.keywords,
     viewCount: news.viewCount,
     createdAt: news.createdAt,
     updatedAt: news.updatedAt,

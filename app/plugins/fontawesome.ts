@@ -115,7 +115,9 @@ import {
   // Icônes pour la navigation admin (sous-menus)
   faList,
   faTags,
+  faTag,
   faHashtag,
+  faPalette,
   faAddressCard,
   faLightbulb,
   faSave,
@@ -262,7 +264,9 @@ library.add(
   // Icônes pour la navigation admin (sous-menus)
   faList,
   faTags,
+  faTag,
   faHashtag,
+  faPalette,
   faAddressCard,
   faLightbulb,
   faSave,

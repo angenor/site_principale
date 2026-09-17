@@ -1,5 +1,6 @@
 import prisma from '../../../utils/prisma'
 import { requireAuth } from '../../../utils/auth'
+import { normalizeStringList, parseDateInput } from '../../../utils/news'
 
 interface CreateNewsBody {
   title: string
@@ -10,6 +11,10 @@ interface CreateNewsBody {
   isPublished?: boolean
   label?: 'STANDARD' | 'TRENDING' | 'FEATURED'
   labelExpiresAt?: string | null
+  publishedAt?: string | null
+  categoryId?: string | null
+  authors?: string[]
+  keywords?: string[]
 }
 
 function generateSlug(title: string): string {
@@ -49,6 +54,21 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  if (body.categoryId) {
+    const category = await prisma.newsCategory.findUnique({ where: { id: body.categoryId } })
+    if (!category) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Catégorie introuvable'
+      })
+    }
+  }
+
+  // Date de publication : celle fournie, sinon la date du jour lors de la publication
+  const publishedAt = body.publishedAt
+    ? parseDateInput(body.publishedAt, 'Date de publication')
+    : (body.isPublished ? new Date() : null)
+
   let slug = generateSlug(body.title)
   const existingSlug = await prisma.news.findUnique({
     where: { slug }
@@ -68,7 +88,10 @@ export default defineEventHandler(async (event) => {
       externalUrl: body.externalUrl || null,
       authorId: auth.userId,
       isPublished: body.isPublished || false,
-      publishedAt: body.isPublished ? new Date() : null,
+      publishedAt,
+      categoryId: body.categoryId || null,
+      authors: normalizeStringList(body.authors),
+      keywords: normalizeStringList(body.keywords),
       label: body.label || 'STANDARD',
       labelExpiresAt: body.labelExpiresAt ? new Date(body.labelExpiresAt) : null
     },

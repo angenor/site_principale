@@ -5,6 +5,13 @@ export default defineEventHandler(async (event) => {
 
   const page = parseInt(query.page as string) || 1
   const limit = parseInt(query.limit as string) || 10
+  const categorySlug = (query.category as string) || ''
+
+  // Filtre optionnel par catégorie pour la section "Récent"
+  const latestWhere = {
+    isPublished: true,
+    ...(categorySlug ? { category: { slug: categorySlug } } : {})
+  }
 
   const now = new Date()
 
@@ -32,7 +39,11 @@ export default defineEventHandler(async (event) => {
       summary: true,
       coverImage: true,
       externalUrl: true,
-      publishedAt: true
+      publishedAt: true,
+      keywords: true,
+      category: {
+        select: { id: true, name: true, slug: true, color: true }
+      }
     }
   })
 
@@ -51,16 +62,18 @@ export default defineEventHandler(async (event) => {
       summary: true,
       coverImage: true,
       externalUrl: true,
-      publishedAt: true
+      publishedAt: true,
+      keywords: true,
+      category: {
+        select: { id: true, name: true, slug: true, color: true }
+      }
     }
   })
 
   // Récupérer toutes les actualités publiées (paginées) pour la section "Récent"
   const [latest, total] = await Promise.all([
     prisma.news.findMany({
-      where: {
-        isPublished: true
-      },
+      where: latestWhere,
       skip: (page - 1) * limit,
       take: limit,
       orderBy: { publishedAt: 'desc' },
@@ -71,12 +84,14 @@ export default defineEventHandler(async (event) => {
         summary: true,
         coverImage: true,
         externalUrl: true,
-        publishedAt: true
+        publishedAt: true,
+        keywords: true,
+        category: {
+          select: { id: true, name: true, slug: true, color: true }
+        }
       }
     }),
-    prisma.news.count({
-      where: { isPublished: true }
-    })
+    prisma.news.count({ where: latestWhere })
   ])
 
   return {

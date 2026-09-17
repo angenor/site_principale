@@ -86,6 +86,67 @@ const tabs = [
   { id: 'gallery' as const, label: 'Slider accueil', icon: 'image' }
 ]
 
+// Sauvegarde locale des formulaires en cours
+const axisDraft = useFormDraft({
+  key: 'strategic-axes',
+  source: () => ({ ...newAxis.value }),
+  apply: (data) => {
+    newAxis.value = { ...newAxis.value, ...data }
+  }
+})
+const partnerDraft = useFormDraft({
+  key: 'partners',
+  source: () => ({ ...newPartner.value }),
+  apply: (data) => {
+    newPartner.value = { ...newPartner.value, ...data }
+  }
+})
+const imageDraft = useFormDraft({
+  key: 'gallery',
+  source: () => ({ ...newImage.value }),
+  apply: (data) => {
+    newImage.value = { ...newImage.value, ...data }
+  }
+})
+const axisDraftRestoredAt = axisDraft.restoredAt
+const partnerDraftRestoredAt = partnerDraft.restoredAt
+const imageDraftRestoredAt = imageDraft.restoredAt
+
+// Les formulaires de création sont toujours affichés : leur suivi démarre au montage
+onMounted(() => {
+  axisDraft.start('new')
+  partnerDraft.start('new')
+  imageDraft.start('new')
+})
+
+// Rouvre l'édition laissée en cours avant le rechargement de la page
+function resumeEdit<T extends { id: string }>(
+  draft: Pick<ReturnType<typeof useFormDraft>, 'resume'>,
+  items: () => T[] | null | undefined,
+  edit: (item: T) => void
+) {
+  draft.resume((ctx) => {
+    if (ctx === 'new') return
+    const list = items() || []
+    const item = list.find(i => i.id === ctx)
+    if (item) {
+      edit(item)
+      return
+    }
+    if (list.length) return false
+  })
+}
+resumeEdit(axisDraft, () => axes.value, editAxis)
+resumeEdit(partnerDraft, () => partners.value, editPartner)
+resumeEdit(imageDraft, () => gallery.value, editImage)
+
+// Affiche l'onglet contenant un brouillon restauré
+onMounted(() => {
+  if (axisDraftRestoredAt.value) activeTab.value = 'axes'
+  else if (partnerDraftRestoredAt.value) activeTab.value = 'partners'
+  else if (imageDraftRestoredAt.value) activeTab.value = 'gallery'
+})
+
 // Strategic Axes CRUD
 async function saveAxis() {
   error.value = ''
@@ -131,9 +192,11 @@ function editAxis(axis: StrategicAxis) {
     linkUrl: axis.linkUrl || '',
     isActive: axis.isActive
   }
+  axisDraft.start(axis.id)
 }
 
 function resetAxisForm() {
+  axisDraft.clear()
   editingAxis.value = null
   newAxis.value = {
     title: '',
@@ -144,6 +207,7 @@ function resetAxisForm() {
     linkUrl: '',
     isActive: true
   }
+  axisDraft.start('new')
 }
 
 async function deleteAxis(id: string) {
@@ -200,9 +264,11 @@ function editPartner(partner: Partner) {
     description: partner.description || '',
     isActive: partner.isActive
   }
+  partnerDraft.start(partner.id)
 }
 
 function resetPartnerForm() {
+  partnerDraft.clear()
   editingPartner.value = null
   newPartner.value = {
     name: '',
@@ -211,6 +277,7 @@ function resetPartnerForm() {
     description: '',
     isActive: true
   }
+  partnerDraft.start('new')
 }
 
 async function deletePartner(id: string) {
@@ -267,9 +334,11 @@ function editImage(image: GalleryImage) {
     linkUrl: image.linkUrl || '',
     isActive: image.isActive
   }
+  imageDraft.start(image.id)
 }
 
 function resetImageForm() {
+  imageDraft.clear()
   editingImage.value = null
   newImage.value = {
     title: '',
@@ -278,6 +347,7 @@ function resetImageForm() {
     linkUrl: '',
     isActive: true
   }
+  imageDraft.start('new')
 }
 
 async function deleteImage(id: string) {
@@ -339,6 +409,12 @@ async function deleteImage(id: string) {
             <h3 class="font-semibold text-gray-900 dark:text-white mb-4">
               {{ editingAxis ? 'Modifier l\'axe' : 'Nouvel axe stratégique' }}
             </h3>
+            <FormDraftNotice
+              v-if="axisDraftRestoredAt"
+              :saved-at="axisDraftRestoredAt"
+              class="mb-4"
+              @discard="axisDraft.discard()"
+            />
             <div class="space-y-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Titre *</label>
@@ -425,6 +501,12 @@ async function deleteImage(id: string) {
             <h3 class="font-semibold text-gray-900 dark:text-white mb-4">
               {{ editingPartner ? 'Modifier le partenaire' : 'Nouveau partenaire' }}
             </h3>
+            <FormDraftNotice
+              v-if="partnerDraftRestoredAt"
+              :saved-at="partnerDraftRestoredAt"
+              class="mb-4"
+              @discard="partnerDraft.discard()"
+            />
             <div class="space-y-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nom *</label>
@@ -488,6 +570,12 @@ async function deleteImage(id: string) {
             <h3 class="font-semibold text-gray-900 dark:text-white mb-4">
               {{ editingImage ? 'Modifier l\'image' : 'Nouvelle image' }}
             </h3>
+            <FormDraftNotice
+              v-if="imageDraftRestoredAt"
+              :saved-at="imageDraftRestoredAt"
+              class="mb-4"
+              @discard="imageDraft.discard()"
+            />
             <div class="space-y-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image *</label>

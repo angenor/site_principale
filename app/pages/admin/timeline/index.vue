@@ -31,6 +31,32 @@ const form = ref({
   isActive: true
 })
 
+// Sauvegarde locale de la saisie en cours
+const draft = useFormDraft({
+  key: 'timeline',
+  source: () => ({ ...form.value }),
+  apply: (data) => {
+    form.value = { ...form.value, ...data }
+  }
+})
+const draftRestoredAt = draft.restoredAt
+
+// Rouvre le formulaire laissé en cours avant le rechargement de la page
+draft.resume((ctx) => {
+  if (ctx === 'new') {
+    startCreate()
+    return
+  }
+  const list = events.value || []
+  const item = list.find(i => i.id === ctx)
+  if (item) {
+    startEdit(item)
+    return
+  }
+  // Élément supprimé entre-temps : le brouillon est abandonné
+  if (list.length) return false
+})
+
 function startCreate() {
   editingEvent.value = null
   isCreating.value = true
@@ -44,6 +70,7 @@ function startCreate() {
   }
   error.value = ''
   success.value = ''
+  draft.start('new')
 }
 
 function startEdit(event: TimelineEvent) {
@@ -59,9 +86,11 @@ function startEdit(event: TimelineEvent) {
   }
   error.value = ''
   success.value = ''
+  draft.start(event.id)
 }
 
 function cancelEdit() {
+  draft.clear()
   editingEvent.value = null
   isCreating.value = false
   error.value = ''
@@ -166,6 +195,11 @@ async function toggleActive(event: TimelineEvent) {
       </h2>
 
       <form @submit.prevent="save" class="space-y-4">
+        <FormDraftNotice
+          v-if="draftRestoredAt"
+          :saved-at="draftRestoredAt"
+          @discard="draft.discard()"
+        />
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <!-- Année -->
           <div>

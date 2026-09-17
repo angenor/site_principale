@@ -23,6 +23,15 @@ interface NewsItem {
   coverImage: string | null
   externalUrl: string | null
   publishedAt: string
+  keywords?: string[]
+  category: { id: string; name: string; slug: string; color: string | null } | null
+}
+
+interface NewsCategory {
+  id: string
+  name: string
+  slug: string
+  color: string | null
 }
 
 interface NewsHomeResponse {
@@ -39,13 +48,38 @@ interface NewsHomeResponse {
   }
 }
 
+const route = useRoute()
+const router = useRouter()
+
 const currentPage = ref(1)
+const selectedCategory = ref((route.query.categorie as string) || '')
+
+const { data: categories } = await useFetch<NewsCategory[]>('/api/news/categories', {
+  default: () => []
+})
 
 const { data: newsData, status } = await useFetch<NewsHomeResponse>('/api/news/home', {
   query: computed(() => ({
     page: currentPage.value,
-    limit: 10
+    limit: 10,
+    ...(selectedCategory.value ? { category: selectedCategory.value } : {})
   }))
+})
+
+const activeCategory = computed(() => categories.value?.find(c => c.slug === selectedCategory.value) || null)
+
+function selectCategory(slug: string) {
+  selectedCategory.value = slug
+  currentPage.value = 1
+  router.replace({ query: slug ? { categorie: slug } : {} })
+}
+
+watch(() => route.query.categorie, (value) => {
+  const slug = (value as string) || ''
+  if (slug !== selectedCategory.value) {
+    selectedCategory.value = slug
+    currentPage.value = 1
+  }
 })
 
 const trending = computed(() => newsData.value?.trending || [])
@@ -101,7 +135,7 @@ function navigateToNews(item: NewsItem) {
 
     <template v-else>
       <!-- Section À la une (Trending) -->
-      <section v-if="trending.length > 0" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
+      <section v-if="trending.length > 0 && !selectedCategory" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
         <h2 class="border-b-2 border-yellow-600 mb-6">
           <span class="bg-yellow-600 px-3 py-1.5 text-white uppercase tracking-wide text-sm font-semibold inline-block">
             À la une
@@ -139,6 +173,13 @@ function navigateToNews(item: NewsItem) {
             <div class="absolute inset-x-0 bottom-0 p-6 z-20">
               <!-- Titre toujours visible -->
               <div class="mb-0 group-hover:mb-4 transition-all duration-300">
+                <span
+                  v-if="item.category"
+                  class="inline-block mr-2 px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide text-white"
+                  :style="{ backgroundColor: item.category.color || '#3695d8' }"
+                >
+                  {{ item.category.name }}
+                </span>
                 <time class="text-white/70 text-sm">{{ formatDate(item.publishedAt) }}</time>
                 <h3 class="font-bold text-white text-xl leading-tight mt-2 group-hover:underline line-clamp-2">
                   {{ item.title }}
@@ -160,12 +201,45 @@ function navigateToNews(item: NewsItem) {
       <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="flex flex-col lg:flex-row gap-8">
           <!-- Récent (2/3 ou pleine largeur si pas de featured) -->
-          <div :class="featured ? 'w-full lg:w-2/3' : 'w-full'">
+          <div :class="featured && !selectedCategory ? 'w-full lg:w-2/3' : 'w-full'">
             <h2 class="border-b-2 border-red-600 mb-6">
               <span class="bg-red-600 px-3 py-1.5 text-white uppercase tracking-wide text-sm font-semibold inline-block">
-                Récent
+                {{ activeCategory ? activeCategory.name : 'Récent' }}
               </span>
             </h2>
+
+            <!-- Filtre par catégorie -->
+            <div v-if="categories && categories.length > 0" class="flex flex-wrap gap-2 mb-6" role="group" aria-label="Filtrer par catégorie">
+              <button
+                type="button"
+                :aria-pressed="!selectedCategory"
+                :class="[
+                  'px-3 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer',
+                  !selectedCategory
+                    ? 'bg-ti-blue border-ti-blue text-white'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                ]"
+                @click="selectCategory('')"
+              >
+                Toutes
+              </button>
+              <button
+                v-for="category in categories"
+                :key="category.id"
+                type="button"
+                :aria-pressed="selectedCategory === category.slug"
+                :class="[
+                  'px-3 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer',
+                  selectedCategory === category.slug
+                    ? 'text-white'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                ]"
+                :style="selectedCategory === category.slug ? { backgroundColor: category.color || '#3695d8', borderColor: category.color || '#3695d8' } : {}"
+                @click="selectCategory(category.slug)"
+              >
+                {{ category.name }}
+              </button>
+            </div>
 
             <!-- Empty state -->
             <div v-if="latest.length === 0" class="text-center py-16">
@@ -207,6 +281,13 @@ function navigateToNews(item: NewsItem) {
                 </div>
                 <!-- Contenu -->
                 <div class="flex-1">
+                  <span
+                    v-if="item.category"
+                    class="inline-block mb-1 px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide text-white"
+                    :style="{ backgroundColor: item.category.color || '#3695d8' }"
+                  >
+                    {{ item.category.name }}
+                  </span>
                   <h3 class="font-bold text-xl text-gray-900 dark:text-white group-hover:text-ti-blue dark:group-hover:text-ti-blue-400 leading-tight transition-colors">
                     {{ item.title }}
                   </h3>
@@ -264,7 +345,7 @@ function navigateToNews(item: NewsItem) {
           </div>
 
           <!-- En vedette (1/3) - conditionnel -->
-          <div v-if="featured" class="w-full lg:w-1/3">
+          <div v-if="featured && !selectedCategory" class="w-full lg:w-1/3">
             <h2 class="border-b-2 border-indigo-600 mb-6">
               <span class="bg-indigo-600 px-3 py-1.5 text-white uppercase tracking-wide text-sm font-semibold inline-block">
                 En vedette
@@ -289,6 +370,13 @@ function navigateToNews(item: NewsItem) {
                   </span>
                 </div>
               </div>
+              <span
+                v-if="featured.category"
+                class="inline-block mb-2 px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide text-white"
+                :style="{ backgroundColor: featured.category.color || '#3695d8' }"
+              >
+                {{ featured.category.name }}
+              </span>
               <h3 class="font-bold text-2xl text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 leading-tight transition-colors">
                 {{ featured.title }}
               </h3>

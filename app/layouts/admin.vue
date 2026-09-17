@@ -28,7 +28,14 @@ const navigation: NavItem[] = [
       { name: 'Mots-clés', href: '/admin/keywords', icon: 'hashtag' }
     ]
   },
-  { name: 'Actualités', href: '/admin/news', icon: 'newspaper' },
+  {
+    name: 'Actualités',
+    icon: 'newspaper',
+    children: [
+      { name: 'Liste des actualités', href: '/admin/news', icon: 'list' },
+      { name: 'Catégories', href: '/admin/news-categories', icon: 'tags' }
+    ]
+  },
   {
     name: 'Ressources',
     icon: 'book',
@@ -62,7 +69,7 @@ function isActive(href: string) {
   if (href === '/admin') {
     return route.path === '/admin'
   }
-  return route.path.startsWith(href)
+  return route.path === href || route.path.startsWith(`${href}/`)
 }
 
 function isParentActive(item: NavItem): boolean {

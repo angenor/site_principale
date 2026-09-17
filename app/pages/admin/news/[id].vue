@@ -27,7 +27,33 @@ interface NewsItem {
   isPublished: boolean
   label: 'STANDARD' | 'TRENDING' | 'FEATURED'
   labelExpiresAt: string | null
+  publishedAt: string | null
+  categoryId: string | null
+  authors: string[]
+  keywords: string[]
+  author: { id: string; name: string } | null
   attachments?: Attachment[]
+}
+
+interface NewsCategoryOption {
+  id: string
+  name: string
+  color: string | null
+}
+
+// Conversion Date <-> valeur d'un input datetime-local (heure locale du navigateur)
+function toLocalInputValue(value: string | null): string {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  const offset = date.getTimezoneOffset() * 60000
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16)
+}
+
+function toIsoOrNull(value: string): string | null {
+  if (!value) return null
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? null : date.toISOString()
 }
 
 const route = useRoute()
@@ -43,8 +69,25 @@ const form = ref({
   externalUrl: '',
   isPublished: false,
   label: 'STANDARD' as 'STANDARD' | 'TRENDING' | 'FEATURED',
-  labelExpiresAt: '' as string
+  labelExpiresAt: '' as string,
+  publishedAt: '' as string,
+  categoryId: '' as string,
+  authors: [] as string[],
+  keywords: [] as string[]
 })
+
+const { fullName } = useAuth()
+
+const { data: categories } = await useFetch<NewsCategoryOption[]>('/api/admin/news-categories', {
+  default: () => []
+})
+const { data: suggestions } = await useFetch<{ authors: string[]; keywords: string[] }>('/api/admin/news/suggestions', {
+  default: () => ({ authors: [], keywords: [] })
+})
+
+// Nom de l'administrateur affiché quand aucun auteur n'est renseigné
+const creatorName = ref('')
+const defaultAuthorName = computed(() => creatorName.value || fullName.value || 'l\'administrateur')
 
 // Fichiers annexes
 const attachments = ref<Attachment[]>([])
@@ -75,13 +118,6 @@ if (!isNew) {
     }
 
     if (newsData.value) {
-      // Formater la date d'expiration pour l'input datetime-local
-      let formattedExpiry = ''
-      if (newsData.value.labelExpiresAt) {
-        const date = new Date(newsData.value.labelExpiresAt)
-        formattedExpiry = date.toISOString().slice(0, 16)
-      }
-
       form.value = {
         title: newsData.value.title,
         summary: newsData.value.summary || '',
@@ -90,7 +126,14 @@ if (!isNew) {
         externalUrl: newsData.value.externalUrl || '',
         isPublished: newsData.value.isPublished,
         label: newsData.value.label || 'STANDARD',
-        labelExpiresAt: formattedExpiry
+        labelExpiresAt: toLocalInputValue(newsData.value.labelExpiresAt),
+        publishedAt: toLocalInputValue(newsData.value.publishedAt),
+        categoryId: newsData.value.categoryId || '',
+        authors: newsData.value.authors || [],
+        keywords: newsData.value.keywords || []
+      }
+      if (newsData.value.author) {
+        creatorName.value = newsData.value.author.name
       }
       // Charger les fichiers annexes
       if (newsData.value.attachments) {
@@ -105,6 +148,31 @@ if (!isNew) {
   }
 } else {
   dataLoaded.value = true
+}
+
+// Sauvegarde locale de la saisie en cours
+const editorRevision = ref(0)
+const draft = useFormDraft({
+  key: 'news',
+  source: () => ({
+    form: { ...form.value, content: normalizeEditorContent(form.value.content) },
+    // Les fichiers d'une actualité existante sont enregistrés immédiatement
+    attachments: isNew ? attachments.value : []
+  }),
+  apply: (data) => {
+    form.value = { ...form.value, ...data.form }
+    if (isNew) attachments.value = data.attachments
+  }
+})
+const draftRestoredAt = draft.restoredAt
+
+onMounted(() => {
+  if (dataLoaded.value) draft.start(id)
+})
+
+function discardDraft() {
+  draft.discard()
+  editorRevision.value++
 }
 
 // Check if content has blocks
@@ -154,7 +222,11 @@ async function handleSubmit() {
       externalUrl: form.value.externalUrl || null,
       isPublished: form.value.isPublished,
       label: form.value.label,
-      labelExpiresAt: form.value.labelExpiresAt || null
+      labelExpiresAt: toIsoOrNull(form.value.labelExpiresAt),
+      publishedAt: toIsoOrNull(form.value.publishedAt),
+      categoryId: form.value.categoryId || null,
+      authors: form.value.authors,
+      keywords: form.value.keywords
     }
 
     if (isNew) {
@@ -182,6 +254,7 @@ async function handleSubmit() {
             attachmentErrors++
           }
         }
+        draft.clear()
         if (attachmentErrors > 0) {
           success.value = `Actualité créée, mais ${attachmentErrors} fichier(s) n'ont pas pu être associés`
         } else if (tempAttachments.length > 0) {
@@ -198,6 +271,7 @@ async function handleSubmit() {
         method: 'PUT',
         body: payload
       })
+      draft.commit()
       success.value = 'Actualité mise à jour avec succès'
     }
   } catch (e: unknown) {
@@ -216,11 +290,16 @@ async function togglePublish() {
 
   isSaving.value = true
   try {
-    await $fetch(`/api/admin/news/${id}`, {
+    const result = await $fetch<{ data: { publishedAt: string | null } }>(`/api/admin/news/${id}`, {
       method: 'PUT',
       body: { isPublished: !form.value.isPublished }
     })
     form.value.isPublished = !form.value.isPublished
+    form.value.publishedAt = toLocalInputValue(result.data.publishedAt)
+    draft.updateBaseline((reference) => {
+      reference.form.isPublished = form.value.isPublished
+      reference.form.publishedAt = form.value.publishedAt
+    })
     success.value = form.value.isPublished ? 'Actualité publiée' : 'Actualité dépubliée'
   } catch {
     error.value = 'Erreur lors du changement de statut'
@@ -287,6 +366,12 @@ async function togglePublish() {
       <font-awesome-icon icon="check-circle" />
       {{ success }}
     </div>
+    <FormDraftNotice
+      v-if="draftRestoredAt"
+      :saved-at="draftRestoredAt"
+      class="mb-6"
+      @discard="discardDraft"
+    />
 
     <!-- Loading -->
     <div v-if="isLoading" class="flex justify-center py-12">
@@ -333,6 +418,49 @@ async function togglePublish() {
             </div>
           </div>
 
+          <!-- Auteurs & mots-clés -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Auteurs et mots-clés</h3>
+
+            <div class="space-y-4">
+              <div>
+                <label for="authors" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <font-awesome-icon icon="user" class="mr-1 text-green-600" />
+                  Auteur(s)
+                  <span class="text-xs font-normal text-gray-500 dark:text-gray-400">(optionnel)</span>
+                </label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                  Pour les actualités rédigées par des tiers. Appuyez sur Entrée après chaque nom.
+                </p>
+                <TagInput
+                  v-model="form.authors"
+                  input-id="authors"
+                  :suggestions="suggestions?.authors || []"
+                  placeholder="Ex : Jean Rakoto"
+                />
+                <p v-if="form.authors.length === 0" class="text-xs text-gray-500 dark:text-gray-400 mt-2 italic">
+                  Aucun auteur indiqué : l'actualité sera signée par {{ defaultAuthorName }}.
+                </p>
+              </div>
+
+              <div>
+                <label for="keywords" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <font-awesome-icon icon="hashtag" class="mr-1 text-green-600" />
+                  Mots-clés
+                </label>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                  Appuyez sur Entrée ou tapez une virgule pour ajouter un mot-clé.
+                </p>
+                <TagInput
+                  v-model="form.keywords"
+                  input-id="keywords"
+                  :suggestions="suggestions?.keywords || []"
+                  placeholder="Ex : transparence, redevances minières"
+                />
+              </div>
+            </div>
+          </div>
+
           <!-- Content -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Contenu</h3>
@@ -347,7 +475,7 @@ async function togglePublish() {
               <ClientOnly>
                 <ContentEditor
                   v-if="dataLoaded"
-                  :key="`editor-${id}-${dataLoaded}`"
+                  :key="`editor-${id}-${dataLoaded}-${editorRevision}`"
                   v-model="form.content"
                   :min-height="400"
                   placeholder="Commencez à écrire le contenu de l'actualité..."
@@ -367,6 +495,56 @@ async function togglePublish() {
 
         <!-- Sidebar (1/3) -->
         <div class="space-y-6">
+          <!-- Publication & catégorie -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Publication</h3>
+
+            <div class="space-y-4">
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label for="categoryId" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Catégorie
+                  </label>
+                  <NuxtLink
+                    to="/admin/news-categories"
+                    target="_blank"
+                    class="text-xs text-green-600 dark:text-green-400 hover:underline"
+                  >
+                    Gérer les catégories
+                  </NuxtLink>
+                </div>
+                <select
+                  id="categoryId"
+                  v-model="form.categoryId"
+                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 cursor-pointer"
+                >
+                  <option value="">Aucune catégorie</option>
+                  <option v-for="category in categories" :key="category.id" :value="category.id">
+                    {{ category.name }}
+                  </option>
+                </select>
+                <p v-if="!categories?.length" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Aucune catégorie n'a encore été créée.
+                </p>
+              </div>
+
+              <div>
+                <label for="publishedAt" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Date de publication
+                </label>
+                <input
+                  id="publishedAt"
+                  v-model="form.publishedAt"
+                  type="datetime-local"
+                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {{ form.publishedAt ? 'Date affichée sur le site et utilisée pour le tri.' : 'Laissez vide pour utiliser la date de mise en ligne.' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <!-- Cover Image -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Image de couverture</h3>

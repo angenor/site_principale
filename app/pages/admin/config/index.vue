@@ -103,6 +103,32 @@ watch(configs, (newConfigs) => {
   }
 }, { immediate: true })
 
+// Sauvegarde locale de la saisie en cours, comparée aux valeurs enregistrées
+function savedValues(): Record<string, string> {
+  return Object.fromEntries((configs.value || []).map(config => [config.key, config.value]))
+}
+
+const draft = useFormDraft({
+  key: 'config',
+  // Un champ vidé qui n'existe pas en base n'est pas une modification
+  source: () => {
+    const saved = savedValues()
+    return Object.fromEntries(
+      Object.entries(formValues.value).filter(([key, value]) => value !== '' || key in saved)
+    )
+  },
+  // Les données contiennent toutes les valeurs du formulaire : elles le remplacent entièrement
+  apply: (data) => {
+    formValues.value = { ...data }
+  },
+  baseline: savedValues
+})
+const draftRestoredAt = draft.restoredAt
+
+onMounted(() => {
+  draft.start()
+})
+
 function getValue(key: string): string {
   return formValues.value[key] || ''
 }
@@ -129,6 +155,7 @@ async function saveAll() {
 
     success.value = 'Configuration enregistrée avec succès'
     await refresh()
+    draft.commit()
   } catch (err: any) {
     error.value = err.data?.message || 'Erreur lors de l\'enregistrement'
   } finally {
@@ -142,6 +169,13 @@ async function saveSingle(key: string) {
       method: 'PUT',
       body: { value: formValues.value[key] || '' }
     })
+    // La valeur enregistrée devient la référence pour cette clé
+    const saved = configs.value?.find(config => config.key === key)
+    if (saved) {
+      saved.value = formValues.value[key] || ''
+    } else {
+      configs.value?.push({ id: key, key, value: formValues.value[key] || '', description: null })
+    }
     success.value = 'Valeur enregistrée'
     setTimeout(() => success.value = '', 3000)
   } catch (err: any) {
@@ -179,6 +213,12 @@ async function saveSingle(key: string) {
     <div v-if="success" class="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
       <p class="text-green-600 dark:text-green-400">{{ success }}</p>
     </div>
+    <FormDraftNotice
+      v-if="draftRestoredAt"
+      :saved-at="draftRestoredAt"
+      class="mb-4"
+      @discard="draft.discard()"
+    />
 
     <!-- Groupes de configuration -->
     <div class="space-y-6">

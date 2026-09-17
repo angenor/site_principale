@@ -71,6 +71,32 @@ const slugPreview = computed(() => {
   return generateSlug(form.value.name)
 })
 
+// Sauvegarde locale de la saisie en cours
+const draft = useFormDraft({
+  key: 'categories',
+  source: () => ({ ...form.value }),
+  apply: (data) => {
+    form.value = { ...form.value, ...data }
+  }
+})
+const draftRestoredAt = draft.restoredAt
+
+// Rouvre le formulaire laissé en cours avant le rechargement de la page
+draft.resume((ctx) => {
+  if (ctx === 'new') {
+    startCreate()
+    return
+  }
+  const list = categories.value || []
+  const item = list.find(i => i.id === ctx)
+  if (item) {
+    startEdit(item)
+    return
+  }
+  // Élément supprimé entre-temps : le brouillon est abandonné
+  if (list.length) return false
+}, () => !categoriesLoading.value)
+
 function startCreate() {
   editingCategory.value = null
   isCreating.value = true
@@ -84,6 +110,7 @@ function startCreate() {
   }
   error.value = ''
   success.value = ''
+  draft.start('new')
 }
 
 function startEdit(category: Category) {
@@ -99,9 +126,11 @@ function startEdit(category: Category) {
   }
   error.value = ''
   success.value = ''
+  draft.start(category.id)
 }
 
 function cancelEdit() {
+  draft.clear()
   editingCategory.value = null
   isCreating.value = false
   error.value = ''
@@ -200,6 +229,11 @@ async function handleDeleteCategory(category: Category) {
       </h2>
 
       <form @submit.prevent="save" class="space-y-4">
+        <FormDraftNotice
+          v-if="draftRestoredAt"
+          :saved-at="draftRestoredAt"
+          @discard="draft.discard()"
+        />
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <!-- Nom -->
           <div>

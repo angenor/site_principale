@@ -1,4 +1,5 @@
 import prisma from '../../utils/prisma'
+import { formatNewsAuthors } from '../../utils/news'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
@@ -22,6 +23,9 @@ export default defineEventHandler(async (event) => {
           lastName: true
         }
       },
+      category: {
+        select: { id: true, name: true, slug: true, color: true }
+      },
       attachments: {
         orderBy: { sortOrder: 'asc' }
       }
@@ -43,8 +47,6 @@ export default defineEventHandler(async (event) => {
 
   return {
     ...newsArticle,
-    author: newsArticle.author
-      ? `${newsArticle.author.firstName} ${newsArticle.author.lastName}`
-      : 'Équipe MOM'
+    author: formatNewsAuthors(newsArticle.authors, newsArticle.author)
   }
 })

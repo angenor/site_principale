@@ -93,6 +93,20 @@ if (!isNew) {
   }
 }
 
+// Sauvegarde locale de la saisie en cours
+const draft = useFormDraft({
+  key: 'resources',
+  source: () => ({ ...form.value }),
+  apply: (data) => {
+    form.value = { ...form.value, ...data }
+  }
+})
+const draftRestoredAt = draft.restoredAt
+
+onMounted(() => {
+  if (!error.value) draft.start(id)
+})
+
 async function handleFileUpload(event: Event) {
   const input = event.target as HTMLInputElement
   const file = input.files?.[0]
@@ -173,6 +187,7 @@ async function handleSubmit() {
         body: payload
       })
       if (result.success) {
+        draft.clear()
         success.value = 'Ressource créée avec succès'
         setTimeout(() => {
           router.push(`/admin/resources/${result.data.id}`)
@@ -183,6 +198,7 @@ async function handleSubmit() {
         method: 'PUT',
         body: payload
       })
+      draft.commit()
       success.value = 'Ressource mise à jour avec succès'
     }
   } catch (e: unknown) {
@@ -206,6 +222,9 @@ async function togglePublish() {
       body: { isPublished: !form.value.isPublished }
     })
     form.value.isPublished = !form.value.isPublished
+    draft.updateBaseline((reference) => {
+      reference.isPublished = form.value.isPublished
+    })
     success.value = form.value.isPublished ? 'Ressource publiée' : 'Ressource dépubliée'
   } catch {
     error.value = 'Erreur lors du changement de statut'
@@ -290,6 +309,12 @@ function getFileIcon(mimeType: string): string {
       <font-awesome-icon icon="check-circle" />
       {{ success }}
     </div>
+    <FormDraftNotice
+      v-if="draftRestoredAt"
+      :saved-at="draftRestoredAt"
+      class="mb-6"
+      @discard="draft.discard()"
+    />
 
     <!-- Loading -->
     <div v-if="isLoading" class="flex justify-center py-12">

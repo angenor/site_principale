@@ -4,22 +4,21 @@ definePageMeta({
   middleware: 'auth'
 })
 
-interface Keyword {
+interface NewsCategory {
   id: string
   name: string
   slug: string
   description: string | null
-  icon: string | null
   color: string | null
   sortOrder: number
   createdAt: string
   updatedAt: string
-  caseStudiesCount: number
+  newsCount: number
 }
 
-const { data: keywords, refresh } = await useFetch<Keyword[]>('/api/admin/keywords')
+const { data: categories, refresh } = await useFetch<NewsCategory[]>('/api/admin/news-categories')
 
-const editingKeyword = ref<Keyword | null>(null)
+const editingCategory = ref<NewsCategory | null>(null)
 const isCreating = ref(false)
 const isSaving = ref(false)
 const error = ref('')
@@ -29,15 +28,13 @@ const form = ref<{
   name: string
   slug: string
   description: string
-  icon: string | null
   color: string
   sortOrder: number
 }>({
   name: '',
   slug: '',
   description: '',
-  icon: null,
-  color: '#3695d8',
+  color: '#3B82F6',
   sortOrder: 0
 })
 
@@ -60,7 +57,7 @@ const slugPreview = computed(() => {
 
 // Sauvegarde locale de la saisie en cours
 const draft = useFormDraft({
-  key: 'keywords',
+  key: 'news-categories',
   source: () => ({ ...form.value }),
   apply: (data) => {
     form.value = { ...form.value, ...data }
@@ -74,7 +71,7 @@ draft.resume((ctx) => {
     startCreate()
     return
   }
-  const list = keywords.value || []
+  const list = categories.value || []
   const item = list.find(i => i.id === ctx)
   if (item) {
     startEdit(item)
@@ -85,40 +82,38 @@ draft.resume((ctx) => {
 })
 
 function startCreate() {
-  editingKeyword.value = null
+  editingCategory.value = null
   isCreating.value = true
   form.value = {
     name: '',
     slug: '',
     description: '',
-    icon: null,
-    color: '#3695d8',
-    sortOrder: (keywords.value?.length || 0) * 10
+    color: '#3B82F6',
+    sortOrder: (categories.value?.length || 0) * 10
   }
   error.value = ''
   success.value = ''
   draft.start('new')
 }
 
-function startEdit(keyword: Keyword) {
+function startEdit(category: NewsCategory) {
   isCreating.value = false
-  editingKeyword.value = keyword
+  editingCategory.value = category
   form.value = {
-    name: keyword.name,
-    slug: keyword.slug,
-    description: keyword.description || '',
-    icon: keyword.icon,
-    color: keyword.color || '#3695d8',
-    sortOrder: keyword.sortOrder
+    name: category.name,
+    slug: category.slug,
+    description: category.description || '',
+    color: category.color || '#3B82F6',
+    sortOrder: category.sortOrder
   }
   error.value = ''
   success.value = ''
-  draft.start(keyword.id)
+  draft.start(category.id)
 }
 
 function cancelEdit() {
   draft.clear()
-  editingKeyword.value = null
+  editingCategory.value = null
   isCreating.value = false
   error.value = ''
 }
@@ -138,23 +133,22 @@ async function save() {
       name: form.value.name.trim(),
       slug: form.value.slug.trim() || slugPreview.value,
       description: form.value.description.trim() || null,
-      icon: form.value.icon || null,
       color: form.value.color || null,
       sortOrder: form.value.sortOrder
     }
 
     if (isCreating.value) {
-      await $fetch('/api/admin/keywords', {
+      await $fetch('/api/admin/news-categories', {
         method: 'POST',
         body: payload
       })
-      success.value = 'Mot-clé créé avec succès'
-    } else if (editingKeyword.value) {
-      await $fetch(`/api/admin/keywords/${editingKeyword.value.id}`, {
+      success.value = 'Catégorie créée avec succès'
+    } else if (editingCategory.value) {
+      await $fetch(`/api/admin/news-categories/${editingCategory.value.id}`, {
         method: 'PUT',
         body: payload
       })
-      success.value = 'Mot-clé mis à jour avec succès'
+      success.value = 'Catégorie mise à jour avec succès'
     }
 
     await refresh()
@@ -167,22 +161,22 @@ async function save() {
   }
 }
 
-async function deleteKeyword(keyword: Keyword) {
-  if (keyword.caseStudiesCount > 0) {
-    error.value = `Impossible de supprimer : ce mot-clé est utilisé par ${keyword.caseStudiesCount} étude(s) de cas`
+async function deleteCategory(category: NewsCategory) {
+  if (category.newsCount > 0) {
+    error.value = `Impossible de supprimer : cette catégorie est utilisée par ${category.newsCount} actualité(s)`
     return
   }
 
-  if (!confirm(`Supprimer le mot-clé "${keyword.name}" ?`)) {
+  if (!confirm(`Supprimer la catégorie "${category.name}" ?`)) {
     return
   }
 
   try {
-    await $fetch(`/api/admin/keywords/${keyword.id}`, {
+    await $fetch(`/api/admin/news-categories/${category.id}`, {
       method: 'DELETE'
     })
     await refresh()
-    success.value = 'Mot-clé supprimé'
+    success.value = 'Catégorie supprimée'
   } catch (err: unknown) {
     const e = err as { data?: { statusMessage?: string } }
     error.value = e.data?.statusMessage || 'Erreur lors de la suppression'
@@ -195,19 +189,19 @@ async function deleteKeyword(keyword: Keyword) {
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
       <div>
         <h1 class="text-2xl font-heading font-bold text-gray-900 dark:text-white">
-          Mots-clés
+          Catégories d'actualités
         </h1>
         <p class="text-gray-600 dark:text-gray-400 mt-1">
-          Gérez les mots-clés des études de cas
+          Créez autant de catégories que nécessaire (actualités, blogs, opinions, annonces…) pour classer les actualités
         </p>
       </div>
       <button
-        v-if="!isCreating && !editingKeyword"
+        v-if="!isCreating && !editingCategory"
         @click="startCreate"
         class="btn-ti text-sm cursor-pointer"
       >
         <font-awesome-icon icon="plus" class="mr-2" />
-        Nouveau mot-clé
+        Nouvelle catégorie
       </button>
     </div>
 
@@ -220,9 +214,9 @@ async function deleteKeyword(keyword: Keyword) {
     </div>
 
     <!-- Formulaire de création/édition -->
-    <div v-if="isCreating || editingKeyword" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+    <div v-if="isCreating || editingCategory" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
       <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        {{ isCreating ? 'Nouveau mot-clé' : 'Modifier le mot-clé' }}
+        {{ isCreating ? 'Nouvelle catégorie' : 'Modifier la catégorie' }}
       </h2>
 
       <form @submit.prevent="save" class="space-y-4">
@@ -241,7 +235,7 @@ async function deleteKeyword(keyword: Keyword) {
               v-model="form.name"
               type="text"
               class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              placeholder="Ex: Environnement"
+              placeholder="Ex: Blog, Opinion, Annonce"
             />
           </div>
 
@@ -271,22 +265,11 @@ async function deleteKeyword(keyword: Keyword) {
             v-model="form.description"
             rows="2"
             class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            placeholder="Description du mot-clé..."
+            placeholder="Description de la catégorie..."
           />
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <!-- Icône -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Icône
-            </label>
-            <IconPicker v-model="form.icon" placeholder="Rechercher une icône..." />
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Choisissez une icône FontAwesome ou téléversez une image personnalisée
-            </p>
-          </div>
-
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <!-- Couleur -->
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -302,7 +285,7 @@ async function deleteKeyword(keyword: Keyword) {
                 v-model="form.color"
                 type="text"
                 class="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                placeholder="#3695d8"
+                placeholder="#3B82F6"
               />
             </div>
           </div>
@@ -341,15 +324,12 @@ async function deleteKeyword(keyword: Keyword) {
       </form>
     </div>
 
-    <!-- Liste des mots-clés -->
+    <!-- Liste des catégories -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full">
           <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Icône
-              </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Nom
               </th>
@@ -357,7 +337,7 @@ async function deleteKeyword(keyword: Keyword) {
                 Slug
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Études de cas
+                Actualités
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Ordre
@@ -368,81 +348,64 @@ async function deleteKeyword(keyword: Keyword) {
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-            <tr v-for="keyword in keywords" :key="keyword.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <!-- Image personnalisée -->
-                <div
-                  v-if="keyword.icon && (keyword.icon.startsWith('/') || keyword.icon.startsWith('http'))"
-                  class="w-8 h-8 flex items-center justify-center rounded-lg overflow-hidden"
-                  :style="{ backgroundColor: keyword.color || '#3695d8' }"
-                >
-                  <img :src="keyword.icon" alt="" class="w-6 h-6 object-contain" />
-                </div>
-                <!-- Icône FontAwesome -->
-                <div
-                  v-else-if="keyword.icon"
-                  class="w-8 h-8 flex items-center justify-center rounded-lg"
-                  :style="{ backgroundColor: keyword.color || '#3695d8' }"
-                >
-                  <font-awesome-icon :icon="keyword.icon" class="text-white text-sm" />
-                </div>
-                <!-- Pas d'icône -->
-                <div v-else class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-600">
-                  <font-awesome-icon icon="hashtag" class="text-gray-400 text-sm" />
-                </div>
-              </td>
+            <tr v-for="category in categories" :key="category.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
               <td class="px-6 py-4">
-                <span class="text-gray-900 dark:text-white font-medium">{{ keyword.name }}</span>
-                <p v-if="keyword.description" class="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
-                  {{ keyword.description }}
+                <span
+                  class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-sm font-medium text-white"
+                  :style="{ backgroundColor: category.color || '#6B7280' }"
+                >
+                  {{ category.name }}
+                </span>
+                <p v-if="category.description" class="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
+                  {{ category.description }}
                 </p>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <code class="text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                  {{ keyword.slug }}
+                  {{ category.slug }}
                 </code>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span
                   :class="[
                     'px-2 py-1 text-xs font-medium rounded',
-                    keyword.caseStudiesCount > 0
+                    category.newsCount > 0
                       ? 'bg-ti-blue/10 text-ti-blue'
                       : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
                   ]"
                 >
-                  {{ keyword.caseStudiesCount }}
+                  {{ category.newsCount }}
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-gray-500 dark:text-gray-400">
-                {{ keyword.sortOrder }}
+                {{ category.sortOrder }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right">
                 <button
-                  @click="startEdit(keyword)"
+                  @click="startEdit(category)"
                   class="text-ti-blue hover:text-ti-blue-700 mr-3 cursor-pointer"
                   title="Modifier"
                 >
                   <font-awesome-icon icon="edit" />
                 </button>
                 <button
-                  @click="deleteKeyword(keyword)"
+                  @click="deleteCategory(category)"
                   :class="[
                     'cursor-pointer',
-                    keyword.caseStudiesCount > 0
+                    category.newsCount > 0
                       ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
                       : 'text-red-500 hover:text-red-700'
                   ]"
-                  :disabled="keyword.caseStudiesCount > 0"
-                  :title="keyword.caseStudiesCount > 0 ? 'Impossible de supprimer : mot-clé utilisé' : 'Supprimer'"
+                  :disabled="category.newsCount > 0"
+                  :title="category.newsCount > 0 ? 'Impossible de supprimer : catégorie utilisée' : 'Supprimer'"
                 >
                   <font-awesome-icon icon="trash" />
                 </button>
               </td>
             </tr>
-            <tr v-if="!keywords?.length">
-              <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                Aucun mot-clé défini. Cliquez sur "Nouveau mot-clé" pour commencer.
+            <tr v-if="!categories?.length">
+              <td colspan="5" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                Aucune catégorie définie. Cliquez sur "Nouvelle catégorie" pour commencer.
               </td>
             </tr>
           </tbody>

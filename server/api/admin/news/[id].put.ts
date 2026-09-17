@@ -1,5 +1,6 @@
 import prisma from '../../../utils/prisma'
 import { requireAuth } from '../../../utils/auth'
+import { normalizeStringList, parseDateInput } from '../../../utils/news'
 
 interface UpdateNewsBody {
   title?: string
@@ -10,6 +11,10 @@ interface UpdateNewsBody {
   isPublished?: boolean
   label?: 'STANDARD' | 'TRENDING' | 'FEATURED'
   labelExpiresAt?: string | null
+  publishedAt?: string | null
+  categoryId?: string | null
+  authors?: string[]
+  keywords?: string[]
 }
 
 export default defineEventHandler(async (event) => {
@@ -76,11 +81,40 @@ export default defineEventHandler(async (event) => {
     updateData.externalUrl = body.externalUrl || null
   }
 
+  if (body.publishedAt !== undefined) {
+    updateData.publishedAt = body.publishedAt
+      ? parseDateInput(body.publishedAt, 'Date de publication')
+      : null
+  }
+
   if (body.isPublished !== undefined) {
     updateData.isPublished = body.isPublished
-    if (body.isPublished && !existingNews.publishedAt) {
+    // Date de publication par défaut si aucune n'est définie
+    const nextPublishedAt = updateData.publishedAt !== undefined ? updateData.publishedAt : existingNews.publishedAt
+    if (body.isPublished && !nextPublishedAt) {
       updateData.publishedAt = new Date()
     }
+  }
+
+  if (body.categoryId !== undefined) {
+    if (body.categoryId) {
+      const category = await prisma.newsCategory.findUnique({ where: { id: body.categoryId } })
+      if (!category) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: 'Catégorie introuvable'
+        })
+      }
+    }
+    updateData.categoryId = body.categoryId || null
+  }
+
+  if (body.authors !== undefined) {
+    updateData.authors = normalizeStringList(body.authors)
+  }
+
+  if (body.keywords !== undefined) {
+    updateData.keywords = normalizeStringList(body.keywords)
   }
 
   if (body.label !== undefined) {
@@ -115,6 +149,9 @@ export default defineEventHandler(async (event) => {
       publishedAt: updatedNews.publishedAt,
       label: updatedNews.label,
       labelExpiresAt: updatedNews.labelExpiresAt,
+      categoryId: updatedNews.categoryId,
+      authors: updatedNews.authors,
+      keywords: updatedNews.keywords,
       createdAt: updatedNews.createdAt,
       updatedAt: updatedNews.updatedAt,
       author: updatedNews.author ? `${updatedNews.author.firstName} ${updatedNews.author.lastName}` : null

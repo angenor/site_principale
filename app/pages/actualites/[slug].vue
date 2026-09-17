@@ -29,6 +29,9 @@ interface NewsArticle {
   externalUrl: string | null
   publishedAt: string
   author: string
+  authors: string[]
+  keywords: string[]
+  category: { id: string; name: string; slug: string; color: string | null } | null
   viewCount: number
   attachments?: Attachment[]
 }
@@ -188,6 +191,15 @@ function getFileColor(mimeType: string): string {
               <span class="text-gray-700 dark:text-gray-300 truncate">{{ article.title }}</span>
             </nav>
 
+            <NuxtLink
+              v-if="article.category"
+              :to="{ path: '/actualites', query: { categorie: article.category.slug } }"
+              class="inline-block mb-3 px-3 py-1 rounded text-xs font-semibold uppercase tracking-wide text-white hover:opacity-90 transition-opacity"
+              :style="{ backgroundColor: article.category.color || '#3695d8' }"
+            >
+              {{ article.category.name }}
+            </NuxtLink>
+
             <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               {{ article.title }}
             </h1>
@@ -199,7 +211,10 @@ function getFileColor(mimeType: string): string {
               </div>
               <div class="flex items-center gap-2">
                 <font-awesome-icon icon="user" class="w-4 h-4" />
-                <span>{{ article.author }}</span>
+                <span>
+                  <span v-if="article.authors?.length" class="sr-only">{{ article.authors.length > 1 ? 'Auteurs :' : 'Auteur :' }}</span>
+                  {{ article.author }}
+                </span>
               </div>
               <div class="flex items-center gap-2">
                 <font-awesome-icon icon="eye" class="w-4 h-4" />
@@ -229,6 +244,18 @@ function getFileColor(mimeType: string): string {
         <!-- Message si pas de contenu -->
         <div v-else class="text-center py-8 text-gray-500 dark:text-gray-400">
           <p>Le contenu complet de cette actualité n'est pas disponible.</p>
+        </div>
+
+        <!-- Mots-clés -->
+        <div v-if="article.keywords?.length" class="mt-10 flex flex-wrap items-center gap-2">
+          <font-awesome-icon icon="hashtag" class="text-gray-400" />
+          <span
+            v-for="keyword in article.keywords"
+            :key="keyword"
+            class="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+          >
+            {{ keyword }}
+          </span>
         </div>
 
         <!-- Fichiers annexes -->

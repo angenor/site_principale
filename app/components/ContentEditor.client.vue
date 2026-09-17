@@ -11,6 +11,7 @@ import InlineCode from '@editorjs/inline-code'
 import Paragraph from '@editorjs/paragraph'
 import ImageTool from '@editorjs/image'
 import Checklist from '@editorjs/checklist'
+import TextColorTool from '~/utils/editorTextColor'
 
 // Custom Block Tune for image positioning (float left/right)
 class ImagePositionTune implements BlockTune {
@@ -242,6 +243,11 @@ const htmlToEditorJs = (html: string): OutputData => {
 }
 
 onMounted(async () => {
+  // Au chargement complet d'une page (hydratation SSR), la ref du conteneur
+  // n'est pas encore renseignée au montage : on attend le rendu suivant
+  if (!editorContainer.value) {
+    await nextTick()
+  }
   if (!editorContainer.value) return
 
   const initialData = getInitialData()
@@ -366,6 +372,9 @@ onMounted(async () => {
       },
       inlineCode: {
         class: InlineCode
+      },
+      textColor: {
+        class: TextColorTool
       },
       checklist: {
         class: Checklist,
@@ -627,6 +636,10 @@ defineExpose({ save })
             <span class="btn-label">Vidéo</span>
           </button>
         </div>
+        <span class="toolbar-hint">
+          <font-awesome-icon icon="palette" />
+          Sélectionnez du texte pour le mettre en forme ou changer sa couleur
+        </span>
       </div>
       <!-- Éditeur -->
       <div
@@ -682,6 +695,23 @@ defineExpose({ save })
 
 .dark .toolbar-label {
   color: #9ca3af;
+}
+
+.toolbar-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.dark .toolbar-hint {
+  color: #9ca3af;
+}
+
+.toolbar-hint svg {
+  width: 0.75rem;
+  height: 0.75rem;
 }
 
 .toolbar-buttons {
@@ -1016,6 +1046,93 @@ defineExpose({ save })
 .dark :deep(.inline-code) {
   background-color: #374151;
   color: #f472b6;
+}
+
+/* Couleur du texte */
+:deep(.cdx-text-color-actions) {
+  padding: 0.5rem;
+  width: 13rem;
+}
+
+:deep(.cdx-text-color-swatches) {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.375rem;
+}
+
+:deep(.cdx-text-color-swatch) {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  border: 2px solid white;
+  box-shadow: 0 0 0 1px #d1d5db;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+:deep(.cdx-text-color-swatch:hover) {
+  transform: scale(1.12);
+}
+
+.dark :deep(.cdx-text-color-swatch) {
+  border-color: #374151;
+  box-shadow: 0 0 0 1px #6b7280;
+}
+
+:deep(.cdx-text-color-footer) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e5e7eb;
+  font-size: 0.75rem;
+}
+
+.dark :deep(.cdx-text-color-footer) {
+  border-top-color: #4b5563;
+}
+
+:deep(.cdx-text-color-custom) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+.dark :deep(.cdx-text-color-custom) {
+  color: #d1d5db;
+}
+
+:deep(.cdx-text-color-custom input[type="color"]) {
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  background: none;
+  cursor: pointer;
+}
+
+:deep(.cdx-text-color-reset) {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+:deep(.cdx-text-color-reset:hover) {
+  background-color: #f3f4f6;
+}
+
+.dark :deep(.cdx-text-color-reset) {
+  color: #d1d5db;
+}
+
+.dark :deep(.cdx-text-color-reset:hover) {
+  background-color: #4b5563;
 }
 
 /* Image tool styles */

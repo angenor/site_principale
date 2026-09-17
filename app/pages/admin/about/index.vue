@@ -33,6 +33,38 @@ const form = ref({
   isActive: true
 })
 
+// Sauvegarde locale de la saisie en cours
+const editorRevision = ref(0)
+const draft = useFormDraft({
+  key: 'about',
+  source: () => ({ ...form.value, content: normalizeEditorContent(form.value.content) }),
+  apply: (data) => {
+    form.value = { ...form.value, ...data }
+  }
+})
+const draftRestoredAt = draft.restoredAt
+
+// Rouvre le formulaire laissé en cours avant le rechargement de la page
+draft.resume((ctx) => {
+  if (ctx === 'new') {
+    startCreate()
+    return
+  }
+  const list = contents.value || []
+  const item = list.find(i => i.id === ctx)
+  if (item) {
+    startEdit(item)
+    return
+  }
+  // Élément supprimé entre-temps : le brouillon est abandonné
+  if (list.length) return false
+})
+
+function discardDraft() {
+  draft.discard()
+  editorRevision.value++
+}
+
 function startCreate() {
   editingContent.value = null
   isCreating.value = true
@@ -46,6 +78,7 @@ function startCreate() {
   }
   error.value = ''
   success.value = ''
+  draft.start('new')
 }
 
 function startEdit(content: AboutContent) {
@@ -75,9 +108,11 @@ function startEdit(content: AboutContent) {
   }
   error.value = ''
   success.value = ''
+  draft.start(content.id)
 }
 
 function cancelEdit() {
+  draft.clear()
   editingContent.value = null
   isCreating.value = false
   error.value = ''
@@ -202,6 +237,11 @@ async function toggleActive(content: AboutContent) {
       </h2>
 
       <form @submit.prevent="save" class="space-y-4">
+        <FormDraftNotice
+          v-if="draftRestoredAt"
+          :saved-at="draftRestoredAt"
+          @discard="discardDraft"
+        />
         <!-- Titre de la section -->
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -226,6 +266,7 @@ async function toggleActive(content: AboutContent) {
           </label>
           <ClientOnly>
             <ContentEditor
+              :key="editorRevision"
               v-model="form.content"
               placeholder="Rédigez le contenu de cette section..."
               :min-height="300"

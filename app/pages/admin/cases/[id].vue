@@ -88,6 +88,26 @@ if (!isNew) {
   }
 }
 
+// Sauvegarde locale de la saisie en cours
+const editorRevision = ref(0)
+const draft = useFormDraft({
+  key: 'cases',
+  source: () => ({ ...form.value, content: normalizeEditorContent(form.value.content) }),
+  apply: (data) => {
+    form.value = { ...form.value, ...data }
+  }
+})
+const draftRestoredAt = draft.restoredAt
+
+onMounted(() => {
+  if (!error.value) draft.start(id)
+})
+
+function discardDraft() {
+  draft.discard()
+  editorRevision.value++
+}
+
 // Toggle category selection
 function toggleCategory(categoryId: string) {
   const index = form.value.categoryIds.indexOf(categoryId)
@@ -180,6 +200,7 @@ async function handleSubmit() {
         body: payload
       })
       if (result.success) {
+        draft.clear()
         success.value = 'Étude de cas créée avec succès'
         setTimeout(() => {
           router.push(`/admin/cases/${result.data.id}`)
@@ -190,6 +211,7 @@ async function handleSubmit() {
         method: 'PUT',
         body: payload
       })
+      draft.commit()
       success.value = 'Étude de cas mise à jour avec succès'
     }
   } catch (e: unknown) {
@@ -214,6 +236,9 @@ async function togglePublish() {
       body: { isPublished: !form.value.isPublished }
     })
     form.value.isPublished = !form.value.isPublished
+    draft.updateBaseline((reference) => {
+      reference.isPublished = form.value.isPublished
+    })
     success.value = form.value.isPublished ? 'Étude de cas publiée' : 'Étude de cas dépubliée'
   } catch {
     error.value = 'Erreur lors du changement de statut'
@@ -282,6 +307,12 @@ async function togglePublish() {
       <font-awesome-icon icon="check-circle" />
       {{ success }}
     </div>
+    <FormDraftNotice
+      v-if="draftRestoredAt"
+      :saved-at="draftRestoredAt"
+      class="mb-6"
+      @discard="discardDraft"
+    />
 
     <!-- Loading -->
     <div v-if="isLoading" class="flex justify-center py-12">
@@ -354,6 +385,7 @@ async function togglePublish() {
               </p>
               <ClientOnly>
                 <ContentEditor
+                  :key="editorRevision"
                   v-model="form.content"
                   :min-height="400"
                   placeholder="Commencez à écrire le contenu de l'étude de cas..."

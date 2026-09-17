@@ -6,6 +6,12 @@ export default defineEventHandler(async (event) => {
   const page = parseInt(query.page as string) || 1
   const limit = parseInt(query.limit as string) || 10
   const sortOrder = (query.sort as string) || 'recent'
+  const categorySlug = (query.category as string) || ''
+
+  const where = {
+    isPublished: true,
+    ...(categorySlug ? { category: { slug: categorySlug } } : {})
+  }
 
   const orderBy: any = sortOrder === 'oldest'
     ? { publishedAt: 'asc' }
@@ -13,9 +19,7 @@ export default defineEventHandler(async (event) => {
 
   const [news, total] = await Promise.all([
     prisma.news.findMany({
-      where: {
-        isPublished: true
-      },
+      where,
       orderBy,
       skip: (page - 1) * limit,
       take: limit,
@@ -26,12 +30,14 @@ export default defineEventHandler(async (event) => {
         summary: true,
         coverImage: true,
         externalUrl: true,
-        publishedAt: true
+        publishedAt: true,
+        keywords: true,
+        category: {
+          select: { id: true, name: true, slug: true, color: true }
+        }
       }
     }),
-    prisma.news.count({
-      where: { isPublished: true }
-    })
+    prisma.news.count({ where })
   ])
 
   return {

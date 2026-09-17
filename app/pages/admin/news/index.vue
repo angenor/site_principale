@@ -18,6 +18,9 @@ interface NewsItem {
   author: string | null
   label: 'STANDARD' | 'TRENDING' | 'FEATURED'
   labelExpiresAt: string | null
+  category: { id: string; name: string; color: string | null } | null
+  authors: string[]
+  keywords: string[]
 }
 
 interface NewsResponse {
@@ -32,19 +35,25 @@ interface NewsResponse {
 
 const search = ref('')
 const status = ref('all')
+const categoryId = ref('')
 const page = ref(1)
 const limit = 10
 
 const debouncedSearch = refDebounced(search, 300)
+
+const { data: categories } = await useFetch<{ id: string; name: string }[]>('/api/admin/news-categories', {
+  default: () => []
+})
 
 const { data: newsResponse, pending, refresh } = await useFetch<NewsResponse>('/api/admin/news', {
   query: computed(() => ({
     page: page.value,
     limit,
     search: debouncedSearch.value,
-    status: status.value
+    status: status.value,
+    categoryId: categoryId.value
   })),
-  watch: [page, debouncedSearch, status]
+  watch: [page, debouncedSearch, status, categoryId]
 })
 
 const news = computed(() => newsResponse.value?.data || [])
@@ -57,6 +66,7 @@ function goToPage(p: number) {
 function resetFilters() {
   search.value = ''
   status.value = 'all'
+  categoryId.value = ''
   page.value = 1
 }
 
@@ -141,8 +151,19 @@ function isExpiringSoon(dateString: string | null): boolean {
           <option value="draft">Brouillons</option>
         </select>
 
+        <select
+          v-model="categoryId"
+          class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-ti-blue focus:border-ti-blue"
+        >
+          <option value="">Toutes les catégories</option>
+          <option value="none">Sans catégorie</option>
+          <option v-for="category in categories" :key="category.id" :value="category.id">
+            {{ category.name }}
+          </option>
+        </select>
+
         <button
-          v-if="search || status !== 'all'"
+          v-if="search || status !== 'all' || categoryId"
           @click="resetFilters"
           class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white cursor-pointer"
         >
@@ -202,6 +223,13 @@ function isExpiringSoon(dateString: string | null): boolean {
                   </div>
                   <div>
                     <div class="flex items-center gap-2 flex-wrap">
+                      <span
+                        v-if="item.category"
+                        class="text-white text-xs px-2 py-0.5 rounded font-medium whitespace-nowrap"
+                        :style="{ backgroundColor: item.category.color || '#6B7280' }"
+                      >
+                        {{ item.category.name }}
+                      </span>
                       <p class="font-medium text-gray-900 dark:text-white line-clamp-1">
                         {{ item.title }}
                       </p>
@@ -229,12 +257,16 @@ function isExpiringSoon(dateString: string | null): boolean {
                     <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
                       {{ item.summary }}
                     </p>
+                    <p v-if="item.author" class="text-xs text-gray-400 dark:text-gray-500 line-clamp-1">
+                      <font-awesome-icon icon="user" class="mr-1" />
+                      {{ item.author }}
+                    </p>
                   </div>
                 </div>
               </td>
               <td class="px-6 py-4 hidden md:table-cell">
                 <span class="text-sm text-gray-600 dark:text-gray-400">
-                  {{ formatDate(item.createdAt) }}
+                  {{ formatDate(item.publishedAt || item.createdAt) }}
                 </span>
               </td>
               <td class="px-6 py-4">

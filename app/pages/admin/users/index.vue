@@ -41,6 +41,32 @@ const form = ref({
   isActive: true
 })
 
+// Sauvegarde locale de la saisie en cours (le mot de passe n'est jamais stocké)
+const draft = useFormDraft({
+  key: 'users',
+  source: () => ({ ...form.value, password: '' }),
+  apply: (data) => {
+    form.value = { ...form.value, ...data, password: form.value.password }
+  }
+})
+const draftRestoredAt = draft.restoredAt
+
+// Rouvre le formulaire laissé en cours avant le rechargement de la page
+draft.resume((ctx) => {
+  if (ctx === 'new') {
+    openNewForm()
+    return
+  }
+  const list = users.value || []
+  const item = list.find(u => u.id === ctx)
+  if (item) {
+    editUser(item)
+    return
+  }
+  // Utilisateur supprimé entre-temps : le brouillon est abandonné
+  if (list.length) return false
+})
+
 function openNewForm() {
   editingUser.value = null
   form.value = {
@@ -52,6 +78,7 @@ function openNewForm() {
     isActive: true
   }
   showForm.value = true
+  draft.start('new')
 }
 
 function editUser(user: User) {
@@ -65,9 +92,11 @@ function editUser(user: User) {
     isActive: user.isActive
   }
   showForm.value = true
+  draft.start(user.id)
 }
 
 function closeForm() {
+  draft.clear()
   showForm.value = false
   editingUser.value = null
   error.value = ''
@@ -211,6 +240,11 @@ function formatDate(dateString: string | null) {
         </div>
 
         <div class="p-6 space-y-4">
+          <FormDraftNotice
+            v-if="draftRestoredAt"
+            :saved-at="draftRestoredAt"
+            @discard="draft.discard()"
+          />
           <div v-if="error" class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-3 py-2 rounded-lg text-sm">
             {{ error }}
           </div>

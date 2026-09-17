@@ -199,14 +199,39 @@ model News {
   label          NewsLabel @default(STANDARD)
   labelExpiresAt DateTime? // Date d'expiration de l'étiquette
 
+  // Auteurs tiers (optionnel) - si vide, l'auteur affiché est l'administrateur (authorId)
+  authors     String[]  @default([])
+  // Mots-clés libres
+  keywords    String[]  @default([])
+
   // Relations
   authorId    String
   author      User      @relation("NewsAuthor", fields: [authorId], references: [id])
+  categoryId  String?
+  category    NewsCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   attachments NewsAttachment[]
 
   @@index([publishedAt])
   @@index([label])
+  @@index([categoryId])
   @@map("news")
+}
+
+// Catégories d'actualités (actualités, blogs, opinions, annonces...)
+model NewsCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  color       String?  // Couleur en hexadécimal (ex: "#3B82F6")
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  news        News[]
+
+  @@map("news_categories")
 }
 
 // Fichiers annexes des actualités (PDF, documents, etc.)

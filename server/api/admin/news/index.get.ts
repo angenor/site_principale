@@ -1,5 +1,6 @@
 import prisma from '../../../utils/prisma'
 import { requireAuth } from '../../../utils/auth'
+import { formatNewsAuthors } from '../../../utils/news'
 
 export default defineEventHandler(async (event) => {
   await requireAuth(event)
@@ -9,6 +10,7 @@ export default defineEventHandler(async (event) => {
   const limit = parseInt(query.limit as string) || 10
   const search = (query.search as string) || ''
   const status = (query.status as string) || 'all'
+  const categoryId = (query.categoryId as string) || ''
 
   const skip = (page - 1) * limit
 
@@ -18,7 +20,9 @@ export default defineEventHandler(async (event) => {
   if (search) {
     where.OR = [
       { title: { contains: search, mode: 'insensitive' } },
-      { summary: { contains: search, mode: 'insensitive' } }
+      { summary: { contains: search, mode: 'insensitive' } },
+      { keywords: { has: search } },
+      { authors: { has: search } }
     ]
   }
 
@@ -26,6 +30,12 @@ export default defineEventHandler(async (event) => {
     where.isPublished = true
   } else if (status === 'draft') {
     where.isPublished = false
+  }
+
+  if (categoryId === 'none') {
+    where.categoryId = null
+  } else if (categoryId) {
+    where.categoryId = categoryId
   }
 
   const [news, total] = await Promise.all([
@@ -37,6 +47,9 @@ export default defineEventHandler(async (event) => {
       include: {
         author: {
           select: { firstName: true, lastName: true }
+        },
+        category: {
+          select: { id: true, name: true, color: true }
         }
       }
     }),
@@ -57,7 +70,10 @@ export default defineEventHandler(async (event) => {
       createdAt: item.createdAt,
       label: item.label,
       labelExpiresAt: item.labelExpiresAt,
-      author: item.author ? `${item.author.firstName} ${item.author.lastName}` : null
+      category: item.category,
+      authors: item.authors,
+      keywords: item.keywords,
+      author: formatNewsAuthors(item.authors, item.author)
     })),
     pagination: {
       page,
