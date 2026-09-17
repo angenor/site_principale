@@ -19,6 +19,16 @@ interface Contact {
   createdAt: string
   processedAt: string | null
   notes: string | null
+  attachments: ContactAttachment[]
+}
+
+interface ContactAttachment {
+  id: string
+  kind: 'FILE' | 'LINK'
+  filename: string | null
+  url: string | null
+  mimeType: string | null
+  fileSize: number | null
 }
 
 const route = useRoute()
@@ -101,6 +111,14 @@ async function deleteContact() {
   } catch {
     error.value = 'Erreur lors de la suppression'
   }
+}
+
+const fileAttachments = computed(() => contact.value?.attachments.filter(a => a.kind === 'FILE') || [])
+const linkAttachments = computed(() => contact.value?.attachments.filter(a => a.kind === 'LINK') || [])
+
+function attachmentIcon(attachment: ContactAttachment): string | string[] {
+  const icon = getFileIcon(attachment.mimeType)
+  return icon === 'file' ? ['far', 'file'] : icon
 }
 
 function formatDate(dateString: string | null) {
@@ -217,6 +235,55 @@ function getStatusLabel(status: ContactStatus) {
           <div class="prose prose-gray dark:prose-invert max-w-none">
             <p class="whitespace-pre-wrap text-gray-700 dark:text-gray-300">{{ contact.message }}</p>
           </div>
+        </div>
+
+        <!-- Pièces jointes -->
+        <div v-if="contact.attachments.length" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+            <font-awesome-icon icon="paperclip" class="text-ti-blue" />
+            Pièces jointes ({{ contact.attachments.length }})
+          </h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Fichiers envoyés par le dénonciateur : ouvrez-les avec prudence.
+          </p>
+
+          <ul v-if="fileAttachments.length" class="divide-y divide-gray-200 dark:divide-gray-700 rounded-lg border border-gray-200 dark:border-gray-700">
+            <li v-for="file in fileAttachments" :key="file.id" class="flex items-center gap-3 px-4 py-3">
+              <font-awesome-icon :icon="attachmentIcon(file)" class="text-ti-blue text-lg flex-shrink-0" />
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-sm font-medium text-gray-900 dark:text-white">{{ file.filename }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  {{ getFileExtension(file.filename) }}<template v-if="file.fileSize"> · {{ formatFileSize(file.fileSize) }}</template>
+                </p>
+              </div>
+              <a
+                :href="`/api/admin/contacts/${contact.id}/attachments/${file.id}`"
+                class="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-ti-blue border border-ti-blue rounded-lg hover:bg-ti-blue hover:text-white transition-colors cursor-pointer"
+              >
+                <font-awesome-icon icon="download" />
+                <span class="hidden sm:inline">Télécharger</span>
+              </a>
+            </li>
+          </ul>
+
+          <ul v-if="linkAttachments.length" :class="['space-y-2', fileAttachments.length ? 'mt-4' : '']">
+            <li
+              v-for="link in linkAttachments"
+              :key="link.id"
+              class="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-3"
+            >
+              <font-awesome-icon icon="link" class="text-ti-blue flex-shrink-0" />
+              <a
+                :href="link.url || undefined"
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                class="min-w-0 flex-1 truncate text-sm text-ti-blue hover:underline"
+              >
+                {{ link.url }}
+              </a>
+              <font-awesome-icon icon="external-link-alt" class="text-xs text-gray-400 flex-shrink-0" />
+            </li>
+          </ul>
         </div>
 
         <!-- Notes -->

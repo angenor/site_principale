@@ -32,6 +32,14 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  // Les pièces jointes des signalements ne sont jamais publiques
+  if (/^\/?private(\/|$)/i.test(path)) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'Fichier non trouvé'
+    })
+  }
+
   // Determine the uploads directory based on environment
   const isProduction = process.env.NODE_ENV === 'production'
   const uploadsDir = isProduction

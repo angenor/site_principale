@@ -14,7 +14,20 @@ export default defineEventHandler(async (event) => {
   }
 
   const contact = await prisma.contact.findUnique({
-    where: { id }
+    where: { id },
+    include: {
+      attachments: {
+        orderBy: { sortOrder: 'asc' },
+        select: {
+          id: true,
+          kind: true,
+          filename: true,
+          url: true,
+          mimeType: true,
+          fileSize: true
+        }
+      }
+    }
   })
 
   if (!contact) {

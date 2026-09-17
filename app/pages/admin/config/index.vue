@@ -63,6 +63,14 @@ const configGroups: ConfigGroup[] = [
     ]
   },
   {
+    label: 'Page « Signaler un cas »',
+    icon: 'bullhorn',
+    items: [
+      { key: 'report_contact_email', label: 'Email', type: 'email', placeholder: 'vramaherison@transparency.mg', description: 'Affiché dans « Autres moyens de nous contacter ». Vide : valeur indiquée en exemple' },
+      { key: 'report_contact_phone', label: 'Téléphone', type: 'text', placeholder: '+261 20 22 309 71', description: 'Affiché dans « Autres moyens de nous contacter ». Vide : valeur indiquée en exemple' }
+    ]
+  },
+  {
     label: 'Réseaux sociaux',
     icon: 'share-nodes',
     items: [

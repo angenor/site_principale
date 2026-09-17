@@ -1,5 +1,6 @@
 import prisma from '../../../utils/prisma'
 import { requireAuth } from '../../../utils/auth'
+import { deleteReportAttachmentFiles } from '../../../utils/reports'
 
 export default defineEventHandler(async (event) => {
   await requireAuth(event)
@@ -14,7 +15,8 @@ export default defineEventHandler(async (event) => {
   }
 
   const contact = await prisma.contact.findUnique({
-    where: { id }
+    where: { id },
+    include: { attachments: { select: { filepath: true } } }
   })
 
   if (!contact) {
@@ -27,6 +29,8 @@ export default defineEventHandler(async (event) => {
   await prisma.contact.delete({
     where: { id }
   })
+
+  await deleteReportAttachmentFiles(contact.attachments.map(attachment => attachment.filepath))
 
   return { success: true }
 })

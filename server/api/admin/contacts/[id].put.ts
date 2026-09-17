@@ -45,7 +45,20 @@ export default defineEventHandler(async (event) => {
 
   const updatedContact = await prisma.contact.update({
     where: { id },
-    data: updateData
+    data: updateData,
+    include: {
+      attachments: {
+        orderBy: { sortOrder: 'asc' },
+        select: {
+          id: true,
+          kind: true,
+          filename: true,
+          url: true,
+          mimeType: true,
+          fileSize: true
+        }
+      }
+    }
   })
 
   return {

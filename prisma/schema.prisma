@@ -475,12 +475,32 @@ enum ContactStatus {
   ARCHIVED
 }
 
+// Catégories de signalement (modifiables dans le back-office)
+model ReportCategory {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  icon        String?   // Icône FontAwesome ou URL d'image personnalisée
+  color       String?   // Couleur en hexadécimal (ex: "#3B82F6")
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  reports     Contact[]
+
+  @@map("report_categories")
+}
+
 model Contact {
   id          String        @id @default(cuid())
   name        String?
   email       String?
   phone       String?
-  subject     String
+  subject     String        // Nom de la catégorie au moment du signalement
+  categoryId  String?
+  category    ReportCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   message     String        @db.Text
   status      ContactStatus @default(NEW)
   isAnonymous Boolean       @default(false)
@@ -489,9 +509,36 @@ model Contact {
   processedAt DateTime?
   notes       String?       @db.Text // Notes internes
 
+  // Relations
+  attachments ContactAttachment[]
+
   @@index([status])
   @@index([createdAt])
+  @@index([categoryId])
   @@map("contacts")
+}
+
+enum ContactAttachmentKind {
+  FILE
+  LINK
+}
+
+// Pièces jointes d'un signalement (fichiers privés ou liens)
+model ContactAttachment {
+  id          String                @id @default(cuid())
+  contactId   String
+  contact     Contact               @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  kind        ContactAttachmentKind
+  filename    String?               // Nom original du fichier
+  filepath    String?               // Chemin de stockage privé (hors dossier public)
+  url         String?               // Lien fourni par le dénonciateur
+  mimeType    String?
+  fileSize    Int?                  // Taille en octets
+  sortOrder   Int                   @default(0)
+  createdAt   DateTime              @default(now())
+
+  @@index([contactId])
+  @@map("contact_attachments")
 }
 
 // ============================================================================

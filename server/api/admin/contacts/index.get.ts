@@ -33,7 +33,8 @@ export default defineEventHandler(async (event) => {
       where,
       skip,
       take: limit,
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      include: { _count: { select: { attachments: true } } }
     }),
     prisma.contact.count({ where })
   ])
@@ -50,7 +51,8 @@ export default defineEventHandler(async (event) => {
       isAnonymous: contact.isAnonymous,
       createdAt: contact.createdAt,
       processedAt: contact.processedAt,
-      notes: contact.notes
+      notes: contact.notes,
+      attachmentCount: contact._count.attachments
     })),
     pagination: {
       page,
