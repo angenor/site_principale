@@ -65,19 +65,37 @@ function renderParagraph(data: { text: string }): string {
   return `<p>${data.text}</p>`
 }
 
-function renderList(data: { style: string; items: string[] | any[] }): string {
-  const tag = data.style === 'ordered' ? 'ol' : 'ul'
-  const items = data.items.map(item => {
-    // Handle nested list items (Editor.js 2.0 format)
-    const content = typeof item === 'string' ? item : item.content || ''
-    return `<li>${content}</li>`
-  }).join('')
-  return `<${tag}>${items}</${tag}>`
+interface ListItem {
+  content?: string
+  meta?: { checked?: boolean }
+  items?: Array<ListItem | string>
 }
 
-function renderQuote(data: { text: string; caption?: string }): string {
-  let html = `<blockquote>${data.text}`
-  if (data.caption) {
+function renderList(data: { style: string; items: Array<ListItem | string> }): string {
+  if (!data.items?.length) return ''
+  const tag = data.style === 'ordered' ? 'ol' : 'ul'
+  const listClass = data.style === 'checklist' ? ' class="checklist"' : ''
+
+  // Les listes Editor.js 2.x contiennent des objets avec sous-listes imbriquées
+  const items = data.items.map((item) => {
+    if (typeof item === 'string') return `<li>${item}</li>`
+    const content = item.content || ''
+    const nested = item.items?.length ? renderList({ style: data.style, items: item.items }) : ''
+    if (data.style === 'checklist') {
+      const checked = item.meta?.checked
+      return `<li class="checklist-item${checked ? ' checked' : ''}"><input type="checkbox" ${checked ? 'checked' : ''} disabled /><span>${content}</span>${nested}</li>`
+    }
+    return `<li>${content}${nested}</li>`
+  }).join('')
+
+  return `<${tag}${listClass}>${items}</${tag}>`
+}
+
+function renderQuote(data: { text: string; caption?: string; alignment?: string }): string {
+  if (!data.text?.trim()) return ''
+  const alignClass = data.alignment === 'center' ? ' class="text-center"' : ''
+  let html = `<blockquote${alignClass}><p>${data.text}</p>`
+  if (data.caption?.trim()) {
     html += `<cite>${data.caption}</cite>`
   }
   html += '</blockquote>'
@@ -118,23 +136,81 @@ function renderTable(data: { content: string[][]; withHeadings?: boolean; stretc
   return `<table class="${tableClass}"><tbody>${rows}</tbody></table>`
 }
 
-function renderEmbed(data: { service: string; embed: string; caption?: string }): string {
-  let html = `<div class="embed-responsive">`
+function renderEmbed(data: { service?: string; embed?: string; caption?: string }): string {
+  // Sans adresse valide, une iframe afficherait la page elle-même : le bloc est ignoré
+  if (!data.embed || !/^https:\/\//.test(data.embed)) return ''
 
-  if (data.service === 'youtube') {
-    html += `<iframe src="${data.embed}" frameborder="0" allowfullscreen></iframe>`
-  } else if (data.service === 'vimeo') {
-    html += `<iframe src="${data.embed}" frameborder="0" allowfullscreen></iframe>`
-  } else {
-    html += `<iframe src="${data.embed}" frameborder="0"></iframe>`
-  }
-
-  if (data.caption) {
-    html += `<p class="caption">${data.caption}</p>`
-  }
-
+  const src = data.embed.replace(/"/g, '&quot;')
+  let html = '<figure class="content-video">'
+  html += '<div class="embed-responsive">'
+  html += `<iframe src="${src}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe>`
   html += '</div>'
+  if (data.caption?.trim()) {
+    html += `<figcaption>${data.caption}</figcaption>`
+  }
+  html += '</figure>'
   return html
+}
+
+// Minutage YouTube : « 90 », « 90s » ou « 1m30s »
+function parseStartTime(value: string | null): number {
+  if (!value) return 0
+  if (/^\d+s?$/.test(value)) return parseInt(value, 10)
+  const match = value.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/)
+  if (!match) return 0
+  return (Number(match[1] || 0) * 3600) + (Number(match[2] || 0) * 60) + Number(match[3] || 0)
+}
+
+export interface VideoEmbedData {
+  service: 'youtube' | 'vimeo'
+  source: string
+  embed: string
+  width: number
+  height: number
+  caption: string
+}
+
+/**
+ * Convertit un lien YouTube ou Vimeo en données de bloc « embed » Editor.js.
+ * Retourne null si le lien n'est pas reconnu.
+ */
+export function parseVideoUrl(input: string): VideoEmbedData | null {
+  let url: URL
+  try {
+    url = new URL(input.trim())
+  } catch {
+    return null
+  }
+  const host = url.hostname.replace(/^(www\.|m\.)/, '')
+  const base = { source: url.toString(), width: 580, height: 320, caption: '' }
+
+  // YouTube : watch?v=, youtu.be/, embed/, shorts/, live/
+  let youtubeId: string | null = null
+  if (host === 'youtu.be') {
+    youtubeId = url.pathname.slice(1).split('/')[0] || null
+  } else if (host === 'youtube.com' || host === 'youtube-nocookie.com') {
+    youtubeId = url.searchParams.get('v')
+      || url.pathname.match(/^\/(?:embed|shorts|live)\/([^/?#]+)/)?.[1]
+      || null
+  }
+  if (youtubeId && /^[\w-]{6,}$/.test(youtubeId)) {
+    const start = parseStartTime(url.searchParams.get('t') || url.searchParams.get('start'))
+    return {
+      ...base,
+      service: 'youtube',
+      embed: `https://www.youtube.com/embed/${youtubeId}${start > 0 ? `?start=${start}` : ''}`
+    }
+  }
+
+  // Vimeo : vimeo.com/ID ou player.vimeo.com/video/ID
+  if (host === 'vimeo.com' || host === 'player.vimeo.com') {
+    const vimeoId = url.pathname.match(/(?:^|\/)(\d+)(?:\/|$)/)?.[1]
+    if (vimeoId) {
+      return { ...base, service: 'vimeo', embed: `https://player.vimeo.com/video/${vimeoId}` }
+    }
+  }
+
+  return null
 }
 
 function renderImage(

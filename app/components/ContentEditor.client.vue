@@ -12,6 +12,7 @@ import Paragraph from '@editorjs/paragraph'
 import ImageTool from '@editorjs/image'
 import Checklist from '@editorjs/checklist'
 import TextColorTool from '~/utils/editorTextColor'
+import { parseVideoUrl } from '~/utils/editorjs'
 
 // Custom Block Tune for image positioning (float left/right)
 class ImagePositionTune implements BlockTune {
@@ -532,8 +533,45 @@ function insertDelimiter() {
   insertBlock('delimiter', {})
 }
 
-function insertEmbed() {
-  insertBlock('embed', {})
+// Insertion d'une vidéo : l'outil Embed n'a pas de champ de saisie, on demande le lien ici
+const showVideoInput = ref(false)
+const videoUrl = ref('')
+const videoError = ref('')
+const videoInputRef = ref<HTMLInputElement | null>(null)
+// Position mémorisée : le focus quitte l'éditeur pendant la saisie du lien
+let videoInsertIndex = -1
+
+async function insertEmbed() {
+  videoInsertIndex = editor ? editor.blocks.getCurrentBlockIndex() : -1
+  videoUrl.value = ''
+  videoError.value = ''
+  showVideoInput.value = true
+  await nextTick()
+  videoInputRef.value?.focus()
+}
+
+function cancelVideo() {
+  showVideoInput.value = false
+  videoError.value = ''
+}
+
+async function confirmVideo() {
+  if (!editor) return
+  const data = parseVideoUrl(videoUrl.value)
+  if (!data) {
+    videoError.value = 'Lien non reconnu. Collez l\'adresse d\'une vidéo YouTube ou Vimeo.'
+    return
+  }
+
+  try {
+    await editor.isReady
+    const index = videoInsertIndex >= 0 ? videoInsertIndex + 1 : editor.blocks.getBlocksCount()
+    await editor.blocks.insert('embed', { ...data }, undefined, index, true)
+    showVideoInput.value = false
+  } catch (err) {
+    console.error('Error inserting video:', err)
+    videoError.value = 'Impossible d\'insérer la vidéo'
+  }
 }
 
 // Expose save method
@@ -636,6 +674,31 @@ defineExpose({ save })
             <span class="btn-label">Vidéo</span>
           </button>
         </div>
+        <div v-if="showVideoInput" class="video-input">
+          <label for="content-editor-video-url" class="video-input-label">
+            <font-awesome-icon icon="video" />
+            Lien de la vidéo (YouTube ou Vimeo)
+          </label>
+          <div class="video-input-row">
+            <input
+              id="content-editor-video-url"
+              ref="videoInputRef"
+              v-model="videoUrl"
+              type="url"
+              placeholder="https://www.youtube.com/watch?v=..."
+              class="video-input-field"
+              @keydown.enter.prevent="confirmVideo"
+              @keydown.esc.prevent="cancelVideo"
+            />
+            <button type="button" class="video-input-confirm" :disabled="!videoUrl.trim()" @click="confirmVideo">
+              Insérer
+            </button>
+            <button type="button" class="video-input-cancel" @click="cancelVideo">
+              Annuler
+            </button>
+          </div>
+          <p v-if="videoError" class="video-input-error">{{ videoError }}</p>
+        </div>
         <span class="toolbar-hint">
           <font-awesome-icon icon="palette" />
           Sélectionnez du texte pour le mettre en forme ou changer sa couleur
@@ -695,6 +758,106 @@ defineExpose({ save })
 
 .dark .toolbar-label {
   color: #9ca3af;
+}
+
+.video-input {
+  flex-basis: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.75rem;
+  border: 1px solid #bfdbfe;
+  border-radius: 0.5rem;
+  background-color: #eff6ff;
+}
+
+.dark .video-input {
+  border-color: #1e40af;
+  background-color: rgba(30, 64, 175, 0.2);
+}
+
+.video-input-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #1e3a8a;
+}
+
+.dark .video-input-label {
+  color: #bfdbfe;
+}
+
+.video-input-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.video-input-field {
+  flex: 1 1 14rem;
+  min-width: 0;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background-color: white;
+  color: #111827;
+  font-size: 0.875rem;
+}
+
+.dark .video-input-field {
+  border-color: #4b5563;
+  background-color: #374151;
+  color: white;
+}
+
+.video-input-confirm,
+.video-input-cancel {
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.video-input-confirm {
+  background-color: #16a34a;
+  color: white;
+}
+
+.video-input-confirm:hover {
+  background-color: #15803d;
+}
+
+.video-input-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.video-input-cancel {
+  color: #374151;
+}
+
+.video-input-cancel:hover {
+  background-color: #e5e7eb;
+}
+
+.dark .video-input-cancel {
+  color: #d1d5db;
+}
+
+.dark .video-input-cancel:hover {
+  background-color: #4b5563;
+}
+
+.video-input-error {
+  font-size: 0.8125rem;
+  color: #dc2626;
+}
+
+.dark .video-input-error {
+  color: #f87171;
 }
 
 .toolbar-hint {

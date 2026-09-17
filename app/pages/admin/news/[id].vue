@@ -338,32 +338,12 @@ async function togglePublish() {
           </p>
         </div>
       </div>
-      <div class="flex items-center gap-3">
-        <button
-          type="button"
-          @click="togglePublish"
-          :disabled="isSaving"
-          :class="[
-            form.isPublished
-              ? 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/50 dark:text-green-300'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300',
-            'px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer disabled:opacity-50'
-          ]"
-        >
-          <font-awesome-icon :icon="form.isPublished ? 'check-circle' : 'eye-slash'" class="mr-2" />
-          {{ form.isPublished ? 'Publiée' : 'Brouillon' }}
-        </button>
-        <button
-          type="button"
-          @click="handleSubmit"
-          :disabled="isSaving"
-          class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
-        >
-          <font-awesome-icon v-if="isSaving" icon="spinner" class="animate-spin" />
-          <font-awesome-icon v-else icon="check" />
-          {{ isSaving ? 'Enregistrement...' : 'Enregistrer' }}
-        </button>
-      </div>
+      <AdminPublishActions
+        :published="form.isPublished"
+        :saving="isSaving"
+        @toggle="togglePublish"
+        @save="handleSubmit"
+      />
     </div>
 
     <!-- Messages -->
@@ -676,6 +656,24 @@ async function togglePublish() {
             />
           </div>
         </div>
+      </div>
+
+      <!-- Actions répétées en bas du formulaire, pour éviter de remonter -->
+      <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <p v-if="error" class="text-sm text-red-600 dark:text-red-400 sm:mr-auto flex items-center gap-2">
+          <font-awesome-icon icon="circle-exclamation" />
+          {{ error }}
+        </p>
+        <p v-else-if="success" class="text-sm text-green-700 dark:text-green-400 sm:mr-auto flex items-center gap-2">
+          <font-awesome-icon icon="check-circle" />
+          {{ success }}
+        </p>
+        <AdminPublishActions
+          :published="form.isPublished"
+          :saving="isSaving"
+          @toggle="togglePublish"
+          @save="handleSubmit"
+        />
       </div>
     </form>
 
