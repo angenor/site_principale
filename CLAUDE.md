@@ -271,7 +271,18 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml build --no-cache
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
-### Migration de la base de donnees
+### Sauvegarde et migration depuis le poste local
+
+```bash
+./scripts/prod.sh backup    # Sauvegarde la base de production dans backups/ (ignore par git)
+./scripts/prod.sh migrate   # Sauvegarde, puis aligne la base sur le schema de origin/main
+```
+
+`migrate` affiche les changements, refuse tout changement destructeur, demande confirmation,
+applique en une seule transaction puis verifie qu'aucune table n'a perdu de lignes.
+Le code n'est pas redeploye par ce script.
+
+### Migration de la base de donnees (manuelle)
 
 Apres modification de `prisma/schema.prisma`, executer sur le VPS :
 

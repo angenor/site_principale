@@ -36,3 +36,6 @@ docker/certbot/www/
 firebase-debug.log
 firebase-debug.*.log
 .firebaserc.backup
+
+# Sauvegardes de base de données (données de production)
+backups/
