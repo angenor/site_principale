@@ -6,8 +6,8 @@
 # Stage 1: Base image with pnpm
 FROM node:22-alpine AS base
 
-# Install pnpm globally
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install pnpm globally (version fixée : « latest » peut casser le build du jour au lendemain)
+RUN corepack enable && corepack prepare pnpm@10.26.2 --activate
 
 # Set working directory
 WORKDIR /app
