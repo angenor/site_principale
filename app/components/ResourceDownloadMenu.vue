@@ -74,14 +74,12 @@ onBeforeUnmount(() => {
         target="_blank"
         :rel="single.externalUrl ? 'noopener noreferrer' : 'noopener'"
         :download="single.fileUrl ? (single.filename || '') : undefined"
-        class="flex items-center uppercase text-blue-800 dark:text-blue-400 font-semibold text-xs hover:underline"
+        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-ti-blue hover:bg-ti-blue-700 text-white text-xs font-semibold transition-colors"
         :title="`${single.languageLabel} – ${describe(single)}`"
         @click="track"
       >
-        <span class="mr-3 block w-8 h-0.5 bg-blue-800 dark:bg-blue-400" />
-        télécharger
-        <span class="ml-1.5 normal-case font-bold">({{ single.languageCode }})</span>
-        <font-awesome-icon v-if="single.externalUrl" icon="external-link-alt" class="ml-1.5 text-[0.6rem]" />
+        <font-awesome-icon :icon="single.externalUrl ? 'external-link-alt' : 'download'" />
+        Télécharger
       </a>
     </template>
 
@@ -89,14 +87,14 @@ onBeforeUnmount(() => {
     <template v-else-if="files.length > 1">
       <button
         type="button"
-        class="flex items-center uppercase text-blue-800 dark:text-blue-400 font-semibold text-xs hover:underline cursor-pointer"
+        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-ti-blue hover:bg-ti-blue-700 text-white text-xs font-semibold transition-colors cursor-pointer"
         :aria-expanded="isOpen"
         aria-haspopup="true"
         @click="isOpen = !isOpen"
       >
-        <span class="mr-3 block w-8 h-0.5 bg-blue-800 dark:bg-blue-400" />
-        télécharger
-        <font-awesome-icon :icon="isOpen ? 'chevron-up' : 'chevron-down'" class="ml-1.5 text-[0.6rem]" />
+        <font-awesome-icon icon="download" />
+        Télécharger
+        <font-awesome-icon :icon="isOpen ? 'chevron-up' : 'chevron-down'" class="text-[0.6rem]" />
       </button>
 
       <Transition

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-const { thumb } = useImageVariants()
 const { getConfig } = useAppSettings()
 
 const introText = computed(() => getConfig('resources_reports_intro', 'Rapports, guides et recherches sur la gouvernance minière à Madagascar, à télécharger dans les langues disponibles'))
@@ -62,15 +61,6 @@ const { data: resourcesData, status } = await useFetch<ResourceResponse>('/api/r
 const resources = computed(() => resourcesData.value?.data || [])
 const categories = computed(() => resourcesData.value?.categories || [])
 const pagination = computed(() => resourcesData.value?.pagination)
-
-function formatDate(date: string | null) {
-  if (!date) return ''
-  return new Date(date).toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  })
-}
 
 function changePage(page: number) {
   currentPage.value = page
@@ -162,75 +152,14 @@ function filterByCategory(categoryId: string) {
           </p>
         </div>
 
-        <!-- Grille de ressources : couverture puis informations -->
+        <!-- Grille de ressources -->
         <div v-else class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <article
+          <ResourceCard
             v-for="item in resources"
-            :id="item.slug"
             :key="item.id"
-            class="flex flex-col h-full bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-shadow border border-gray-100 dark:border-gray-700 scroll-mt-28"
-          >
-            <!-- Couverture -->
-            <div class="aspect-[3/4] rounded-t-xl overflow-hidden bg-gray-100 dark:bg-gray-700">
-              <img
-                v-if="item.coverImage"
-                :src="thumb(item.coverImage)"
-                :alt="item.title"
-                loading="lazy"
-                class="w-full h-full object-cover"
-              />
-              <div
-                v-else
-                class="w-full h-full bg-gradient-to-br from-ti-blue to-ti-blue-700 flex items-center justify-center"
-              >
-                <font-awesome-icon :icon="getFileIcon(item.files[0]?.mimeType)" class="w-12 h-12 text-white/50" />
-              </div>
-            </div>
-
-            <!-- Informations -->
-            <div class="flex flex-col flex-1 p-5">
-              <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2 text-xs">
-                <button
-                  v-if="item.category"
-                  type="button"
-                  class="text-blue-400 capitalize hover:underline cursor-pointer text-left"
-                  @click="filterByCategory(item.category.id)"
-                >
-                  {{ item.category.name }}
-                </button>
-                <time v-if="item.publishedAt" :datetime="item.publishedAt" class="text-gray-500 dark:text-gray-400">
-                  {{ formatDate(item.publishedAt) }}
-                </time>
-              </div>
-              <h2 class="text-lg font-bold leading-snug text-gray-900 dark:text-white line-clamp-2">
-                {{ item.title }}
-              </h2>
-              <p v-if="item.authorName" class="mt-1 text-xs text-gray-600 dark:text-gray-300 truncate" :title="item.authorName">
-                {{ item.authorName }}
-              </p>
-              <p class="mt-2 text-sm text-gray-600 dark:text-gray-300 leading-relaxed line-clamp-3">
-                {{ item.description || 'Téléchargez ce rapport pour le consulter.' }}
-              </p>
-              <div class="mt-auto pt-4 flex items-center justify-between gap-3">
-                <div v-if="item.files.length" class="flex flex-wrap gap-1" aria-label="Langues disponibles">
-                  <span
-                    v-for="file in item.files"
-                    :key="file.id"
-                    class="px-1.5 py-0.5 rounded text-[0.65rem] font-bold bg-ti-blue/10 text-ti-blue dark:text-blue-300"
-                    :title="file.languageLabel"
-                  >
-                    {{ file.languageCode }}
-                  </span>
-                </div>
-                <ResourceDownloadMenu
-                  class="ml-auto"
-                  :resource-id="item.id"
-                  :title="item.title"
-                  :files="item.files"
-                />
-              </div>
-            </div>
-          </article>
+            :item="item"
+            @select-category="filterByCategory"
+          />
         </div>
 
         <!-- Pagination -->

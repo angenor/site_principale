@@ -103,8 +103,8 @@ onMounted(() => {
   if (!error.value) draft.start(id)
 })
 
-// Aperçu : première version disponible
-const previewFile = computed(() => form.value.files[0])
+// Aperçu : catégorie choisie
+const selectedCategory = computed(() => categories.value.find(c => c.id === form.value.categoryId))
 
 async function handleSubmit() {
   error.value = ''
@@ -350,45 +350,19 @@ async function togglePublish() {
           <!-- Preview -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Aperçu</h3>
-            <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-              <div class="aspect-[3/4] bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                <img
-                  v-if="form.coverImage"
-                  :src="form.coverImage"
-                  :alt="form.title"
-                  class="w-full h-full object-cover"
-                />
-                <font-awesome-icon
-                  v-else
-                  :icon="getFileIcon(previewFile?.mimeType)"
-                  class="text-gray-400 text-4xl"
-                />
-              </div>
-              <div class="p-4">
-                <h4 class="font-medium text-gray-900 dark:text-white line-clamp-2">
-                  {{ form.title || 'Titre du rapport' }}
-                </h4>
-                <p v-if="form.authorName.trim()" class="text-xs text-gray-600 dark:text-gray-300 mt-1 truncate">
-                  <font-awesome-icon icon="user" class="mr-1 text-gray-400" />
-                  {{ form.authorName.trim() }}
-                </p>
-                <p v-if="form.description" class="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-                  {{ form.description }}
-                </p>
-                <div class="flex flex-wrap gap-1.5 mt-3">
-                  <span
-                    v-for="file in form.files"
-                    :key="file.key"
-                    class="text-xs px-2 py-0.5 rounded font-semibold bg-ti-blue/10 text-ti-blue dark:text-blue-300"
-                    :title="file.languageLabel"
-                  >
-                    {{ file.languageCode || '?' }}
-                    <font-awesome-icon v-if="file.source === 'link'" icon="external-link-alt" class="ml-0.5 text-[0.6rem]" />
-                  </span>
-                  <span class="text-xs px-2 py-0.5 bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 rounded ml-auto">Télécharger</span>
-                </div>
-              </div>
-            </div>
+            <ResourceCard
+              :item="{
+                id: 'preview',
+                title: form.title || 'Titre du rapport',
+                description: form.description.trim() || null,
+                authorName: form.authorName.trim() || null,
+                coverImage: form.coverImage || null,
+                files: form.files,
+                publishedAt: toIsoOrNull(form.publishedAt),
+                category: selectedCategory ? { id: selectedCategory.id, name: selectedCategory.name, color: selectedCategory.color, icon: selectedCategory.icon } : null
+              }"
+              preview
+            />
           </div>
         </div>
       </div>

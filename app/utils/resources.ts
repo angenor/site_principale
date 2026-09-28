@@ -83,6 +83,19 @@ export const RESOURCE_LANGUAGES = [
 export type AudioVideoFormat = 'VIDEO' | 'AUDIO'
 
 /** Audio/vidéo tel qu'affiché dans la rubrique Ressources */
+/** Rapport tel qu'affiché dans une carte (site public et aperçu de l'administration) */
+export interface ResourceSummary {
+  id: string
+  slug?: string
+  title: string
+  description: string | null
+  authorName: string | null
+  coverImage: string | null
+  files: ResourceFileVersion[]
+  publishedAt: string | null
+  category: { id: string; name: string; color: string | null; icon: string | null } | null
+}
+
 export interface AudioVideoSummary {
   id: string
   title: string
