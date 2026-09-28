@@ -18,7 +18,7 @@ interface CaseStudy {
   eventDate: string | null
   location: string | null
   isPublished: boolean
-  regionId: string | null
+  regionIds: string[]
   categoryIds: string[]
   keywordIds: string[]
 }
@@ -49,7 +49,7 @@ const form = ref({
   coverImage: '',
   eventDate: '',
   location: '',
-  regionId: '',
+  regionIds: [] as string[],
   categoryIds: [] as string[],
   keywordIds: [] as string[],
   isPublished: false
@@ -60,6 +60,7 @@ const isSaving = ref(false)
 const error = ref('')
 const success = ref('')
 const keywordSearch = ref('')
+const regionSearch = ref('')
 
 // Fetch existing case if editing
 if (!isNew) {
@@ -75,7 +76,7 @@ if (!isNew) {
         coverImage: caseData.value.coverImage || '',
         eventDate: caseData.value.eventDate ? caseData.value.eventDate.split('T')[0] : '',
         location: caseData.value.location || '',
-        regionId: caseData.value.regionId || '',
+        regionIds: caseData.value.regionIds || [],
         categoryIds: caseData.value.categoryIds || [],
         keywordIds: caseData.value.keywordIds || [],
         isPublished: caseData.value.isPublished
@@ -117,6 +118,24 @@ function toggleCategory(categoryId: string) {
     form.value.categoryIds.splice(index, 1)
   }
 }
+
+// Toggle region selection
+function toggleRegion(regionId: string) {
+  const index = form.value.regionIds.indexOf(regionId)
+  if (index === -1) {
+    form.value.regionIds.push(regionId)
+  } else {
+    form.value.regionIds.splice(index, 1)
+  }
+}
+
+// Filter regions based on search
+const filteredRegions = computed(() => {
+  if (!regions.value) return []
+  const query = regionSearch.value.toLowerCase().trim()
+  if (!query) return regions.value
+  return regions.value.filter(r => r.name.toLowerCase().includes(query))
+})
 
 // Toggle keyword selection
 function toggleKeyword(keywordId: string) {
@@ -188,7 +207,7 @@ async function handleSubmit() {
       coverImage: form.value.coverImage || null,
       eventDate: form.value.eventDate || null,
       location: form.value.location || null,
-      regionId: form.value.regionId || null,
+      regionIds: form.value.regionIds,
       categoryIds: form.value.categoryIds,
       keywordIds: form.value.keywordIds,
       isPublished: form.value.isPublished
@@ -505,19 +524,48 @@ async function togglePublish() {
 
             <div class="space-y-4">
               <div>
-                <label for="region" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Région
-                </label>
-                <select
-                  id="region"
-                  v-model="form.regionId"
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-ti-blue focus:border-ti-blue cursor-pointer"
-                >
-                  <option value="">Sélectionner une région</option>
-                  <option v-for="region in regions" :key="region.id" :value="region.id">
-                    {{ region.name }}
-                  </option>
-                </select>
+                <p class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Régions concernées
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                  Cochez toutes les régions sur lesquelles porte le cas.
+                </p>
+
+                <div v-if="regions?.length && regions.length > 8" class="relative mb-2">
+                  <font-awesome-icon
+                    icon="search"
+                    class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-3 h-3"
+                  />
+                  <input
+                    v-model="regionSearch"
+                    type="text"
+                    placeholder="Rechercher une région..."
+                    class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-ti-blue focus:border-ti-blue"
+                  />
+                </div>
+
+                <div v-if="regions?.length" class="max-h-64 overflow-y-auto space-y-1 border border-gray-200 dark:border-gray-700 rounded-lg p-2">
+                  <label
+                    v-for="region in filteredRegions"
+                    :key="region.id"
+                    class="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      :checked="form.regionIds.includes(region.id)"
+                      @change="toggleRegion(region.id)"
+                      class="w-4 h-4 text-ti-blue border-gray-300 dark:border-gray-600 rounded focus:ring-ti-blue cursor-pointer"
+                    />
+                    <span class="text-sm text-gray-700 dark:text-gray-300">{{ region.name }}</span>
+                  </label>
+                  <p v-if="!filteredRegions.length" class="text-center py-2 text-sm text-gray-500 dark:text-gray-400">
+                    Aucune région trouvée pour "{{ regionSearch }}"
+                  </p>
+                </div>
+
+                <p v-if="form.regionIds.length > 0" class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  {{ form.regionIds.length }} région(s) sélectionnée(s)
+                </p>
                 <p v-if="regionsLoading" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   <font-awesome-icon icon="spinner" class="animate-spin mr-1" />
                   Chargement des régions...

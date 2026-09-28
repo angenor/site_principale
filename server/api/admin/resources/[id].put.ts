@@ -6,6 +6,7 @@ import { normalizeResourceFiles, resourceFilesCreateData } from '../../../utils/
 interface UpdateResourceBody {
   title?: string
   description?: string
+  authorName?: string | null
   coverImage?: string
   files?: unknown
   categoryId?: string | null
@@ -51,6 +52,10 @@ export default defineEventHandler(async (event) => {
 
   if (body.description !== undefined) {
     updateData.description = body.description?.trim() || null
+  }
+
+  if (body.authorName !== undefined) {
+    updateData.authorName = body.authorName?.trim() || null
   }
 
   if (body.coverImage !== undefined) {

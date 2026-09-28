@@ -1,8 +1,10 @@
 import prisma from '../../../utils/prisma'
 import { requireAuth } from '../../../utils/auth'
+import { ensureCaseStudyRegionsMigrated } from '../../../utils/caseStudies'
 
 export default defineEventHandler(async (event) => {
   await requireAuth(event)
+  await ensureCaseStudyRegionsMigrated()
 
   const query = getQuery(event)
   const search = query.search as string | undefined

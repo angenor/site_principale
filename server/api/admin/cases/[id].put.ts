@@ -1,5 +1,6 @@
 import prisma from '../../../utils/prisma'
 import { requireAuth } from '../../../utils/auth'
+import { ensureCaseStudyRegionsMigrated } from '../../../utils/caseStudies'
 
 interface UpdateCaseBody {
   title?: string
@@ -9,7 +10,7 @@ interface UpdateCaseBody {
   coverImage?: string
   eventDate?: string | null
   location?: string
-  regionId?: string | null
+  regionIds?: string[]
   categoryIds?: string[]
   keywordIds?: string[]
   isPublished?: boolean
@@ -17,6 +18,7 @@ interface UpdateCaseBody {
 
 export default defineEventHandler(async (event) => {
   await requireAuth(event)
+  await ensureCaseStudyRegionsMigrated()
 
   const id = getRouterParam(event, 'id')
 
@@ -94,10 +96,6 @@ export default defineEventHandler(async (event) => {
     updateData.location = body.location?.trim() || null
   }
 
-  if (body.regionId !== undefined) {
-    updateData.regionId = body.regionId || null
-  }
-
   // Handle publication status
   if (body.isPublished !== undefined) {
     updateData.isPublished = body.isPublished
@@ -122,6 +120,22 @@ export default defineEventHandler(async (event) => {
           data: body.categoryIds.map(categoryId => ({
             caseStudyId: id,
             categoryId
+          }))
+        })
+      }
+    }
+
+    // Update regions if provided
+    if (body.regionIds !== undefined) {
+      await tx.caseStudyRegion.deleteMany({
+        where: { caseStudyId: id }
+      })
+
+      if (body.regionIds.length > 0) {
+        await tx.caseStudyRegion.createMany({
+          data: body.regionIds.map(regionId => ({
+            caseStudyId: id,
+            regionId
           }))
         })
       }
@@ -153,8 +167,13 @@ export default defineEventHandler(async (event) => {
         author: {
           select: { firstName: true, lastName: true }
         },
-        region: {
-          select: { name: true }
+        regions: {
+          include: {
+            region: {
+              select: { id: true, name: true }
+            }
+          },
+          orderBy: { region: { name: 'asc' } }
         },
         categories: {
           include: {
@@ -191,8 +210,8 @@ export default defineEventHandler(async (event) => {
       createdAt: updatedCase.createdAt,
       updatedAt: updatedCase.updatedAt,
       author: updatedCase.author ? `${updatedCase.author.firstName} ${updatedCase.author.lastName}` : null,
-      region: updatedCase.region?.name || null,
-      regionId: updatedCase.regionId,
+      regions: updatedCase.regions.map(r => r.region.name),
+      regionIds: updatedCase.regions.map(r => r.regionId),
       categories: updatedCase.categories.map(c => ({
         id: c.category.id,
         name: c.category.name,

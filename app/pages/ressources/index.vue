@@ -27,6 +27,7 @@ interface ResourceItem {
   slug: string
   title: string
   description: string | null
+  authorName: string | null
   coverImage: string | null
   files: ResourceFileVersion[]
   downloadCount: number
@@ -146,10 +147,8 @@ function filterByCategory(categoryId: string) {
     <section class="py-12">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Loading -->
-        <div v-if="status === 'pending'" class="grid md:grid-cols-2 xl:grid-cols-3 gap-x-20 gap-y-10">
-          <div v-for="i in 6" :key="i" class="animate-pulse">
-            <div class="bg-gray-200 dark:bg-gray-700 h-64 rounded-lg" />
-          </div>
+        <div v-if="status === 'pending'" class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div v-for="i in 8" :key="i" class="animate-pulse bg-gray-200 dark:bg-gray-700 h-[32rem] rounded-xl" />
         </div>
 
         <!-- Empty state -->
@@ -163,41 +162,57 @@ function filterByCategory(categoryId: string) {
           </p>
         </div>
 
-        <!-- Grille de ressources avec design card -->
-        <div v-else class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-start justify-center gap-12 lg:gap-16">
-          <article v-for="item in resources" :id="item.slug" :key="item.id" class="scroll-mt-28">
-            <div class="relative">
-              <!-- Image -->
+        <!-- Grille de ressources : couverture puis informations -->
+        <div v-else class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <article
+            v-for="item in resources"
+            :id="item.slug"
+            :key="item.id"
+            class="flex flex-col h-full bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-shadow border border-gray-100 dark:border-gray-700 scroll-mt-28"
+          >
+            <!-- Couverture -->
+            <div class="aspect-[3/4] rounded-t-xl overflow-hidden bg-gray-100 dark:bg-gray-700">
               <img
                 v-if="item.coverImage"
                 :src="thumb(item.coverImage)"
                 :alt="item.title"
                 loading="lazy"
-                class="w-full aspect-[3/2] lg:aspect-[3/4] h-32 lg:h-[22rem] object-cover shadow-lg"
+                class="w-full h-full object-cover"
               />
               <div
                 v-else
-                class="w-full aspect-[3/2] lg:aspect-[3/4] h-32 lg:h-[22rem] bg-gradient-to-br from-ti-blue to-ti-blue-700 shadow-lg flex items-center justify-center"
+                class="w-full h-full bg-gradient-to-br from-ti-blue to-ti-blue-700 flex items-center justify-center"
               >
                 <font-awesome-icon :icon="getFileIcon(item.files[0]?.mimeType)" class="w-12 h-12 text-white/50" />
               </div>
+            </div>
 
-              <!-- Info Card avec design chevauchant -->
-              <div class="lg:rounded-l-[20px] lg:rounded-t-[20px] bg-white dark:bg-gray-800 lg:absolute bottom-6 -right-10 lg:w-[13rem] px-5 pt-4 pb-6 lg:h-72 shadow flex flex-col">
-                <span class="inline-block text-xs text-gray-500 dark:text-gray-400">
-                  {{ formatDate(item.publishedAt) }}
-                </span>
-                <h2 class="text-lg font-bold leading-tight mt-1 mb-1.5 text-gray-900 dark:text-white line-clamp-2">
-                  {{ item.title }}
-                </h2>
+            <!-- Informations -->
+            <div class="flex flex-col flex-1 p-5">
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2 text-xs">
                 <button
                   v-if="item.category"
+                  type="button"
+                  class="text-blue-400 capitalize hover:underline cursor-pointer text-left"
                   @click="filterByCategory(item.category.id)"
-                  class="inline-block text-blue-400 text-xs capitalize hover:underline cursor-pointer text-left"
                 >
                   {{ item.category.name }}
                 </button>
-                <div v-if="item.files.length" class="flex flex-wrap gap-1 mt-2" aria-label="Langues disponibles">
+                <time v-if="item.publishedAt" :datetime="item.publishedAt" class="text-gray-500 dark:text-gray-400">
+                  {{ formatDate(item.publishedAt) }}
+                </time>
+              </div>
+              <h2 class="text-lg font-bold leading-snug text-gray-900 dark:text-white line-clamp-2">
+                {{ item.title }}
+              </h2>
+              <p v-if="item.authorName" class="mt-1 text-xs text-gray-600 dark:text-gray-300 truncate" :title="item.authorName">
+                {{ item.authorName }}
+              </p>
+              <p class="mt-2 text-sm text-gray-600 dark:text-gray-300 leading-relaxed line-clamp-3">
+                {{ item.description || 'Téléchargez ce rapport pour le consulter.' }}
+              </p>
+              <div class="mt-auto pt-4 flex items-center justify-between gap-3">
+                <div v-if="item.files.length" class="flex flex-wrap gap-1" aria-label="Langues disponibles">
                   <span
                     v-for="file in item.files"
                     :key="file.id"
@@ -207,11 +222,8 @@ function filterByCategory(categoryId: string) {
                     {{ file.languageCode }}
                   </span>
                 </div>
-                <p class="text-gray-800 dark:text-gray-300 mt-3 leading-relaxed text-xs line-clamp-3 flex-1">
-                  {{ item.description || 'Téléchargez ce rapport pour le consulter.' }}
-                </p>
                 <ResourceDownloadMenu
-                  class="mt-auto"
+                  class="ml-auto"
                   :resource-id="item.id"
                   :title="item.title"
                   :files="item.files"

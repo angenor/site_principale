@@ -9,7 +9,7 @@ interface CreateCaseBody {
   coverImage?: string
   eventDate?: string
   location?: string
-  regionId?: string
+  regionIds?: string[]
   categoryIds?: string[]
   keywordIds?: string[]
   isPublished?: boolean
@@ -74,10 +74,15 @@ export default defineEventHandler(async (event) => {
       coverImage: body.coverImage || null,
       eventDate: body.eventDate ? new Date(body.eventDate) : null,
       location: body.location?.trim() || null,
-      regionId: body.regionId || null,
       authorId: auth.userId,
       isPublished: body.isPublished || false,
       publishedAt: body.isPublished ? new Date() : null,
+      // Create regions relations
+      regions: body.regionIds?.length ? {
+        create: body.regionIds.map(regionId => ({
+          regionId
+        }))
+      } : undefined,
       // Create categories relations
       categories: body.categoryIds?.length ? {
         create: body.categoryIds.map(categoryId => ({
@@ -95,8 +100,13 @@ export default defineEventHandler(async (event) => {
       author: {
         select: { firstName: true, lastName: true }
       },
-      region: {
-        select: { name: true }
+      regions: {
+        include: {
+          region: {
+            select: { name: true }
+          }
+        },
+        orderBy: { region: { name: 'asc' } }
       },
       categories: {
         include: {
@@ -126,7 +136,7 @@ export default defineEventHandler(async (event) => {
       isPublished: caseStudy.isPublished,
       createdAt: caseStudy.createdAt,
       author: caseStudy.author ? `${caseStudy.author.firstName} ${caseStudy.author.lastName}` : null,
-      region: caseStudy.region?.name || null,
+      regions: caseStudy.regions.map(r => r.region.name),
       categories: caseStudy.categories.map(c => ({
         id: c.category.id,
         name: c.category.name,

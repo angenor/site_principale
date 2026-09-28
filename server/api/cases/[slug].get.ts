@@ -1,4 +1,5 @@
 import prisma from '../../utils/prisma'
+import { ensureCaseStudyRegionsMigrated } from '../../utils/caseStudies'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
@@ -10,13 +11,20 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  await ensureCaseStudyRegionsMigrated()
+
   const caseStudy = await prisma.caseStudy.findUnique({
     where: {
       slug,
       isPublished: true
     },
     include: {
-      region: true,
+      regions: {
+        include: {
+          region: true
+        },
+        orderBy: { region: { name: 'asc' } }
+      },
       categories: {
         include: {
           category: true
@@ -59,6 +67,7 @@ export default defineEventHandler(async (event) => {
 
   // Récupérer les cas connexes (même catégorie ou région)
   const categoryIds = caseStudy.categories.map(c => c.categoryId)
+  const regionIds = caseStudy.regions.map(r => r.regionId)
   const relatedCases = await prisma.caseStudy.findMany({
     where: {
       isPublished: true,
@@ -72,7 +81,11 @@ export default defineEventHandler(async (event) => {
           }
         },
         {
-          regionId: caseStudy.regionId
+          regions: {
+            some: {
+              regionId: { in: regionIds }
+            }
+          }
         }
       ]
     },
@@ -89,6 +102,7 @@ export default defineEventHandler(async (event) => {
   // Formater la réponse
   return {
     ...caseStudy,
+    regions: caseStudy.regions.map(r => r.region),
     categories: caseStudy.categories.map(c => c.category),
     keywords: caseStudy.keywords.map(k => ({
       id: k.keyword.id,

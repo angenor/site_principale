@@ -1,6 +1,9 @@
 import prisma from '../../utils/prisma'
+import { ensureCaseStudyRegionsMigrated } from '../../utils/caseStudies'
 
 export default defineEventHandler(async (event) => {
+  await ensureCaseStudyRegionsMigrated()
+
   const query = getQuery(event)
   const limit = parseInt(query.limit as string) || 4
 
@@ -22,11 +25,16 @@ export default defineEventHandler(async (event) => {
       coverImage: true,
       eventDate: true,
       publishedAt: true,
-      region: {
+      regions: {
         select: {
-          id: true,
-          name: true
-        }
+          region: {
+            select: {
+              id: true,
+              name: true
+            }
+          }
+        },
+        orderBy: { region: { name: 'asc' } }
       },
       categories: {
         select: {
@@ -47,6 +55,7 @@ export default defineEventHandler(async (event) => {
   // Formater les résultats
   return featuredCases.map(cs => ({
     ...cs,
+    regions: cs.regions.map(r => r.region),
     categories: cs.categories.map(c => c.category)
   }))
 })

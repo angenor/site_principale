@@ -1,4 +1,5 @@
 import prisma from '../../utils/prisma'
+import { ensureCaseStudyRegionsMigrated } from '../../utils/caseStudies'
 
 interface AutocompleteResult {
   id: string
@@ -37,6 +38,8 @@ export default defineEventHandler(async (event): Promise<AutocompleteResponse> =
     }
   }
 
+  await ensureCaseStudyRegionsMigrated()
+
   // Build search conditions
   const searchCondition = {
     OR: [
@@ -73,7 +76,10 @@ export default defineEventHandler(async (event): Promise<AutocompleteResponse> =
             summary: true,
             coverImage: true,
             publishedAt: true,
-            region: { select: { name: true } },
+            regions: {
+              select: { region: { select: { name: true } } },
+              orderBy: { region: { name: 'asc' } }
+            },
             categories: {
               include: { category: { select: { name: true, color: true } } },
               take: 1
@@ -181,7 +187,7 @@ export default defineEventHandler(async (event): Promise<AutocompleteResponse> =
       category: item.categories[0]?.category
         ? { name: item.categories[0].category.name, color: item.categories[0].category.color }
         : undefined,
-      region: item.region?.name
+      region: item.regions.map(r => r.region.name).join(', ') || undefined
     })
   })
 

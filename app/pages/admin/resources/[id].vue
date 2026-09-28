@@ -17,6 +17,7 @@ interface ResourceItem {
   slug: string
   title: string
   description: string | null
+  authorName: string | null
   coverImage: string | null
   files: ResourceFileVersion[]
   isPublished: boolean
@@ -33,6 +34,7 @@ const isNew = id === 'new'
 const form = ref({
   title: '',
   description: '',
+  authorName: '',
   coverImage: '',
   files: (isNew ? [createEditableResourceFile('FR', 'Français')] : []) as EditableResourceFile[],
   categoryId: '',
@@ -72,6 +74,7 @@ if (!isNew) {
       form.value = {
         title: resourceData.value.title,
         description: resourceData.value.description || '',
+        authorName: resourceData.value.authorName || '',
         coverImage: resourceData.value.coverImage || '',
         files: toEditableResourceFiles(resourceData.value.files),
         categoryId: resourceData.value.categoryId || '',
@@ -123,6 +126,7 @@ async function handleSubmit() {
     const payload = {
       title: form.value.title.trim(),
       description: form.value.description.trim() || null,
+      authorName: form.value.authorName.trim() || null,
       coverImage: form.value.coverImage || null,
       files: toResourceFilesPayload(form.value.files),
       categoryId: form.value.categoryId || null,
@@ -261,6 +265,19 @@ async function togglePublish() {
               </div>
 
               <div>
+                <label for="authorName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Auteur
+                </label>
+                <input
+                  id="authorName"
+                  v-model="form.authorName"
+                  type="text"
+                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  placeholder="Personne ou organisation (optionnel)"
+                />
+              </div>
+
+              <div>
                 <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Description
                 </label>
@@ -334,7 +351,7 @@ async function togglePublish() {
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Aperçu</h3>
             <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-              <div class="aspect-video bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+              <div class="aspect-[3/4] bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
                 <img
                   v-if="form.coverImage"
                   :src="form.coverImage"
@@ -351,6 +368,10 @@ async function togglePublish() {
                 <h4 class="font-medium text-gray-900 dark:text-white line-clamp-2">
                   {{ form.title || 'Titre du rapport' }}
                 </h4>
+                <p v-if="form.authorName.trim()" class="text-xs text-gray-600 dark:text-gray-300 mt-1 truncate">
+                  <font-awesome-icon icon="user" class="mr-1 text-gray-400" />
+                  {{ form.authorName.trim() }}
+                </p>
                 <p v-if="form.description" class="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
                   {{ form.description }}
                 </p>

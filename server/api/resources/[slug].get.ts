@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
       slug: true,
       title: true,
       description: true,
+      authorName: true,
       coverImage: true,
       ...legacyFileSelect,
       files: resourceFilesSelect,

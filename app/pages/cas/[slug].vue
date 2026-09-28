@@ -52,7 +52,7 @@ interface CaseStudyDetail {
   publishedAt: string | null
   readTime: number | null
   viewCount: number
-  region: Region | null
+  regions: Region[]
   categories: Category[]
   keywords: Keyword[]
   media: Media[]
@@ -250,9 +250,9 @@ const copyLink = async () => {
               <font-awesome-icon icon="calendar" class="w-4 h-4 mr-2" />
               {{ formattedDate }}
             </span>
-            <span v-if="caseStudy.region" class="flex items-center">
+            <span v-if="caseStudy.regions.length" class="flex items-center">
               <font-awesome-icon icon="location-dot" class="w-4 h-4 mr-2" />
-              {{ caseStudy.region.name }}
+              {{ caseStudy.regions.map(r => r.name).join(', ') }}
             </span>
             <span class="flex items-center">
               <font-awesome-icon icon="clock" class="w-4 h-4 mr-2" />
@@ -481,19 +481,7 @@ const copyLink = async () => {
 </template>
 
 <style scoped>
-/* Styles pour le contenu HTML */
-:deep(.prose h2) {
-  font-size: 1.5rem;
-  margin-top: 2.5rem;
-  margin-bottom: 1rem;
-}
-
-:deep(.prose h3) {
-  font-size: 1.25rem;
-  margin-top: 2rem;
-  margin-bottom: 0.75rem;
-}
-
+/* Styles pour le contenu HTML (les titres suivent les tailles de .prose dans main.css) */
 :deep(.prose p) {
   margin-bottom: 1rem;
 }

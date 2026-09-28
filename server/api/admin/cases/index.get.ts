@@ -1,8 +1,10 @@
 import prisma from '../../../utils/prisma'
 import { requireAuth } from '../../../utils/auth'
+import { ensureCaseStudyRegionsMigrated } from '../../../utils/caseStudies'
 
 export default defineEventHandler(async (event) => {
   await requireAuth(event)
+  await ensureCaseStudyRegionsMigrated()
 
   const query = getQuery(event)
   const page = parseInt(query.page as string) || 1
@@ -40,8 +42,13 @@ export default defineEventHandler(async (event) => {
       author: {
         select: { firstName: true, lastName: true }
       },
-      region: {
-        select: { name: true }
+      regions: {
+        include: {
+          region: {
+            select: { name: true }
+          }
+        },
+        orderBy: { region: { name: 'asc' } }
       },
       categories: {
         include: {
@@ -57,7 +64,7 @@ export default defineEventHandler(async (event) => {
     data: cases.map(c => ({
       ...c,
       author: c.author ? `${c.author.firstName} ${c.author.lastName}` : null,
-      region: c.region?.name || null,
+      regions: c.regions.map(r => r.region.name),
       categories: c.categories.map(cc => cc.category)
     })),
     pagination: {

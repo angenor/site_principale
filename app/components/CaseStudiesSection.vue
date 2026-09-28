@@ -26,7 +26,7 @@ interface CaseStudy {
   coverImage: string | null
   eventDate: string | null
   publishedAt: string | null
-  region: Region | null
+  regions: Region[]
   categories: Category[]
 }
 
@@ -97,7 +97,7 @@ const getDisplayDate = (cs: CaseStudy) => cs.eventDate || cs.publishedAt || unde
             :title="featuredCase.title"
             :subtitle="featuredCase.subtitle || undefined"
             :categories="featuredCase.categories"
-            :region="featuredCase.region?.name"
+            :region="featuredCase.regions.map(r => r.name).join(', ') || undefined"
             :date="getDisplayDate(featuredCase)"
             :link-to="`/cas/${featuredCase.slug}`"
             variant="featured"
@@ -114,7 +114,7 @@ const getDisplayDate = (cs: CaseStudy) => cs.eventDate || cs.publishedAt || unde
             :image="caseStudy.coverImage || '/images/placeholder-case.jpg'"
             :title="caseStudy.title"
             :categories="caseStudy.categories"
-            :region="caseStudy.region?.name"
+            :region="caseStudy.regions.map(r => r.name).join(', ') || undefined"
             :link-to="`/cas/${caseStudy.slug}`"
             variant="default"
             aspect-ratio="video"

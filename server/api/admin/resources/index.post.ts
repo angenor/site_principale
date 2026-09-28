@@ -6,6 +6,7 @@ import { normalizeResourceFiles, resourceFilesCreateData } from '../../../utils/
 interface CreateResourceBody {
   title: string
   description?: string
+  authorName?: string | null
   coverImage?: string
   files: unknown
   categoryId?: string
@@ -57,6 +58,7 @@ export default defineEventHandler(async (event) => {
       slug,
       title: body.title.trim(),
       description: body.description?.trim() || null,
+      authorName: body.authorName?.trim() || null,
       coverImage: body.coverImage || null,
       categoryId: body.categoryId || null,
       authorId: auth.userId,

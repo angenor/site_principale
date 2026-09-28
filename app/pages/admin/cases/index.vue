@@ -20,7 +20,7 @@ interface CaseStudy {
   viewCount: number
   createdAt: string
   author: string | null
-  region: string | null
+  regions: string[]
   categories: Category[]
 }
 
@@ -169,7 +169,7 @@ function formatDate(dateString: string | null) {
                 Titre
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">
-                Région
+                Régions
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">
                 Catégories
@@ -217,7 +217,7 @@ function formatDate(dateString: string | null) {
               </td>
               <td class="px-6 py-4 hidden md:table-cell">
                 <span class="text-sm text-gray-600 dark:text-gray-400">
-                  {{ caseStudy.region || '-' }}
+                  {{ caseStudy.regions.join(', ') || '-' }}
                 </span>
               </td>
               <td class="px-6 py-4 hidden lg:table-cell">

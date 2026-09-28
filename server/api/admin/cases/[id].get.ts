@@ -1,8 +1,10 @@
 import prisma from '../../../utils/prisma'
 import { requireAuth } from '../../../utils/auth'
+import { ensureCaseStudyRegionsMigrated } from '../../../utils/caseStudies'
 
 export default defineEventHandler(async (event) => {
   await requireAuth(event)
+  await ensureCaseStudyRegionsMigrated()
 
   const id = getRouterParam(event, 'id')
 
@@ -19,8 +21,13 @@ export default defineEventHandler(async (event) => {
       author: {
         select: { id: true, firstName: true, lastName: true }
       },
-      region: {
-        select: { id: true, name: true }
+      regions: {
+        include: {
+          region: {
+            select: { id: true, name: true }
+          }
+        },
+        orderBy: { region: { name: 'asc' } }
       },
       categories: {
         include: {
@@ -73,8 +80,8 @@ export default defineEventHandler(async (event) => {
       id: caseStudy.author.id,
       name: `${caseStudy.author.firstName} ${caseStudy.author.lastName}`
     } : null,
-    region: caseStudy.region,
-    regionId: caseStudy.regionId,
+    regions: caseStudy.regions.map(r => r.region),
+    regionIds: caseStudy.regions.map(r => r.regionId),
     categories: caseStudy.categories.map(c => c.category),
     categoryIds: caseStudy.categories.map(c => c.categoryId),
     keywords: caseStudy.keywords.map(k => k.keyword),

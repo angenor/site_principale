@@ -28,7 +28,7 @@ interface CaseStudy {
   coverImage: string | null
   eventDate: string | null
   publishedAt: string | null
-  region: { id: string; name: string } | null
+  regions: { id: string; name: string }[]
   categories: Category[]
 }
 
@@ -294,7 +294,7 @@ const getDisplayDate = (cs: CaseStudy) => cs.eventDate || cs.publishedAt || unde
             :subtitle="caseStudy.subtitle || undefined"
             :description="caseStudy.summary || undefined"
             :categories="caseStudy.categories"
-            :region="caseStudy.region?.name"
+            :region="caseStudy.regions.map(r => r.name).join(', ') || undefined"
             :date="getDisplayDate(caseStudy)"
             :link-to="`/cas/${caseStudy.slug}`"
             variant="default"

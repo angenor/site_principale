@@ -39,6 +39,7 @@ export default defineEventHandler(async (event) => {
     slug: resource.slug,
     title: resource.title,
     description: resource.description,
+    authorName: resource.authorName,
     coverImage: resource.coverImage,
     files: resourceFilesOf(resource),
     isPublished: resource.isPublished,
